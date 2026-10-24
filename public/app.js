@@ -130,16 +130,39 @@ function render() {
     else $("turnBanner").textContent = `${active?.name} のターン${isMyTurn ? " · あなたの番" : ""}`;
     renderActions(g, me, isMyTurn);
   }
-  renderPlayers(g, me); renderHand(me); renderLog(g); renderBuildingGuide(g, me); maybePlayTurnSound(g); maybeShowDiceResult(g); maybeShowTurnNotice(g, me);
+  renderPlayers(g, me); renderHand(me,g); renderLog(g); renderBuildingGuide(g, me); maybePlayTurnSound(g); maybeShowDiceResult(g); maybeShowTurnNotice(g, me);
 }
 function renderPlayers(g, me) {
   $("playersList").innerHTML = g.players.map((p, i) => `<div class="player-row ${g.status === "playing" && (g.phase === "special" ? p.id === g.specialPlayerId : i === g.activeIndex) ? "active" : ""}"><i class="player-swatch" style="background:${p.color}"></i><div class="player-row-main"><div class="player-row-name">${escapeHtml(p.name)}${p.id === g.hostId ? '<span class="host-tag">HOST</span>' : ""}${p.id === playerId ? " <span style=\"color:#82968d;font-weight:500\">(あなた)</span>" : ""}</div><div class="player-row-meta">手札 ${p.handCount || 0}枚 · 道 ${p.roads?.length || 0}</div></div><span class="player-points">${p.victoryPoints ?? "—"}点</span></div>`).join("");
 }
-function renderHand(me) {
+function renderHand(me,g) {
   const hand = me.hand || Object.fromEntries(RESOURCES.map(r => [r, 0])), total = RESOURCES.reduce((n, r) => n + hand[r], 0);
   $("handTotal").textContent = `${total}枚`;
   $("resourceHand").innerHTML = RESOURCES.map(r => `<div class="resource-card"><span class="res-symbol"><img src="/assets/${r}.svg" alt="${RESOURCE[r][1]}" /></span><b>${hand[r]}</b><small>${RESOURCE[r][1]}</small></div>`).join("");
+  const info={
+    knight:{name:"騎士",icon:"♞",effect:"盗賊を別のタイルへ移し、そのタイルに建物がある相手1人から資源をランダムに1枚奪います。使用した騎士が3枚以上になると、最大騎士力（2点）の対象になります。"},
+    victory:{name:"勝利点",icon:"★",effect:"1枚につき1勝利点です。このゲームでは所持している間、自分の得点に自動加算されます。ほかのプレイヤーにはカードの種類とこの勝利点は公開されません。"},
+    road:{name:"街道建設",icon:"━",effect:"資源を払わずに道を最大2本建設できます。通常の道路の接続条件が適用されます。"},
+    plenty:{name:"豊作",icon:"❧",effect:"銀行から好きな資源を合計2枚受け取ります。同じ種類を2枚選ぶこともできます。銀行に残っている資源から選びます。"},
+    monopoly:{name:"独占",icon:"⇄",effect:"資源を1種類指定し、ほかの全プレイヤーが持っているその資源をすべて受け取ります。"}
+  };
+  const cards=me.devCards||[],turn=g?.turnNumber??0;
+  $("developmentHand").innerHTML='<div class="development-hand-heading"><b>発展カード</b><small>'+cards.length+'枚</small></div>'+
+    (cards.length?'<div class="owned-dev-grid">'+Object.entries(info).filter(([type])=>cards.some(c=>c.type===type)).map(([type,d])=>{
+      const owned=cards.filter(c=>c.type===type),fresh=owned.filter(c=>c.boughtTurn>=turn).length;
+      const timing=type==="victory"?"得点に加算済み":fresh===owned.length?"今ターン購入":fresh?"今ターン購入 "+fresh+"枚":"所持中";
+      const note=type==="victory"?"勝利点カードは使用操作が不要です。":"購入したターンには使えません。発展カードの使用は自分の通常ターンに1枚までです。";
+      return `<button class="owned-dev-card dev-${type}" type="button" aria-expanded="false" aria-describedby="dev-effect-${type}"><span class="owned-dev-symbol">${d.icon}</span><span class="owned-dev-name">${d.name}</span><b class="owned-dev-count">×${owned.length}</b><small class="owned-dev-timing">${timing}</small><span class="dev-effect-tooltip" id="dev-effect-${type}" role="tooltip"><strong>${d.name}</strong><span>${d.effect}</span><em>${note}</em></span></button>`;
+    }).join('')+'</div><small class="dev-help">カーソルを合わせる・タップで効果を表示</small>':'<p class="empty-development">発展カードはまだありません</p>');
+  $("developmentHand").querySelectorAll(".owned-dev-card").forEach(button=>button.onclick=()=>{
+    const open=button.getAttribute("aria-expanded")==="true";
+    $("developmentHand").querySelectorAll(".owned-dev-card").forEach(b=>b.setAttribute("aria-expanded","false"));
+    button.setAttribute("aria-expanded",String(!open));
+  });
+
 }
+document.addEventListener("pointerdown",e=>{if(!e.target.closest?.(".owned-dev-card"))document.querySelectorAll(".owned-dev-card[aria-expanded=true]").forEach(b=>b.setAttribute("aria-expanded","false"));});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".owned-dev-card[aria-expanded=true]").forEach(b=>b.setAttribute("aria-expanded","false"));});
 function renderActions(g, me, isMyTurn) {
   let notice = ""; const main = [], build = [], dev = [];
   $("tradeActions").hidden = true;
@@ -167,7 +190,7 @@ function renderActions(g, me, isMyTurn) {
       if (mode === "bank") { $("tradeActions").hidden = false; $("tradeActions").innerHTML = `<select id="tradeGive">${RESOURCES.map(r=>`<option value="${r}">${RESOURCE[r][1]}を出す（${g.tradeRates?.[r] || 4}枚）</option>`).join("")}</select><select id="tradeWant">${RESOURCES.map(r=>`<option value="${r}">${RESOURCE[r][1]}を得る</option>`).join("")}</select><button id="tradeButton" class="action-btn primary">交換</button>`; }
       if (me.devCards?.length) {
         const labels = { knight: "騎士", victory: "勝利点", road: "街道建設", plenty: "豊作", monopoly: "独占" };
-        dev.push(`<div class="dev-card-list" style="grid-column:1/-1">${me.devCards.map(c=>`<span class="dev-chip">${labels[c.type] || c.type}</span>`).join("")}</div>`);
+
         for (const type of ["knight", "plenty", "monopoly", "road"]) if (me.devCards.some(c => c.type === type && c.boughtTurn < g.turnNumber)) dev.push(`<button class="action-btn" data-card="${type}" ${me.usedDevCard ? "disabled" : ""}>${labels[type]}を使う</button>`);
       }
     }
