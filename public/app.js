@@ -5,8 +5,9 @@ const TERRAIN = { wood: ["森林", "🌲"], brick: ["丘陵", "🧱"], sheep: ["
 let boardZoom = 1, boardPan = {x:0,y:0}, boardFrame = null, boardDragged = false;
 let lastDiceResultKey = null, diceResultTimer = null;
 let lastTurnNotice = null, pendingTurnNotice = null;
+let audioContext = null, lastTurnSoundKey = null, pendingTurnSoundKey = null;
 let autoSkipSpecial = localStorage.getItem("island-auto-skip-special")==="1", autoSkipInFlight = false, autoSkipLastKey = null;
-let currentGame = null, playerId = null, roomCode = null, mode = null, selectedRobberHex = null, selectedVictim = "", pendingRoadCard = [], polling = false, soundOn = true, toastTimer;
+let currentGame = null, playerId = null, roomCode = null, mode = null, selectedRobberHex = null, selectedVictim = "", pendingRoadCard = [], polling = false, soundOn = localStorage.getItem("island-sound-on")!=="0", toastTimer;
 
 async function api(path, options = {}) {
   const response = await fetch(path, { ...options, headers: { "content-type": "application/json", ...(options.headers || {}) } });
@@ -34,8 +35,54 @@ async function act(type, args = {}) {
   try { const data = await api(`/api/rooms/${roomCode}/action`, { method: "POST", body: JSON.stringify({ playerId, type, ...args }) }); currentGame = data.game; mode = null; selectedRobberHex = null; pendingRoadCard = []; render(); if (soundOn) clickSound(); return true; }
   catch (error) { showToast(error.message); return false; }
 }
+function getTurnSoundKey(g) {
+  if(g?.status!=="playing"||g.winner||["setup","special","finished"].includes(g.phase)||g.players[g.activeIndex]?.id!==playerId)return null;
+  return `${g.code}:turn:${g.turnNumber}:${playerId}`;
+}
+function playTurnChime() {
+  if(!soundOn||!audioContext||audioContext.state!=="running")return false;
+  try {
+    const now=audioContext.currentTime;
+    // Four softly overlapping bell notes: po-ro-rooon.
+    [523.25,659.25,783.99,1046.5].forEach((frequency,i)=>{
+      const at=now+i*.12,duration=i===3?1.25:.62;
+      for(const [ratio,volume] of [[1,.11],[2,.022]]) {
+        const oscillator=audioContext.createOscillator(),gain=audioContext.createGain();
+        oscillator.type="sine";oscillator.frequency.value=frequency*ratio;
+        gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(volume,at+.009);gain.gain.exponentialRampToValueAtTime(.0001,at+duration);
+        oscillator.connect(gain);gain.connect(audioContext.destination);oscillator.start(at);oscillator.stop(at+duration+.03);
+        oscillator.onended=()=>{oscillator.disconnect();gain.disconnect();};
+      }
+    });
+    return true;
+  } catch (_) { return false; }
+}
+async function unlockAudio() {
+  if(!soundOn)return;
+  try {
+    const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;
+    if(!audioContext||audioContext.state==="closed")audioContext=new Audio();
+    if(audioContext.state==="suspended")await audioContext.resume();
+    if(pendingTurnSoundKey&&pendingTurnSoundKey===getTurnSoundKey(currentGame)&&playTurnChime())pendingTurnSoundKey=null;
+  } catch (_) {}
+}
+document.addEventListener("pointerdown",unlockAudio,{passive:true});
+document.addEventListener("keydown",unlockAudio);
+function maybePlayTurnSound(g) {
+  const key=getTurnSoundKey(g);
+  if(!key){pendingTurnSoundKey=null;return;}
+  if(key===lastTurnSoundKey)return;
+  lastTurnSoundKey=key;
+  pendingTurnSoundKey=soundOn&&!playTurnChime()?key:null;
+}
 function clickSound() {
-  try { const context = new AudioContext(), oscillator = context.createOscillator(), gain = context.createGain(); oscillator.frequency.value = 510; gain.gain.value = .045; oscillator.connect(gain); gain.connect(context.destination); oscillator.start(); oscillator.stop(context.currentTime + .035); } catch (_) {}
+  if(!soundOn||!audioContext||audioContext.state!=="running")return;
+  try { const oscillator=audioContext.createOscillator(),gain=audioContext.createGain();oscillator.frequency.value=510;gain.gain.value=.035;oscillator.connect(gain);gain.connect(audioContext.destination);oscillator.start();oscillator.stop(audioContext.currentTime+.035);oscillator.onended=()=>{oscillator.disconnect();gain.disconnect();}; }catch(_){}
+}
+function syncSoundButton() {
+  const button=$("soundToggle");button.textContent=soundOn?"♪":"×";
+  button.setAttribute("aria-label",soundOn?"音をオフにする":"音をオンにする");
+  button.setAttribute("aria-pressed",String(soundOn));
 }
 
 document.querySelectorAll(".tab").forEach(tab => tab.addEventListener("click", () => {
@@ -56,7 +103,8 @@ $("roomCode").addEventListener("input", e => e.target.value = e.target.value.toU
 $("startGame").addEventListener("click", () => act("start"));
 $("copyCode").addEventListener("click", async () => { try { await navigator.clipboard.writeText(roomCode); showToast("部屋コードをコピーしました。"); } catch (_) { showToast(`部屋コード：${roomCode}`); } });
 $("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); $("turnDialog").close();$("logDialog").close();$("diceResultDialog").close();lastTurnNotice=null;pendingTurnNotice=null; if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; localStorage.removeItem(`island-room-${$("roomCodeDisplay").textContent}`); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
-$("soundToggle").addEventListener("click", e => { soundOn = !soundOn; e.currentTarget.textContent = soundOn ? "♪" : "×"; showToast(soundOn ? "効果音をオンにしました。" : "効果音をオフにしました。"); });
+$("soundToggle").addEventListener("click", () => { soundOn=!soundOn;localStorage.setItem("island-sound-on",soundOn?"1":"0");if(!soundOn)pendingTurnSoundKey=null;else unlockAudio();syncSoundButton();showToast(soundOn?"通知音をオンにしました。":"通知音をオフにしました。"); });
+syncSoundButton();
 
 function render() {
   if (!currentGame) return;
@@ -82,7 +130,7 @@ function render() {
     else $("turnBanner").textContent = `${active?.name} のターン${isMyTurn ? " · あなたの番" : ""}`;
     renderActions(g, me, isMyTurn);
   }
-  renderPlayers(g, me); renderHand(me); renderLog(g); renderBuildingGuide(g, me); maybeShowDiceResult(g); maybeShowTurnNotice(g, me);
+  renderPlayers(g, me); renderHand(me); renderLog(g); renderBuildingGuide(g, me); maybePlayTurnSound(g); maybeShowDiceResult(g); maybeShowTurnNotice(g, me);
 }
 function renderPlayers(g, me) {
   $("playersList").innerHTML = g.players.map((p, i) => `<div class="player-row ${g.status === "playing" && (g.phase === "special" ? p.id === g.specialPlayerId : i === g.activeIndex) ? "active" : ""}"><i class="player-swatch" style="background:${p.color}"></i><div class="player-row-main"><div class="player-row-name">${escapeHtml(p.name)}${p.id === g.hostId ? '<span class="host-tag">HOST</span>' : ""}${p.id === playerId ? " <span style=\"color:#82968d;font-weight:500\">(あなた)</span>" : ""}</div><div class="player-row-meta">手札 ${p.handCount || 0}枚 · 道 ${p.roads?.length || 0}</div></div><span class="player-points">${p.victoryPoints ?? "—"}点</span></div>`).join("");
