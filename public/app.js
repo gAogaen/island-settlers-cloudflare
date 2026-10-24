@@ -134,7 +134,11 @@ function render() {
   renderPlayers(g, me); renderHand(me,g); renderLog(g); renderBuildingGuide(g, me); maybePlayTurnSound(g); maybeShowDiceResult(g); maybeShowTurnNotice(g, me); maybeShowTradeOffer(g,me);
 }
 function renderPlayers(g, me) {
-  $("playersList").innerHTML = g.players.map((p, i) => `<div class="player-row ${g.status === "playing" && (g.phase === "special" ? p.id === g.specialPlayerId : i === g.activeIndex) ? "active" : ""}"><i class="player-swatch" style="background:${p.color}"></i><div class="player-row-main"><div class="player-row-name">${escapeHtml(p.name)}${p.id === g.hostId ? '<span class="host-tag">HOST</span>' : ""}${p.id === playerId ? " <span style=\"color:#82968d;font-weight:500\">(あなた)</span>" : ""}</div><div class="player-row-meta">手札 ${p.handCount || 0}枚 · 道 ${p.roads?.length || 0}</div></div><span class="player-points">${p.victoryPoints ?? "—"}点</span></div>`).join("");
+  $("playersList").innerHTML=g.players.map((p,i)=>{
+    const active=g.status==="playing"&&(g.phase==="special"?p.id===g.specialPlayerId:i===g.activeIndex);
+    const badges=(g.largestArmyOwner===p.id?'<span class="player-award army-award" title="最大騎士力による2勝利点">♞ 最大騎士力 +2点</span>':'')+(g.longestRoadOwner===p.id?'<span class="player-award road-award" title="最長交易路による2勝利点">━ 最長交易路 +2点</span>':'');
+    return `<div class="player-row ${active?'active':''}"><i class="player-swatch" style="background:${p.color}"></i><div class="player-row-main"><div class="player-name-and-points"><div class="player-row-name">${escapeHtml(p.name)}${p.id===g.hostId?'<span class="host-tag">HOST</span>':''}${p.id===playerId?' <span class="self-player-label">(あなた)</span>':''}</div><span class="player-points">${p.victoryPoints??'—'}点</span></div><div class="player-public-stats"><span class="knight-stat" title="実際に使用した騎士カードの枚数">♞ 騎士 <b>${p.playedKnights||0}</b>回</span><span title="つながっている道の最大長。建設した道の総数とは異なります。">最長の道 <b>${p.longestRoad||0}</b>本</span></div><div class="player-row-meta">手札 ${p.handCount||0}枚 · 発展 ${p.devCount||0}枚</div><div class="player-row-meta">開拓地 ${p.settlements?.length||0} · 都市 ${p.cities?.length||0} · 道 ${p.roads?.length||0}本</div>${badges?'<div class="player-awards">'+badges+'</div>':''}</div></div>`;
+  }).join("");
 }
 function renderHand(me,g) {
   const hand = me.hand || Object.fromEntries(RESOURCES.map(r => [r, 0])), total = RESOURCES.reduce((n, r) => n + hand[r], 0);
