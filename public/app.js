@@ -2,6 +2,7 @@ const $ = id => document.getElementById(id);
 const RESOURCES = ["wood", "brick", "sheep", "wheat", "ore"];
 const RESOURCE = { wood: ["🌲", "木材"], brick: ["🧱", "レンガ"], sheep: ["🐑", "羊毛"], wheat: ["🌾", "小麦"], ore: ["⛰️", "鉱石"] };
 const TERRAIN = { wood: ["森林", "🌲"], brick: ["丘陵", "🧱"], sheep: ["牧草地", "🐑"], wheat: ["畑", "🌾"], ore: ["山地", "⛰️"], desert: ["砂漠", "🏜️"] };
+let renderedMatchId=null,actionInFlight=false,activeActionToken=null,tradeDraft={toId:"",giveCards:{},wantCards:{}};
 let boardZoom = 1, boardPan = {x:0,y:0}, boardFrame = null, boardDragged = false;
 let activeTradeOfferId = null, seenTradeOfferIds = new Set(), tradeReplyInFlight = false;
 let lastVictoryNoticeKey = null, pendingVictorySoundKey = null;
@@ -14,7 +15,7 @@ let currentGame = null, playerId = null, roomCode = null, mode = null, selectedR
 async function api(path, options = {}) {
   const response = await fetch(path, { ...options, headers: { "content-type": "application/json", ...(options.headers || {}) } });
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error || "通信に失敗しました。");
+  if (!response.ok) {const error=new Error(data.error||"通信に失敗しました。");error.status=response.status;throw error;}
   return data;
 }
 function rememberName() { return ($("playerName").value || "プレイヤー").trim().slice(0, 16) || "プレイヤー"; }
@@ -22,24 +23,30 @@ function setError(message = "") { $("homeError").textContent = message; }
 function showToast(message) { const el = $("toast"); el.textContent = message; el.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 2400); }
 function enterRoom(code, id) {
   document.body.classList.add("in-room"); boardZoom=1;boardPan={x:0,y:0};
+  currentGame=null;renderedMatchId=null;
   roomCode = code.toUpperCase(); lastDiceResultKey=sessionStorage.getItem(`island-dice-seen-${roomCode}`); playerId = id; localStorage.setItem(`island-room-${roomCode}`, id); localStorage.setItem("island-last-name", rememberName());
   $("homeView").hidden = true; $("gameView").hidden = false; $("roomCodeDisplay").textContent = roomCode; $("connectionLabel").textContent = "オンライン"; refresh();
   if (window.pollTimer) clearInterval(window.pollTimer); window.pollTimer = setInterval(refresh, 2200);
   history.replaceState({}, "", `/?room=${roomCode}`);
 }
 async function refresh() {
-  if (!roomCode || polling) return; polling = true;
-  try { const data = await api(`/api/rooms/${roomCode}?playerId=${encodeURIComponent(playerId)}`); const changed = JSON.stringify(currentGame) !== JSON.stringify(data.game); currentGame = data.game; if (changed) render(); $("connectionLabel").textContent = "オンライン"; }
-  catch (error) { $("connectionLabel").textContent = "再接続中"; if (error.message.includes("部屋が見つかりません")) showToast(error.message); }
+  if (!roomCode || polling||actionInFlight) return; polling = true;
+  const requestedRoom=roomCode,requestedPlayer=playerId;
+  try { const data = await api(`/api/rooms/${roomCode}?playerId=${encodeURIComponent(playerId)}`); if(roomCode!==requestedRoom||playerId!==requestedPlayer)return;if(currentGame&&(data.game.revision||0)<(currentGame.revision||0))return;const changed = JSON.stringify(currentGame) !== JSON.stringify(data.game); currentGame = data.game; if (changed) render(); $("connectionLabel").textContent = "オンライン"; }
+  catch (error) { if(roomCode!==requestedRoom||playerId!==requestedPlayer)return;$("connectionLabel").textContent="再接続中";if([403,404].includes(error.status)){
+    forgetRoom(roomCode,playerId);$("leaveRoom").click();showToast(error.message);
+  } }
   finally { polling = false; }
 }
 async function act(type, args = {}) {
-  try { const data = await api(`/api/rooms/${roomCode}/action`, { method: "POST", body: JSON.stringify({ playerId, type, ...args }) }); currentGame = data.game; mode = null; selectedRobberHex = null; pendingRoadCard = []; render(); if (soundOn) clickSound(); return true; }
+  if(actionInFlight)return false;actionInFlight=true;const token={};activeActionToken=token;const actionRoom=roomCode,actionPlayer=playerId;
+  try { const data = await api(`/api/rooms/${roomCode}/action`, { method: "POST", body: JSON.stringify({ playerId, type, ...args }) }); if(roomCode!==actionRoom||playerId!==actionPlayer)return false;currentGame = data.game; if(type==="offerTrade")tradeDraft={toId:"",giveCards:{},wantCards:{}}; mode = null; selectedRobberHex = null; pendingRoadCard = []; if(activeActionToken===token){actionInFlight=false;activeActionToken=null;} render(); if (soundOn) clickSound(); return true; }
   catch (error) { showToast(error.message); return false; }
+  finally {if(activeActionToken===token){actionInFlight=false;activeActionToken=null;}}
 }
 function getTurnSoundKey(g) {
   if(g?.status!=="playing"||g.winner||["setup","special","finished"].includes(g.phase)||g.players[g.activeIndex]?.id!==playerId)return null;
-  return `${g.code}:turn:${g.turnNumber}:${playerId}`;
+  return `${g.code}:${g.matchId||g.createdAt}:turn:${g.turnNumber}:${playerId}`;
 }
 function playTurnChime() {
   if(!soundOn||!audioContext||audioContext.state!=="running")return false;
@@ -65,7 +72,7 @@ async function unlockAudio() {
     const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;
     if(!audioContext||audioContext.state==="closed")audioContext=new Audio();
     if(audioContext.state==="suspended")await audioContext.resume();
-    if(pendingVictorySoundKey&&currentGame?.winner&&pendingVictorySoundKey===`${currentGame.code}:${currentGame.winner}`&&playVictoryFanfare()){pendingVictorySoundKey=null;pendingTurnSoundKey=null;return;}
+    if(pendingVictorySoundKey&&currentGame?.winner&&pendingVictorySoundKey===`${currentGame.code}:${currentGame.matchId||currentGame.createdAt}:${currentGame.winner}`&&playVictoryFanfare()){pendingVictorySoundKey=null;pendingTurnSoundKey=null;return;}
     if(pendingTurnSoundKey&&pendingTurnSoundKey===getTurnSoundKey(currentGame)&&playTurnChime())pendingTurnSoundKey=null;
   } catch (_) {}
 }
@@ -99,13 +106,15 @@ $("createRoom").addEventListener("click", async () => {
 });
 $("joinRoom").addEventListener("click", async () => {
   setError(""); const code = $("roomCode").value.trim().toUpperCase(); if (!code) return setError("部屋コードを入力してください。");
+  const remembered=localStorage.getItem(`island-room-${code}`);
+  if(remembered){try {await api(`/api/rooms/${code}?playerId=${encodeURIComponent(remembered)}`);enterRoom(code,remembered);return;}catch(error){if(![403,404].includes(error.status))return setError(error.message);}}
   try { const data = await api(`/api/rooms/${code}/join`, { method: "POST", body: JSON.stringify({ playerName: rememberName() }) }); enterRoom(code, data.playerId); }
   catch (e) { setError(e.message); }
 });
 $("roomCode").addEventListener("input", e => e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));
 $("startGame").addEventListener("click", () => act("start"));
 $("copyCode").addEventListener("click", async () => { try { await navigator.clipboard.writeText(roomCode); showToast("部屋コードをコピーしました。"); } catch (_) { showToast(`部屋コード：${roomCode}`); } });
-$("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); $("turnDialog").close();$("logDialog").close();$("diceResultDialog").close();$("tradeOfferDialog").close();$("victoryDialog").close();activeTradeOfferId=null;seenTradeOfferIds.clear();lastTurnNotice=null;pendingTurnNotice=null; if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; localStorage.removeItem(`island-room-${$("roomCodeDisplay").textContent}`); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
+$("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); $("turnDialog").close();$("logDialog").close();$("diceResultDialog").close();$("tradeOfferDialog").close();$("victoryDialog").close();activeTradeOfferId=null;seenTradeOfferIds.clear();lastTurnNotice=null;pendingTurnNotice=null; if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; renderResumeRooms();renderHomeStats(); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
 $("soundToggle").addEventListener("click", () => { soundOn=!soundOn;localStorage.setItem("island-sound-on",soundOn?"1":"0");if(!soundOn){pendingTurnSoundKey=null;pendingVictorySoundKey=null;}else unlockAudio();syncSoundButton();showToast(soundOn?"通知音をオンにしました。":"通知音をオフにしました。"); });
 syncSoundButton();
 
@@ -113,6 +122,11 @@ function render() {
   if (!currentGame) return;
   const g = currentGame, me = g.players.find(p => p.id === playerId), active = g.phase === "special" ? g.players.find(p => p.id === g.specialPlayerId) : g.players[g.activeIndex];
   if (!me) return;
+  if(renderedMatchId!==(g.matchId||g.createdAt)){
+    renderedMatchId=g.matchId||g.createdAt;mode=null;pendingRoadCard=[];selectedRobberHex=null;boardZoom=1;boardPan={x:0,y:0};
+    if(!g.winner)for(const id of ["victoryDialog","turnDialog","diceResultDialog","tradeOfferDialog"])if($(id).open)$(id).close();
+  }
+  rememberRoom(g,me);syncRematchUI(g,me);
   $("gameTitle").textContent = g.status === "lobby" ? "対戦ルーム" : (g.winner ? "ゲーム終了" : "島を開拓しよう" );
   $("gameStatusLabel").textContent = g.status === "lobby" ? "ROOM LOBBY" : g.winner ? "GAME FINISHED" : `TURN ${g.turnNumber || 1}`;
   $("playerCount").textContent = `${g.players.length} / 6`;
@@ -133,7 +147,7 @@ function render() {
     else $("turnBanner").textContent = `${active?.name} のターン${isMyTurn ? " · あなたの番" : ""}`;
     renderActions(g, me, isMyTurn);
   }
-  renderPlayers(g, me); renderHand(me,g); renderLog(g); renderBuildingGuide(g, me); maybePlayTurnSound(g); maybeShowDiceResult(g); maybeShowTurnNotice(g, me); maybeShowTradeOffer(g,me); saveOwnMatchResult(g,me); maybeShowVictory(g);
+  renderPlayers(g, me); renderHand(me,g); renderLog(g); renderBuildingGuide(g, me); renderProduction(g); maybePlayTurnSound(g); maybeShowDiceResult(g); maybeShowTurnNotice(g, me); maybeShowTradeOffer(g,me); saveOwnMatchResult(g,me); maybeShowVictory(g);
 }
 function renderPlayers(g, me) {
   $("playersList").innerHTML=g.players.map((p,i)=>{
@@ -210,11 +224,12 @@ function renderActions(g, me, isMyTurn) {
   }
   if (g.phase === "main" && !isMyTurn && (g.tradeOffers || []).some(o => o.status === "pending" && o.toId === playerId)) main.push(`<button class="action-btn" data-action="playerTradeToggle">交換の提示を見る</button>`);
   if (g.phase === "main" && mode === "playerTrade") { $("tradeActions").hidden = false; renderPlayerTrades(g); }
-  if (g.winner) { main.push(`<button class="action-btn primary" data-action="viewResults">🏆 結果を見る</button><button class="action-btn" onclick="location.href='/'">新しいゲームを始める</button>`); }
+  if (g.winner) { main.push(`<button class="action-btn primary" data-action="rematchReady">${(g.rematchReadyIds||[]).includes(playerId)?"再戦準備を取り消す":"同じメンバーで再戦"}（${g.rematchReadyIds?.length||0}/${g.players.length}）</button><button class="action-btn primary" data-action="viewResults">🏆 結果を見る</button><button class="action-btn" onclick="location.href='/'">新しいゲームを始める</button>`); }
   $("phaseNotice").textContent = notice; $("mainActions").innerHTML = main.join(""); $("buildActions").innerHTML = build.join(""); $("devActions").innerHTML = dev.join("");
   document.querySelectorAll("[data-action]").forEach(button => button.addEventListener("click", () => {
     const action = button.dataset.action;
     if(action==="viewResults"){showVictory(currentGame);return;}
+    if(action==="rematchReady"){toggleRematchReady();return;}
     if (action === "bankToggle") { mode = mode === "bank" ? null : "bank"; render(); return; }
     if (action === "playerTradeToggle") { const me=currentGame.players.find(p=>p.id===playerId),incoming=incomingTradeOffers(currentGame)[0]; if(incoming){showTradeOffer(currentGame,me,incoming);return;} mode = mode === "playerTrade" ? null : "playerTrade"; render(); return; }
     if (action === "roll") return act("roll");
@@ -222,27 +237,31 @@ function renderActions(g, me, isMyTurn) {
     if (action === "endSpecial") return act("endSpecial");
     if (action === "buyDevelopment") return act("buyDevelopment");
   }));
-  document.querySelectorAll("[data-mode]").forEach(button => button.addEventListener("click", () => { mode = mode === button.dataset.mode ? null : button.dataset.mode; render(); }));
+  document.querySelectorAll("[data-mode]").forEach(button => button.addEventListener("click", () => { mode = mode === button.dataset.mode ? null : button.dataset.mode;pendingRoadCard=[]; render(); }));
   document.querySelectorAll("[data-card]").forEach(button => button.addEventListener("click", () => useDevelopment(button.dataset.card)));
   const discardButton = $("submitDiscard"); if (discardButton) discardButton.onclick = () => { const cards = Object.fromEntries(RESOURCES.map(r => [r, Number(document.querySelector(`[data-discard="${r}"]`).value)])); act("discard", { cards }); };
   const victimSelect = $("victimSelect"); if (victimSelect) victimSelect.onchange = () => selectedVictim = victimSelect.value;
   const confirmRobber = $("confirmRobber"); if (confirmRobber) confirmRobber.onclick = () => act("moveRobber", { hexId: selectedRobberHex, victimId: selectedVictim });
   const tradeButton = $("tradeButton"); if (tradeButton) tradeButton.onclick = () => act("tradeBank", { give: $("tradeGive").value, want: $("tradeWant").value });
 }
+function offerBundle(offer,side) {
+  return Object.fromEntries(RESOURCES.map(r=>[r,Number(offer[side+"Cards"]?.[r]??(offer[side]===r?offer[side+"Count"]:0))||0]));
+}
+function resourceBundleText(cards) {return RESOURCES.filter(r=>cards[r]>0).map(r=>RESOURCE[r][1]+"×"+cards[r]).join(" ＋ ")||"なし";}
+function resourceBundleHTML(cards) {return RESOURCES.filter(r=>cards[r]>0).map(r=>`<span class="bundle-item"><img src="/assets/${r}.svg" alt="${RESOURCE[r][1]}"><b>${RESOURCE[r][1]} ×${cards[r]}</b></span>`).join("");}
 function renderPlayerTrades(g) {
-  const panel = $("tradeActions"), others = g.players.filter(p => p.id !== playerId);
-  const offers = (g.tradeOffers || []).filter(o => o.status === "pending" && (o.toId === playerId || o.fromId === playerId));
-  const offerMarkup = offers.map(o => {
-    const from = g.players.find(p => p.id === o.fromId), to = g.players.find(p => p.id === o.toId);
-    const buttons = o.toId === playerId ? `<button class="action-btn primary" data-accept-offer="${o.id}">受ける</button><button class="action-btn" data-decline-offer="${o.id}">断る</button>` : `<span class="waiting-offer">返事待ち</span>`;
-    return `<div class="offer-row"><small>${escapeHtml(from?.name)} → ${escapeHtml(to?.name)}：${o.giveCount} ${RESOURCE[o.give][1]} ⇄ ${o.wantCount} ${RESOURCE[o.want][1]}</small>${buttons}</div>`;
-  }).join("");
-  const canOffer = g.players[g.activeIndex]?.id === playerId;
-  const form = canOffer ? `<div class="player-trade-form"><select id="tradeTarget">${others.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}と交換</option>`).join("")}</select><select id="tradeGive">${RESOURCES.map(r=>`<option value="${r}">${RESOURCE[r][1]}を出す</option>`).join("")}</select><input id="tradeGiveCount" type="number" min="1" value="1" aria-label="出す枚数"><span>⇄</span><select id="tradeWant">${RESOURCES.map(r=>`<option value="${r}">${RESOURCE[r][1]}をもらう</option>`).join("")}</select><input id="tradeWantCount" type="number" min="1" value="1" aria-label="欲しい枚数"><button id="offerTradeButton" class="action-btn primary">交換を提示</button></div>` : "";
-  panel.innerHTML = form + `<div class="offers-list">${offerMarkup || "<small class='no-offers'>交換の提示はありません。</small>"}</div>`;
-  const offerButton = $("offerTradeButton"); if (offerButton) offerButton.onclick = () => act("offerTrade", { toId: $("tradeTarget").value, give: $("tradeGive").value, giveCount: Number($("tradeGiveCount").value), want: $("tradeWant").value, wantCount: Number($("tradeWantCount").value) });
-  panel.querySelectorAll("[data-accept-offer]").forEach(b => b.onclick = () => act("respondTrade", { offerId: b.dataset.acceptOffer, accept: true }));
-  panel.querySelectorAll("[data-decline-offer]").forEach(b => b.onclick = () => act("respondTrade", { offerId: b.dataset.declineOffer, accept: false }));
+  const panel=$("tradeActions"),others=g.players.filter(p=>p.id!==playerId),me=g.players.find(p=>p.id===playerId);
+  const offers=(g.tradeOffers||[]).filter(o=>o.status==="pending"&&(o.toId===playerId||o.fromId===playerId));
+  const offerMarkup=offers.map(o=>`<div class="offer-row"><small>${escapeHtml(g.players.find(p=>p.id===o.fromId)?.name)} → ${escapeHtml(g.players.find(p=>p.id===o.toId)?.name)}<br>${resourceBundleText(offerBundle(o,"give"))} ⇄ ${resourceBundleText(offerBundle(o,"want"))}</small>${o.toId===playerId?`<button class="action-btn primary" data-accept-offer="${o.id}">受ける</button><button class="action-btn" data-decline-offer="${o.id}">断る</button>`:'<span class="waiting-offer">返事待ち</span>'}</div>`).join("");
+  const canOffer=g.players[g.activeIndex]?.id===playerId;
+  if(!others.some(p=>p.id===tradeDraft.toId))tradeDraft.toId=others[0]?.id||"";
+  const form=canOffer?`<div class="multi-trade-form"><select id="tradeTarget">${others.map(p=>`<option value="${p.id}" ${p.id===tradeDraft.toId?'selected':''}>${escapeHtml(p.name)}と交換</option>`).join("")}</select><div class="multi-trade-header"><span>資源</span><b>渡す</b><b>受け取る</b></div>${RESOURCES.map(r=>`<label class="multi-trade-row"><span><img src="/assets/${r}.svg" alt="">${RESOURCE[r][1]}</span><input data-trade-side="giveCards" data-resource="${r}" type="number" min="0" max="${me.hand[r]}" value="${tradeDraft.giveCards[r]||0}" aria-label="渡す${RESOURCE[r][1]}の枚数"><input data-trade-side="wantCards" data-resource="${r}" type="number" min="0" max="24" value="${tradeDraft.wantCards[r]||0}" aria-label="受け取る${RESOURCE[r][1]}の枚数"></label>`).join("")}<small>複数種類をまとめて提示できます。</small><button id="offerTradeButton" class="action-btn primary">この条件で交換を提示</button></div>`:"";
+  panel.innerHTML=form+`<div class="offers-list">${offerMarkup||'<small class="no-offers">交換の提示はありません。</small>'}</div>`;
+  if($("tradeTarget"))$("tradeTarget").onchange=e=>tradeDraft.toId=e.target.value;
+  panel.querySelectorAll("[data-trade-side]").forEach(input=>input.oninput=()=>tradeDraft[input.dataset.tradeSide][input.dataset.resource]=Number(input.value));
+  if($("offerTradeButton"))$("offerTradeButton").onclick=()=>act("offerTrade",{toId:tradeDraft.toId,giveCards:{...tradeDraft.giveCards},wantCards:{...tradeDraft.wantCards}});
+  panel.querySelectorAll("[data-accept-offer]").forEach(b=>b.onclick=()=>act("respondTrade",{offerId:b.dataset.acceptOffer,accept:true}));
+  panel.querySelectorAll("[data-decline-offer]").forEach(b=>b.onclick=()=>act("respondTrade",{offerId:b.dataset.declineOffer,accept:false}));
 }
 async function useDevelopment(type) {
   if (type === "knight") { await act("playCard", { card: type }); return; }
@@ -252,7 +271,7 @@ async function useDevelopment(type) {
     const second = askResource("豊作：2枚目の資源番号を入力してください。"); if (!second) return;
     const cards = Object.fromEntries(RESOURCES.map(r => [r, Number(r === first) + Number(r === second)])); act("playCard", { card: type, cards }); return;
   }
-  if (type === "road") { mode = mode === "roadCard" ? null : "roadCard"; pendingRoadCard = []; render(); showToast("盤面で道を2か所選んでください。"); }
+  if (type === "road") { mode = mode === "roadCard" ? null : "roadCard"; pendingRoadCard = []; render(); showToast("光っている道を選び、確定してください。キャンセルもできます。"); }
 }
 function askResource(title) {
   const list = RESOURCES.map((r, i) => `${i + 1}：${RESOURCE[r][1]}`).join("\n");
@@ -266,6 +285,7 @@ function askResource(title) {
 
 function drawBoard(g, me) {
   const svg = $("board"); if (!g.map) return;
+  const targets=buildTargets(g,me);
   const map = g.map, vertices = new Map(map.vertices.map(v => [v.id, v])), edges = new Map(map.edges.map(e => [e.id, e]));
   const maxX = Math.max(...map.vertices.map(v=>v.x))-Math.min(...map.vertices.map(v=>v.x)), maxY = Math.max(...map.vertices.map(v=>v.y))-Math.min(...map.vertices.map(v=>v.y));
   const scale = Math.min(740 / (maxX + 3.5), 600 / (maxY + 3.5)), px = v => 450 + (v.x - map.centerX) * scale, py = v => 335 + (v.y - map.centerY) * scale;
@@ -284,6 +304,10 @@ function drawBoard(g, me) {
     const [terrainLabel, icon] = TERRAIN[h.terrain];
     const hx=450+(h.x-map.centerX)*scale,hy=335+(h.y-map.centerY)*scale;
     content += `<defs><clipPath id="clip-${h.id}"><polygon points="${points}"/></clipPath></defs><polygon class="hex hex-${h.terrain}" points="${points}" data-hex="${h.id}"/><image href="/assets/${h.terrain}.svg" x="${hx-Math.sqrt(3)*scale/2}" y="${hy-scale}" width="${Math.sqrt(3)*scale}" height="${2*scale}" preserveAspectRatio="none" clip-path="url(#clip-${h.id})" pointer-events="none"/><polygon points="${points}" class="tile-rim"/>`;
+    if(g.dice&&g.lastProduction?.id===g.lastRoll?.id){
+      if(g.lastProduction.tiles.includes(h.id))content+=`<polygon points="${points}" class="produced-tile"/>`;
+      if(g.lastProduction.blockedTiles.includes(h.id))content+=`<polygon points="${points}" class="blocked-production-tile"/>`;
+    }
     if (h.number) {
       const hot = h.number === 6 || h.number === 8, cx=450+(h.x-map.centerX)*scale, cy=335+(h.y-map.centerY)*scale;
       content += `<circle class="hex-number ${hot ? "hot" : ""}" cx="${cx}" cy="${cy}" r="17"/><text class="hex-num-text ${hot ? 'hot' : ''}" x="${cx}" y="${cy-3}">${h.number}</text><text class="hex-num-pips ${hot ? 'hot' : ''}" x="${cx}" y="${cy+9}">${"•".repeat(Math.max(1, 6-Math.abs(7-h.number)))}</text>`;
@@ -301,7 +325,9 @@ function drawBoard(g, me) {
   for (const e of map.edges) {
     const a=vertices.get(e.a),b=vertices.get(e.b),owner=roads.get(e.id); const x1=px(a),y1=py(a),x2=px(b),y2=py(b);
     if (owner) content += `<g class="wood-road" pointer-events="none"><line x1="${x1}" y1="${y1+3}" x2="${x2}" y2="${y2+3}" stroke="#203132" stroke-width="11"/><line class="edge-road" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:${owner.color}"/><line x1="${x1}" y1="${y1-2}" x2="${x2}" y2="${y2-2}" stroke="#ffffff66" stroke-width="2"/></g>`;
-    content += `<line class="edge-hit" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" data-edge="${e.id}"/>`;
+    if(pendingRoadCard.includes(e.id)&&mode==="roadCard")content+=`<line class="road-preview" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+    if(targets.roads.has(e.id))content+=`<line class="candidate-road" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+    content += `<line style="pointer-events:${targets.roads.has(e.id)||(mode==="roadCard"&&pendingRoadCard.includes(e.id))?'stroke':'none'}" class="edge-hit" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" data-edge="${e.id}"/>`;
   }
   for (const v of map.vertices) {
     const owner=g.players.find(p=>(p.settlements||[]).includes(v.id)||(p.cities||[]).includes(v.id));
@@ -310,9 +336,9 @@ function drawBoard(g, me) {
       const shape = city ? `M ${x-13} ${y+9} V ${y-4} L ${x-5} ${y-12} L ${x+2} ${y-5} V ${y-15} H ${x+12} V ${y+9} Z` : `M ${x-11} ${y+9} V ${y-3} L ${x} ${y-14} L ${x+11} ${y-3} V ${y+9} Z`;
       content += `<g class="building-piece wooden-piece"><title>${escapeHtml(owner.name)}：${city ? "都市" : "開拓地"}</title><path d="${shape}" fill="#263032" transform="translate(3,4)" class="piece-depth"/><path d="${shape}" fill="${owner.color}" class="building-outline"/><path d="${shape}" fill="${owner.color}" class="building-face"/><rect x="${x-3}" y="${y+1}" width="6" height="8" rx="1" fill="#fff9e8"/>${city ? `<rect x="${x+5}" y="${y-10}" width="4" height="4" fill="#fff9e8"/>` : ""}</g>`;
     }
-    const placing = (mode === "settlement" || mode === "city" || g.phase === "setup" && g.setupStep === "settlement" && g.players[g.activeIndex]?.id === playerId);
-    if (placing && !owner) content += `<circle cx="${px(v)}" cy="${py(v)}" r="3.5" fill="#fff8dc" stroke="#5e472c" stroke-width="1" pointer-events="none"/>`;
-    content += `<circle class="vertex-hit ${placing ? 'placement-target' : ''}" cx="${px(v)}" cy="${py(v)}" r="19" data-vertex="${v.id}"/>`;
+    const placing=targets.vertices.has(v.id);
+    if(placing)content+=`<circle class="candidate-building" cx="${px(v)}" cy="${py(v)}" r="${owner?18:8}"/>`;
+    content+=`<circle class="vertex-hit" style="pointer-events:${placing?'all':'none'}" cx="${px(v)}" cy="${py(v)}" r="19" data-vertex="${v.id}"/>`;
   }
   svg.innerHTML = content;
   const xs=map.vertices.map(px),ys=map.vertices.map(py),margin=scale*.85;
@@ -330,13 +356,13 @@ function drawBoard(g, me) {
   document.querySelectorAll("[data-robber-hex]").forEach(el => { el.style.fill = "transparent"; el.style.stroke = "transparent"; el.style.pointerEvents = robberTargets ? "all" : "none"; el.style.cursor = robberTargets ? "pointer" : "default"; el.addEventListener("click", () => { if (boardDragged || !robberTargets || el.dataset.robberHex === map.robber) return; selectedRobberHex = el.dataset.robberHex; selectedVictim = ""; render(); }); });
   document.querySelectorAll("[data-edge]").forEach(el => el.addEventListener("click", () => {
     if(boardDragged)return;
-    const edgeId=el.dataset.edge;
+    const edgeId=el.dataset.edge;if(!targets.roads.has(edgeId)&&!(mode==="roadCard"&&pendingRoadCard.includes(edgeId)))return;
     if (mode === "road" || (g.phase === "setup" && g.setupStep === "road" && g.players[g.activeIndex]?.id === playerId)) act("buildRoad",{edgeId});
-    else if (mode === "roadCard") { pendingRoadCard.push(edgeId); if (pendingRoadCard.length === Math.min(2, 15 - me.roads.length)) act("playCard",{card:"road",edgeIds:pendingRoadCard}); else showToast("もう1本、道を選んでください。"); }
+    else if(mode==="roadCard"){const index=pendingRoadCard.indexOf(edgeId);if(index>=0)pendingRoadCard=pendingRoadCard.slice(0,index);else pendingRoadCard.push(edgeId);render();}
   }));
   document.querySelectorAll("[data-vertex]").forEach(el => el.addEventListener("click", () => {
     if(boardDragged)return;
-    const vertexId=el.dataset.vertex;
+    const vertexId=el.dataset.vertex;if(!targets.vertices.has(vertexId))return;
     if (mode === "settlement" || (g.phase === "setup" && g.setupStep === "settlement" && g.players[g.activeIndex]?.id === playerId)) act("buildSettlement",{vertexId});
     else if (mode === "city") act("buildCity",{vertexId});
   }));
@@ -348,7 +374,11 @@ function drawBoard(g, me) {
   else if (mode === "settlement") hintText="開拓地を置く交差点をタップ";
   else if (mode === "city") hintText="都市にする自分の開拓地をタップ";
   else if (mode === "roadCard") hintText=`街道建設：道を選択（${pendingRoadCard.length}/2）`;
+  if(["road","settlement","city","roadCard"].includes(mode)&&!targets.roads.size&&!targets.vertices.size&&!pendingRoadCard.length)hintText="建設できる場所がありません。資源・接続・駒の残数をご確認ください。";
   hint.hidden = !hintText; hint.textContent = hintText;
+  $("cancelSelection").hidden=!(mode||selectedRobberHex);
+  $("confirmRoadCard").hidden=mode!=="roadCard"||!pendingRoadCard.length;
+  $("confirmRoadCard").textContent=`道${pendingRoadCard.length}本で確定`;
 }
 
 function applyBoardCamera() {
@@ -401,7 +431,7 @@ function playVictoryFanfare() {
 
 function maybeShowVictory(g) {
   if(!g.winner)return;
-  const key=`${g.code}:${g.winner}`;
+  const key=`${g.code}:${g.matchId||g.createdAt}:${g.winner}`;
   if(key===lastVictoryNoticeKey||sessionStorage.getItem("island-victory-seen-"+g.code)===key)return;
   lastVictoryNoticeKey=key;sessionStorage.setItem("island-victory-seen-"+g.code,key);pendingVictorySoundKey=soundOn&&!playVictoryFanfare()?key:null;showVictory(g);
 }
@@ -420,6 +450,7 @@ function showVictory(g) {
   }).join('');
   const colors=["#f4cf68","#fff4c5","#7fbfa1","#e79868","#c9b7ec"];
   $("victoryConfetti").innerHTML=Array.from({length:48},(_,i)=>`<i style="--x:${(i*37)%100}%;--delay:${(i%9)*.1}s;--duration:${2.4+(i%7)*.22}s;--color:${colors[i%colors.length]};--rotate:${i*47}deg"></i>`).join('');
+  syncRematchUI(g,g.players.find(p=>p.id===playerId));
   const dialog=$("victoryDialog");if(!dialog.open)dialog.showModal();
 }
 $("closeVictory").onclick=()=>$("victoryDialog").close();
@@ -444,18 +475,15 @@ function maybeShowTradeOffer(g,me) {
   if(fresh&&!$("diceResultDialog").open)showTradeOffer(g,me,fresh);
 }
 function updateTradeOfferAvailability(me,offer) {
-  const have=me.hand?.[offer.want]||0,canPay=have>=offer.wantCount;
-  $("acceptTradeOffer").disabled=tradeReplyInFlight||!canPay;
-  $("declineTradeOffer").disabled=tradeReplyInFlight;
-  $("tradeOfferStatus").textContent=canPay?"内容を確認して「受ける」か「断る」を選んでください。":`渡す${RESOURCE[offer.want][1]}が足りません（手札${have}枚／必要${offer.wantCount}枚）。`;
+  const want=offerBundle(offer,"want"),missing=RESOURCES.filter(r=>(me.hand?.[r]||0)<want[r]);
+  $("acceptTradeOffer").disabled=tradeReplyInFlight||missing.length>0;$("declineTradeOffer").disabled=tradeReplyInFlight;
+  $("tradeOfferStatus").textContent=missing.length?"渡す資源が足りません："+missing.map(r=>RESOURCE[r][1]+"（手札"+(me.hand?.[r]||0)+"／必要"+want[r]+"）").join("、"):"内容を確認して「受ける」か「断る」を選んでください。";
 }
 function showTradeOffer(g,me,offer) {
   activeTradeOfferId=offer.id;seenTradeOfferIds.add(offer.id);
   $("tradeOfferSender").textContent=`${g.players.find(p=>p.id===offer.fromId)?.name||"プレイヤー"} からの提案`;
-  const card=(type,n,label)=>`<div class="trade-material"><b>${label}</b><img src="/assets/${type}.svg" alt="${RESOURCE[type][1]}"><strong>${RESOURCE[type][1]} ×${n}</strong></div>`;
-  $("tradeOfferMaterials").innerHTML=card(offer.give,offer.giveCount,"あなたが受け取る")+'<span class="trade-offer-arrow">⇄</span>'+card(offer.want,offer.wantCount,"あなたが渡す");
-  updateTradeOfferAvailability(me,offer);
-  if(!$("tradeOfferDialog").open)$("tradeOfferDialog").showModal();
+  $("tradeOfferMaterials").innerHTML='<div class="trade-material"><b>あなたが受け取る</b>'+resourceBundleHTML(offerBundle(offer,"give"))+'</div><span class="trade-offer-arrow">⇄</span><div class="trade-material"><b>あなたが渡す</b>'+resourceBundleHTML(offerBundle(offer,"want"))+'</div>';
+  updateTradeOfferAvailability(me,offer);if(!$("tradeOfferDialog").open)$("tradeOfferDialog").showModal();
 }
 async function replyToTradeOffer(accept) {
   if(tradeReplyInFlight)return;
@@ -485,6 +513,7 @@ function maybeShowDiceResult(g) {
   $("diceRollerName").textContent=`${event.playerName||"プレイヤー"} がサイコロを振りました`;
   $("diceResultFaces").innerHTML=diceFace(event.dice[0])+'<span>＋</span>'+diceFace(event.dice[1]);
   $("diceResultTotal").textContent=String(sum);
+  $("diceProductionSummary").innerHTML=productionMarkup(g);
   $("diceResultHelp").textContent=sum===7?"7が出ました。必要な手札調整のあと、盗賊を移動します。":"出目に対応するタイルから資源が生産されます。";
   const dialog=$("diceResultDialog");if(!dialog.open)dialog.showModal();
   clearTimeout(diceResultTimer);diceResultTimer=setTimeout(()=>dialog.close(),3000);
@@ -507,11 +536,11 @@ function turnNotice(g,me) {
   if(g.status!=="playing"||g.winner)return null;
   if(g.phase==="special") {
     if(g.specialPlayerId!==me.id)return null;
-    return {key:`${g.code}:special:${g.turnNumber}:${me.id}`,type:"special",title:"あなたの特別建設です",description:"通常の手番の間に、手持ちの資源で建設・購入できます。",rules:"できること：道・開拓地・都市の建設、発展カードの購入。\nできないこと：サイコロ、資源交換、発展カードの使用。",button:"盤面で建設する",tag:"SPECIAL BUILD",emblem:"⌂"};
+    return {key:`${g.code}:${g.matchId||g.createdAt}:special:${g.turnNumber}:${me.id}`,type:"special",title:"あなたの特別建設です",description:"通常の手番の間に、手持ちの資源で建設・購入できます。",rules:"できること：道・開拓地・都市の建設、発展カードの購入。\nできないこと：サイコロ、資源交換、発展カードの使用。",button:"盤面で建設する",tag:"SPECIAL BUILD",emblem:"⌂"};
   }
   if(g.players[g.activeIndex]?.id!==me.id)return null;
-  if(g.phase==="setup")return {key:`${g.code}:setup:${g.setupIndex}:${me.id}`,type:"setup",title:"あなたの初期配置です",description:"開拓地を置き、その開拓地に接する道を1本配置してください。",rules:"開拓地同士は隣り合わせに置けません。\n開拓地 → 道の順に盤面を選びます。",button:"初期配置をはじめる",tag:"INITIAL PLACEMENT",emblem:"⌂"};
-  return {key:`${g.code}:turn:${g.turnNumber}:${me.id}`,type:"normal",title:"あなたのターンです",description:g.rolled?"手持ちの資源で交換・建設・購入を行えます。":"まずサイコロを振り、資源を受け取りましょう。",rules:"交換・建設・発展カードの購入ができます。\n行動が終わったら「ターン終了」を押してください。",button:g.phase==="play"&&!g.rolled?"🎲 サイコロを振る":"盤面へ進む",tag:"YOUR TURN",emblem:"🎲"};
+  if(g.phase==="setup")return {key:`${g.code}:${g.matchId||g.createdAt}:setup:${g.setupIndex}:${me.id}`,type:"setup",title:"あなたの初期配置です",description:"開拓地を置き、その開拓地に接する道を1本配置してください。",rules:"開拓地同士は隣り合わせに置けません。\n開拓地 → 道の順に盤面を選びます。",button:"初期配置をはじめる",tag:"INITIAL PLACEMENT",emblem:"⌂"};
+  return {key:`${g.code}:${g.matchId||g.createdAt}:turn:${g.turnNumber}:${me.id}`,type:"normal",title:"あなたのターンです",description:g.rolled?"手持ちの資源で交換・建設・購入を行えます。":"まずサイコロを振り、資源を受け取りましょう。",rules:"交換・建設・発展カードの購入ができます。\n行動が終わったら「ターン終了」を押してください。",button:g.phase==="play"&&!g.rolled?"🎲 サイコロを振る":"盤面へ進む",tag:"YOUR TURN",emblem:"🎲"};
 }
 function maybeShowTurnNotice(g,me) {
   syncAutoSkipControls();
@@ -545,7 +574,7 @@ function setAutoSkipSpecial(enabled) {
   const me=currentGame?.players.find(p=>p.id===playerId);if(me)maybeShowTurnNotice(currentGame,me);
 }
 async function autoSkipSpecialTurn(g,me) {
-  const key=`${g.code}:special:${g.turnNumber}:${me.id}`;
+  const key=`${g.code}:${g.matchId||g.createdAt}:special:${g.turnNumber}:${me.id}`;
   if(autoSkipInFlight||autoSkipLastKey===key)return;
   autoSkipLastKey=key;autoSkipInFlight=true;
   try {
@@ -589,6 +618,54 @@ for(const id of ["turnDialog","logDialog","diceResultDialog","tradeOfferDialog"]
 function escapeHtml(value) { return String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 
 
+function cancelBoardSelection() {mode=null;pendingRoadCard=[];selectedRobberHex=null;render();}
+$("cancelSelection").onclick=cancelBoardSelection;
+$("confirmRoadCard").onclick=()=>{if(mode==="roadCard"&&pendingRoadCard.length)act("playCard",{card:"road",edgeIds:[...pendingRoadCard]});};
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&(mode||selectedRobberHex))cancelBoardSelection();});
+function roadCardCandidates(g,me,extra) {
+  if(me.roads.length+extra.length>=15||extra.length>=2)return [];
+  const owned=new Set([...me.roads,...extra]),occupied=new Set(g.players.flatMap(p=>p.roads));extra.forEach(id=>occupied.add(id));
+  return g.map.edges.filter(e=>!occupied.has(e.id)&&[e.a,e.b].some(v=>{
+    if(me.settlements.includes(v)||me.cities.includes(v))return true;
+    if(g.players.some(p=>p.id!==me.id&&[...p.settlements,...p.cities].includes(v)))return false;
+    return g.map.vertices.find(x=>x.id===v).edges.some(id=>owned.has(id));
+  })).map(e=>e.id);
+}
+function buildTargets(g,me) {
+  const moves=g.legalMoves||{},result={roads:new Set(),vertices:new Set()};
+  if(g.winner)return result;
+  if(mode==="roadCard"&&g.phase==="main"&&g.players[g.activeIndex]?.id===me.id){result.roads=new Set(roadCardCandidates(g,me,pendingRoadCard));return result;}
+  if(mode==="road"||g.phase==="setup"&&g.setupStep==="road")result.roads=new Set(moves.roads||[]);
+  if(mode==="settlement"||g.phase==="setup"&&g.setupStep==="settlement")result.vertices=new Set(moves.settlements||[]);
+  if(mode==="city")result.vertices=new Set(moves.cities||[]);
+  return result;
+}
+function productionMarkup(g) {
+  const event=g.lastProduction;if(!event)return '<small class="no-production">サイコロを振ると獲得資源を表示します。</small>';
+  if(event.number===7)return '<p class="production-seven">7：資源の生産はありません。</p>';
+  return (event.payouts||[]).map(row=>{const p=g.players.find(p=>p.id===row.playerId);return `<div class="production-row"><b>${escapeHtml(p?.name||"")}</b><span>${RESOURCES.some(r=>row.resources[r]>0)?resourceBundleHTML(row.resources):'<small>獲得なし</small>'}</span></div>`;}).join('')+(event.shortages?.length?'<p class="production-shortage">銀行不足：'+event.shortages.map(r=>RESOURCE[r][1]).join('・')+'</p>':'');
+}
+function renderProduction(g) {$("productionSummary").innerHTML=productionMarkup(g);}
+function readSavedRooms() {try{const a=JSON.parse(localStorage.getItem("island-resume-rooms-v1")||"[]");return Array.isArray(a)?a:[];}catch(_){return [];}}
+function rememberRoom(g,me) {
+  try {const rooms=readSavedRooms().filter(r=>r.code!==g.code||r.playerId!==me.id);rooms.unshift({code:g.code,playerId:me.id,name:me.name,status:g.winner?((g.rematchReadyIds||[]).includes(me.id)?"rematch":"finished"):g.status,at:Date.now()});localStorage.setItem("island-resume-rooms-v1",JSON.stringify(rooms.slice(0,12)));renderResumeRooms();}catch(_){}
+}
+function forgetRoom(code,id) {try{localStorage.setItem("island-resume-rooms-v1",JSON.stringify(readSavedRooms().filter(r=>r.code!==code||r.playerId!==id)));}catch(_){}}
+function renderResumeRooms() {
+  const rooms=readSavedRooms().filter(r=>r.status!=="finished");
+  $("resumeRooms").innerHTML=rooms.length?'<h2>対戦に戻る</h2><p>同じプレイヤー・手札・盤面のまま復帰できます。</p><div class="resume-room-list">'+rooms.map((r,i)=>`<button data-resume-room="${i}"><b>${escapeHtml(r.code)}</b><span>${escapeHtml(r.name)} · ${r.status==="lobby"?"参加待ち":r.status==="rematch"?"再戦待ち":"進行中"}</span><strong>復帰 →</strong></button>`).join('')+'</div>':"";
+  $("resumeRooms").querySelectorAll("[data-resume-room]").forEach(b=>b.onclick=()=>{const r=rooms[Number(b.dataset.resumeRoom)];enterRoom(r.code,r.playerId);});
+}
+function syncRematchUI(g,me) {
+  if(!g.winner){if($("victoryDialog").open)$("victoryDialog").close();return;}
+  const ready=g.rematchReadyIds||[];
+  $("rematchReadyButton").textContent=ready.includes(me?.id)?"再戦準備を取り消す":"同じメンバーで再戦する";
+  $("rematchReadyStatus").textContent=`準備完了 ${ready.length}/${g.players.length}人。全員が準備すると新しい盤面で開始します。`;
+}
+function toggleRematchReady() {if(currentGame?.winner)act("rematchReady",{ready:!(currentGame.rematchReadyIds||[]).includes(playerId)});}
+$("rematchReadyButton").onclick=toggleRematchReady;
+renderResumeRooms();
+
 function readMatchHistory() {
   try {
     const value=JSON.parse(localStorage.getItem("island-match-history-v1")||"[]");
@@ -597,7 +674,7 @@ function readMatchHistory() {
 }
 function saveOwnMatchResult(g,me) {
   if(!g.winner||!me)return;
-  const key=`${g.code}:${g.createdAt||""}:${me.id}`,history=readMatchHistory();
+  const key=`${g.code}:${g.matchId||g.createdAt||""}:${me.id}`,history=readMatchHistory();
   if(history.some(r=>r.key===key))return;
   const winner=g.players.find(p=>p.id===g.winner);
   history.push({key,at:Date.now(),won:g.winner===me.id,points:me.victoryPoints||0,name:me.name,winnerName:winner?.name||"",players:g.players.length,roomCode:g.code});

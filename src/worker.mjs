@@ -43,12 +43,16 @@ export class GameRoom {
   constructor(state) { this.state = state; this.storage = state.storage; }
 
   async fetch(request) {
+    return this.state.blockConcurrencyWhile(() => this.handleRequest(request));
+  }
+
+  async handleRequest(request) {
     const url = new URL(request.url);
     if (request.method === "POST" && url.pathname === "/create") {
       if (await this.storage.get("game")) return json({ error: "この部屋コードは使用中です。" }, 409);
       const body = await request.json();
       const player = makePlayer(body.playerName, 0);
-      const game = { code: body.code, hostId: player.id, players: [player], status: "lobby", createdAt: Date.now(), log: [`${player.name}が部屋を作りました。`] };
+      const game = { code: body.code, hostId: player.id, players: [player], status: "lobby", createdAt: Date.now(), revision:1, log: [`${player.name}が部屋を作りました。`] };
       await this.storage.put("game", game);
       return json({ game: publicGame(game, player.id), playerId: player.id });
     }
@@ -59,7 +63,7 @@ export class GameRoom {
       if (game.status !== "lobby") return json({ error: "ゲーム開始後の部屋には参加できません。" }, 409);
       if (game.players.length >= 6) return json({ error: "この部屋は満員です。" }, 409);
       const player = makePlayer(body.playerName, game.players.length);
-      game.players.push(player);
+      game.players.push(player);game.revision=(game.revision||0)+1;
       game.log ||= []; pushLog(game, `${player.name}が参加しました。`);
       await this.storage.put("game", game);
       return json({ game: publicGame(game, player.id), playerId: player.id });
@@ -71,7 +75,7 @@ export class GameRoom {
     if (request.method === "POST" && url.pathname === "/action") {
       const body = await request.json();
       try {
-        applyAction(game, player, body);
+        applyAction(game, player, body);game.revision=(game.revision||0)+1;
         pushLog(game, actionLog(game, player, body));
         await this.storage.put("game", game);
         return json({ game: publicGame(game, playerId) });
@@ -90,7 +94,7 @@ function randomCode() { return Array.from(crypto.getRandomValues(new Uint8Array(
 function json(value, status = 200) { return new Response(JSON.stringify(value), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } }); }
 function pushLog(game, message) { game.log ||= []; if (message) game.log.unshift(`${new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Tokyo" })}  ${message}`); game.log = game.log.slice(0, 50); }
 function actionLog(game, player, action) {
-  const actions = { start: "ゲームを開始しました。", roll: `サイコロは${game.dice?.[0] || "?"}と${game.dice?.[1] || "?"}。`, buildRoad: "道を建設しました。", buildSettlement: "開拓地を建設しました。", buildCity: "都市を建設しました。", buyDevelopment: "発展カードを購入しました。", tradeBank: `${CARD_NAMES[action.give] || "資源"}を銀行で交換しました。`, offerTrade: "交換を提示しました。", respondTrade: action.accept ? "交換が成立しました。" : "交換を断りました。", endTurn: "ターンを終了しました。", endSpecial: "特別建設を終了しました。", moveRobber: "盗賊を移動しました。", discard: "資源を捨てました。", playCard: "発展カードを使いました。" };
+  const actions = { start: "ゲームを開始しました。", rematchReady: action.ready ? "再戦準備ができました。" : "再戦準備を取り消しました。", roll: `サイコロは${game.dice?.[0] || "?"}と${game.dice?.[1] || "?"}。`, buildRoad: "道を建設しました。", buildSettlement: "開拓地を建設しました。", buildCity: "都市を建設しました。", buyDevelopment: "発展カードを購入しました。", tradeBank: `${CARD_NAMES[action.give] || "資源"}を銀行で交換しました。`, offerTrade: "交換を提示しました。", respondTrade: action.accept ? "交換が成立しました。" : "交換を断りました。", endTurn: "ターンを終了しました。", endSpecial: "特別建設を終了しました。", moveRobber: "盗賊を移動しました。", discard: "資源を捨てました。", playCard: "発展カードを使いました。" };
   return `${player.name}：${actions[action.type] || "操作しました。"}`;
 }
 function shuffled(items) { const a = [...items]; for (let i = a.length - 1; i > 0; i--) { const j = crypto.getRandomValues(new Uint32Array(1))[0] % (i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
@@ -156,8 +160,11 @@ function createMap(playerCount) {
 
 function beginGame(game) {
   game.status = "playing";
+  game.matchId=crypto.randomUUID();game.matchNumber=(game.matchNumber||0)+1;
+  game.longestRoadOwner=null;game.largestArmyOwner=null;game.lastRoll=null;game.lastProduction=null;
+  game.tradeOffers=[];game.rematchReadyIds=[];game.specialQueue=[];game.specialPlayerId=null;game.normalNextIndex=null;game.pendingDevKnight=false;
   game.map = createMap(game.players.length);
-  game.players.forEach((p, i) => { p.seat = i; p.color = PLAYER_COLORS[i]; p.hand = emptyHand(); p.roads = []; p.settlements = []; p.cities = []; p.devCards = []; p.playedKnights = 0; });
+  game.players.forEach((p, i) => { p.seat = i; p.color = PLAYER_COLORS[i]; p.hand = emptyHand(); p.roads = []; p.settlements = []; p.cities = []; p.devCards = []; p.playedKnights = 0; p.usedDevCard=false;p.victoryPoints=0;p.longestRoad=0; });
   game.activeIndex = 0; game.phase = "setup"; game.setupIndex = 0; game.setupStep = "settlement"; game.pendingVertex = null;
   game.turnNumber = 0; game.dice = null; game.rolled = false; game.discardPending = {}; game.winner = null;
   game.devDeck = shuffled([...[...Array(14)].map(() => "knight"), ...Array(5).fill("victory"), ...Array(2).fill("road"), ...Array(2).fill("plenty"), ...Array(2).fill("monopoly")]);
@@ -173,6 +180,14 @@ function createPorts(map) {
 }
 
 function applyAction(game, player, action) {
+  if(action.type==="rematchReady") {
+    if(!game.winner)throw Error("再戦準備はゲーム終了後に行えます。");
+    const ready=new Set(game.rematchReadyIds||[]);
+    if(action.ready===true)ready.add(player.id);else ready.delete(player.id);
+    game.rematchReadyIds=[...ready];
+    if(game.players.every(p=>ready.has(p.id)))beginGame(game);
+    return;
+  }
   if (action.type === "start") {
     if (player.id !== game.hostId) throw Error("ホストだけが開始できます。");
     if (game.status !== "lobby") throw Error("ゲームはすでに始まっています。");
@@ -256,10 +271,11 @@ function rollDice(game) {
     game.discardPending = {};
     for (const p of game.players) { const total = totalCards(p.hand); if (total > 7) game.discardPending[p.id] = Math.floor(total / 2); }
     game.phase = Object.keys(game.discardPending).length ? "discard" : "robber";
+    game.lastProduction={id:game.lastRoll.id,number:7,tiles:[],blockedTiles:[],payouts:game.players.map(p=>({playerId:p.id,resources:emptyHand()})),shortages:[]};
   } else { distribute(game, a + b); game.phase = "main"; }
 }
 function distribute(game, number) {
-  const payouts = game.players.map(() => emptyHand());
+  const payouts = game.players.map(() => emptyHand()),shortages=[];
   for (const h of game.map.hexes) {
     if (h.number !== number || h.id === game.map.robber) continue;
     const res = TERRAIN_RESOURCE[h.terrain]; if (!res) continue;
@@ -267,9 +283,11 @@ function distribute(game, number) {
   }
   for (const r of RESOURCES) {
     let requested = payouts.reduce((sum, hand) => sum + hand[r], 0), available = bankAvailable(game, r);
-    if (requested > available) continue;
+    if (requested > available) {shortages.push(r);payouts.forEach(hand=>hand[r]=0);continue;}
     game.players.forEach((p, i) => p.hand[r] += payouts[i][r]);
   }
+  game.lastProduction={id:game.lastRoll?.id||crypto.randomUUID(),number,tiles:game.map.hexes.filter(h=>h.number===number&&h.id!==game.map.robber).map(h=>h.id),blockedTiles:game.map.hexes.filter(h=>h.number===number&&h.id===game.map.robber).map(h=>h.id),payouts:game.players.map((p,i)=>({playerId:p.id,resources:payouts[i]})),shortages};
+  for(const row of game.lastProduction.payouts)if(totalCards(row.resources)>0)pushLog(game,`${game.players.find(p=>p.id===row.playerId).name}が${RESOURCES.filter(r=>row.resources[r]>0).map(r=>CARD_NAMES[r]+row.resources[r]+"枚").join("・")}を獲得。`);
 }
 function discardAction(game, player, action) {
   const needed = game.discardPending[player.id]; if (!needed) throw Error("手札を捨てる必要はありません。");
@@ -351,28 +369,37 @@ function tradeBank(game, player, give, want) {
   if (bankAvailable(game, want) < 1) throw Error("銀行にその資源が残っていません。");
   player.hand[give] -= rate; player.hand[want]++;
 }
-function offerTrade(game, player, action) {
-  if (game.phase !== "main") throw Error("プレイヤー交換はサイコロを振った後に行えます。");
-  const target = game.players.find(p => p.id === action.toId && p.id !== player.id);
-  if (!target || !RESOURCES.includes(action.give) || !RESOURCES.includes(action.want) || action.give === action.want) throw Error("交換相手と資源を選んでください。");
-  const giveCount = Number(action.giveCount), wantCount = Number(action.wantCount);
-  if (!Number.isInteger(giveCount) || giveCount < 1 || !Number.isInteger(wantCount) || wantCount < 1) throw Error("交換枚数が正しくありません。");
-  if (player.hand[action.give] < giveCount) throw Error("提示する資源が足りません。");
-  game.tradeOffers ||= [];
-  game.tradeOffers = game.tradeOffers.filter(o => o.status !== "pending" || (o.fromId !== player.id && o.toId !== player.id));
-  game.tradeOffers.push({ id: crypto.randomUUID(), fromId: player.id, toId: target.id, give: action.give, giveCount, want: action.want, wantCount, status: "pending" });
+function normalizeTradeCards(value) {
+  if(!value||typeof value!=="object"||Array.isArray(value)||Object.keys(value).some(k=>!RESOURCES.includes(k)))throw Error("交換する資源が不正です。");
+  const cards=emptyHand();
+  for(const r of RESOURCES){const n=Number(value[r]||0);if(!Number.isInteger(n)||n<0||n>24)throw Error("交換枚数は0〜24枚で指定してください。");cards[r]=n;}
+  return cards;
 }
-function respondTrade(game, player, action) {
-  if (game.phase !== "main") throw Error("この交換は終了しています。");
-  const offer = (game.tradeOffers || []).find(o => o.id === action.offerId && o.status === "pending");
-  if (!offer || offer.toId !== player.id || game.players[game.activeIndex].id !== offer.fromId) throw Error("交換の提示が見つからないか、すでに終了しています。");
-  const from = game.players.find(p => p.id === offer.fromId);
-  if (action.accept) {
-    if (from.hand[offer.give] < offer.giveCount || player.hand[offer.want] < offer.wantCount) throw Error("どちらかの手札が変わったため交換できません。");
-    from.hand[offer.give] -= offer.giveCount; player.hand[offer.give] += offer.giveCount;
-    player.hand[offer.want] -= offer.wantCount; from.hand[offer.want] += offer.wantCount;
-    offer.status = "accepted";
-  } else offer.status = "declined";
+function tradeCards(offer,side) {
+  if(offer[side+"Cards"])return normalizeTradeCards(offer[side+"Cards"]);
+  const cards=emptyHand();if(RESOURCES.includes(offer[side]))cards[offer[side]]=Number(offer[side+"Count"]||0);return cards;
+}
+function offerTrade(game, player, action) {
+  if(game.phase!=="main")throw Error("プレイヤー交換はサイコロを振った後に行えます。");
+  const target=game.players.find(p=>p.id===action.toId&&p.id!==player.id);
+  if(!target)throw Error("交換相手を選んでください。");
+  const giveCards=action.giveCards?normalizeTradeCards(action.giveCards):tradeCards(action,"give"),wantCards=action.wantCards?normalizeTradeCards(action.wantCards):tradeCards(action,"want");
+  if(!totalCards(giveCards)||!totalCards(wantCards))throw Error("双方の資源を1枚以上選んでください。");
+  if(RESOURCES.some(r=>giveCards[r]&&wantCards[r]))throw Error("同じ種類の資源を渡す側と受け取る側の両方には指定できません。");
+  if(RESOURCES.some(r=>player.hand[r]<giveCards[r]))throw Error("提示する資源が足りません。");
+  game.tradeOffers=(game.tradeOffers||[]).filter(o=>o.status!=="pending"||(o.fromId!==player.id&&o.toId!==player.id));
+  game.tradeOffers.push({id:crypto.randomUUID(),fromId:player.id,toId:target.id,giveCards,wantCards,status:"pending"});
+}
+function respondTrade(game,player,action) {
+  if(game.phase!=="main")throw Error("この交換は終了しています。");
+  const offer=(game.tradeOffers||[]).find(o=>o.id===action.offerId&&o.status==="pending");
+  if(!offer||offer.toId!==player.id||game.players[game.activeIndex].id!==offer.fromId)throw Error("交換の提示が見つからないか、すでに終了しています。");
+  const from=game.players.find(p=>p.id===offer.fromId),give=tradeCards(offer,"give"),want=tradeCards(offer,"want");
+  if(action.accept){
+    if(RESOURCES.some(r=>from.hand[r]<give[r]||player.hand[r]<want[r]))throw Error("手札が変わったため交換できません。");
+    for(const r of RESOURCES){from.hand[r]+=want[r]-give[r];player.hand[r]+=give[r]-want[r];}
+    offer.status="accepted";
+  }else offer.status="declined";
 }
 function tradeRate(game, player, resource) {
   let rate = 4;
@@ -416,6 +443,37 @@ function longestRoad(game, player) {
 }
 function checkWinner(game) { if (game.phase === "special") return; const p = game.players[game.activeIndex]; if (!p || p.victoryPoints < 10) return; if (p) { game.winner = p.id; game.phase = "finished"; } }
 
+function legalBuildTargets(game,p) {
+  const result={roads:[],settlements:[],cities:[],freeRoads:[]};
+  if(!game.map||game.winner)return result;
+  const ownsTurn=game.phase==="special"?game.specialPlayerId===p.id:game.players[game.activeIndex]?.id===p.id;
+  if(!ownsTurn)return result;
+  const setup=game.phase==="setup",regular=["main","special"].includes(game.phase);
+  if(!setup&&!regular)return result;
+  const occupied=new Set(game.players.flatMap(x=>[...x.settlements,...x.cities])),roads=allRoads(game);
+  const canPay=cost=>Object.entries(cost).every(([r,n])=>p.hand[r]>=n);
+  if((setup&&game.setupStep==="road")||regular){
+    if(p.roads.length<15)for(const edge of game.map.edges){
+      if(roads.has(edge.id))continue;
+      const connected=setup?[edge.a,edge.b].includes(game.pendingVertex):[edge.a,edge.b].some(v=>{
+        if(p.settlements.includes(v)||p.cities.includes(v))return true;
+        if(game.players.some(x=>x.id!==p.id&&[...x.settlements,...x.cities].includes(v)))return false;
+        return game.map.vertices.find(x=>x.id===v).edges.some(id=>p.roads.includes(id));
+      });
+      if(connected){result.freeRoads.push(edge.id);if(setup||canPay(COST.road))result.roads.push(edge.id);}
+    }
+  }
+  if((setup&&game.setupStep==="settlement")||(regular&&p.settlements.length<5&&canPay(COST.settlement))){
+    for(const v of game.map.vertices){
+      if(occupied.has(v.id))continue;
+      if(v.edges.some(id=>{const e=edgeById(game,id);return occupied.has(e.a===v.id?e.b:e.a);}))continue;
+      if(setup||v.edges.some(id=>p.roads.includes(id)))result.settlements.push(v.id);
+    }
+  }
+  if(regular&&p.cities.length<4&&canPay(COST.city))result.cities=[...p.settlements];
+  return result;
+}
+
 function publicGame(game, viewerId) {
   const output = structuredClone(game);
   output.players = output.players.map(p => ({ ...p, hand: p.id === viewerId ? p.hand : undefined, handCount: totalCards(p.hand), devCards: p.id === viewerId ? p.devCards : undefined, devCount: p.devCards.length, roads: p.roads, settlements: p.settlements, cities: p.cities }));
@@ -423,6 +481,7 @@ function publicGame(game, viewerId) {
   delete output.devDeck;
   output.tradeRates = Object.fromEntries(RESOURCES.map(r => [r, tradeRate(game, game.players.find(p => p.id === viewerId) || game.players[0], r)]));
   output.players.forEach(p => { if (p.id !== viewerId && !game.winner) p.victoryPoints = (p.victoryPoints || 0) - game.players.find(x => x.id === p.id).devCards.filter(c => c.type === "victory").length; });
+  output.legalMoves=legalBuildTargets(game,game.players.find(p=>p.id===viewerId));
   output.log = output.log || [];
   output.tradeOffers = output.tradeOffers || [];
   return output;
