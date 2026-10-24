@@ -29,8 +29,8 @@ async function refresh() {
   finally { polling = false; }
 }
 async function act(type, args = {}) {
-  try { const data = await api(`/api/rooms/${roomCode}/action`, { method: "POST", body: JSON.stringify({ playerId, type, ...args }) }); currentGame = data.game; mode = null; selectedRobberHex = null; pendingRoadCard = []; render(); if (soundOn) clickSound(); }
-  catch (error) { showToast(error.message); }
+  try { const data = await api(`/api/rooms/${roomCode}/action`, { method: "POST", body: JSON.stringify({ playerId, type, ...args }) }); currentGame = data.game; mode = null; selectedRobberHex = null; pendingRoadCard = []; render(); if (soundOn) clickSound(); return true; }
+  catch (error) { showToast(error.message); return false; }
 }
 function clickSound() {
   try { const context = new AudioContext(), oscillator = context.createOscillator(), gain = context.createGain(); oscillator.frequency.value = 510; gain.gain.value = .045; oscillator.connect(gain); gain.connect(context.destination); oscillator.start(); oscillator.stop(context.currentTime + .035); } catch (_) {}
@@ -323,11 +323,18 @@ function maybeShowTurnNotice(g,me) {
 function showTurnNotice(notice,name,color) {
   const dialog=$("turnDialog");if(dialog.open)dialog.close();
   lastTurnNotice=notice.key;pendingTurnNotice=null;
+  $("skipSpecialBuild").hidden=notice.type!=="special";
   dialog.dataset.type=notice.type;dialog.style.setProperty("--turn-color",color);
   $("turnDialogTag").textContent=notice.tag;$("turnDialogEmblem").textContent=notice.emblem;
   $("turnDialogPlayer").textContent=name;$("turnDialogTitle").textContent=notice.title;$("turnDialogDescription").textContent=notice.description;$("turnDialogRules").textContent=notice.rules;$("acknowledgeTurn").textContent=notice.button;dialog.showModal();
 }
 $("acknowledgeTurn").onclick=()=>$("turnDialog").close();
+$("skipSpecialBuild").onclick=async()=>{
+  if(currentGame?.phase!=="special"||currentGame.specialPlayerId!==playerId)return;
+  const button=$("skipSpecialBuild");button.disabled=true;button.textContent="次の人へ移動中…";
+  try { if(await act("endSpecial"))$("turnDialog").close(); }
+  finally { button.disabled=false;button.textContent="特別建設をスキップ"; }
+};
 $("expandLog").onclick=()=>{if($("turnDialog").open)$("turnDialog").close();$("logDialog").showModal();};
 $("closeLog").onclick=()=>$("logDialog").close();
 $("logDialog").addEventListener("close",()=>{if(pendingTurnNotice){const p=pendingTurnNotice;showTurnNotice(p.notice,p.name,p.color);}});
