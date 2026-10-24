@@ -328,14 +328,16 @@ function maybeShowTurnNotice(g,me) {
 function showTurnNotice(notice,name,color) {
   const dialog=$("turnDialog");if(dialog.open)dialog.close();
   lastTurnNotice=notice.key;pendingTurnNotice=null;
-  $("skipSpecialBuild").hidden=notice.type!=="special";$("modalAutoSkipControl").hidden=notice.type!=="special";
+  $("skipSpecialBuild").hidden=notice.type!=="special";
   dialog.dataset.type=notice.type;dialog.style.setProperty("--turn-color",color);
   $("turnDialogTag").textContent=notice.tag;$("turnDialogEmblem").textContent=notice.emblem;
   $("turnDialogPlayer").textContent=name;$("turnDialogTitle").textContent=notice.title;$("turnDialogDescription").textContent=notice.description;$("turnDialogRules").textContent=notice.rules;$("acknowledgeTurn").textContent=notice.button;dialog.showModal();
 }
 
 function syncAutoSkipControls() {
-  for(const id of ["autoSkipSpecial","modalAutoSkipSpecial"])$(id).checked=autoSkipSpecial;
+  $("autoSkipSpecial").checked=autoSkipSpecial;
+  $("autoSkipStatus").textContent=autoSkipSpecial?"特別建設 自動スキップ：ON":"特別建設 自動スキップ：OFF";
+  $("autoSkipExplanation").textContent=autoSkipSpecial?"建設できる場合も自動でパス。ここで解除できます。":"自分の番に建設するか選択します。";
 }
 function setAutoSkipSpecial(enabled) {
   autoSkipSpecial=enabled;localStorage.setItem("island-auto-skip-special",enabled?"1":"0");autoSkipLastKey=null;syncAutoSkipControls();
@@ -357,7 +359,7 @@ async function autoSkipSpecialTurn(g,me) {
   } finally { autoSkipInFlight=false; }
 }
 $("autoSkipSpecial").onchange=e=>setAutoSkipSpecial(e.target.checked);
-$("modalAutoSkipSpecial").onchange=e=>setAutoSkipSpecial(e.target.checked);
+
 syncAutoSkipControls();
 
 $("acknowledgeTurn").onclick=()=>$("turnDialog").close();
