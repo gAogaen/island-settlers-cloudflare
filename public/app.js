@@ -3,6 +3,7 @@ const RESOURCES = ["wood", "brick", "sheep", "wheat", "ore"];
 const RESOURCE = { wood: ["🌲", "木材"], brick: ["🧱", "レンガ"], sheep: ["🐑", "羊毛"], wheat: ["🌾", "小麦"], ore: ["⛰️", "鉱石"] };
 const TERRAIN = { wood: ["森林", "🌲"], brick: ["丘陵", "🧱"], sheep: ["牧草地", "🐑"], wheat: ["畑", "🌾"], ore: ["山地", "⛰️"], desert: ["砂漠", "🏜️"] };
 let boardZoom = 1, boardPan = {x:0,y:0}, boardFrame = null, boardDragged = false;
+let activeTradeOfferId = null, seenTradeOfferIds = new Set(), tradeReplyInFlight = false;
 let lastDiceResultKey = null, diceResultTimer = null;
 let lastTurnNotice = null, pendingTurnNotice = null;
 let audioContext = null, lastTurnSoundKey = null, pendingTurnSoundKey = null;
@@ -102,7 +103,7 @@ $("joinRoom").addEventListener("click", async () => {
 $("roomCode").addEventListener("input", e => e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));
 $("startGame").addEventListener("click", () => act("start"));
 $("copyCode").addEventListener("click", async () => { try { await navigator.clipboard.writeText(roomCode); showToast("部屋コードをコピーしました。"); } catch (_) { showToast(`部屋コード：${roomCode}`); } });
-$("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); $("turnDialog").close();$("logDialog").close();$("diceResultDialog").close();lastTurnNotice=null;pendingTurnNotice=null; if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; localStorage.removeItem(`island-room-${$("roomCodeDisplay").textContent}`); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
+$("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); $("turnDialog").close();$("logDialog").close();$("diceResultDialog").close();$("tradeOfferDialog").close();activeTradeOfferId=null;seenTradeOfferIds.clear();lastTurnNotice=null;pendingTurnNotice=null; if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; localStorage.removeItem(`island-room-${$("roomCodeDisplay").textContent}`); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
 $("soundToggle").addEventListener("click", () => { soundOn=!soundOn;localStorage.setItem("island-sound-on",soundOn?"1":"0");if(!soundOn)pendingTurnSoundKey=null;else unlockAudio();syncSoundButton();showToast(soundOn?"通知音をオンにしました。":"通知音をオフにしました。"); });
 syncSoundButton();
 
@@ -130,7 +131,7 @@ function render() {
     else $("turnBanner").textContent = `${active?.name} のターン${isMyTurn ? " · あなたの番" : ""}`;
     renderActions(g, me, isMyTurn);
   }
-  renderPlayers(g, me); renderHand(me,g); renderLog(g); renderBuildingGuide(g, me); maybePlayTurnSound(g); maybeShowDiceResult(g); maybeShowTurnNotice(g, me);
+  renderPlayers(g, me); renderHand(me,g); renderLog(g); renderBuildingGuide(g, me); maybePlayTurnSound(g); maybeShowDiceResult(g); maybeShowTurnNotice(g, me); maybeShowTradeOffer(g,me);
 }
 function renderPlayers(g, me) {
   $("playersList").innerHTML = g.players.map((p, i) => `<div class="player-row ${g.status === "playing" && (g.phase === "special" ? p.id === g.specialPlayerId : i === g.activeIndex) ? "active" : ""}"><i class="player-swatch" style="background:${p.color}"></i><div class="player-row-main"><div class="player-row-name">${escapeHtml(p.name)}${p.id === g.hostId ? '<span class="host-tag">HOST</span>' : ""}${p.id === playerId ? " <span style=\"color:#82968d;font-weight:500\">(あなた)</span>" : ""}</div><div class="player-row-meta">手札 ${p.handCount || 0}枚 · 道 ${p.roads?.length || 0}</div></div><span class="player-points">${p.victoryPoints ?? "—"}点</span></div>`).join("");
@@ -208,7 +209,7 @@ function renderActions(g, me, isMyTurn) {
   document.querySelectorAll("[data-action]").forEach(button => button.addEventListener("click", () => {
     const action = button.dataset.action;
     if (action === "bankToggle") { mode = mode === "bank" ? null : "bank"; render(); return; }
-    if (action === "playerTradeToggle") { mode = mode === "playerTrade" ? null : "playerTrade"; render(); return; }
+    if (action === "playerTradeToggle") { const me=currentGame.players.find(p=>p.id===playerId),incoming=incomingTradeOffers(currentGame)[0]; if(incoming){showTradeOffer(currentGame,me,incoming);return;} mode = mode === "playerTrade" ? null : "playerTrade"; render(); return; }
     if (action === "roll") return act("roll");
     if (action === "endTurn") return act("endTurn");
     if (action === "endSpecial") return act("endSpecial");
@@ -370,6 +371,52 @@ function renderBuildingGuide(g,me) {
 }
 
 
+
+function incomingTradeOffers(g) {
+  if(g.status!=="playing"||g.winner||g.phase!=="main")return [];
+  return (g.tradeOffers||[]).filter(o=>o.status==="pending"&&o.toId===playerId&&g.players[g.activeIndex]?.id===o.fromId);
+}
+function maybeShowTradeOffer(g,me) {
+  const incoming=incomingTradeOffers(g),dialog=$("tradeOfferDialog");
+  if(activeTradeOfferId&&!incoming.some(o=>o.id===activeTradeOfferId)) {
+    if(dialog.open){dialog.close();if(!tradeReplyInFlight)showToast("この交換の提案は終了しました。");}
+    activeTradeOfferId=null;
+  }
+  if(dialog.open&&activeTradeOfferId) {
+    const offer=incoming.find(o=>o.id===activeTradeOfferId);
+    if(offer)updateTradeOfferAvailability(me,offer);
+    return;
+  }
+  const fresh=incoming.find(o=>!seenTradeOfferIds.has(o.id));
+  if(fresh&&!$("diceResultDialog").open)showTradeOffer(g,me,fresh);
+}
+function updateTradeOfferAvailability(me,offer) {
+  const have=me.hand?.[offer.want]||0,canPay=have>=offer.wantCount;
+  $("acceptTradeOffer").disabled=tradeReplyInFlight||!canPay;
+  $("declineTradeOffer").disabled=tradeReplyInFlight;
+  $("tradeOfferStatus").textContent=canPay?"内容を確認して「受ける」か「断る」を選んでください。":`渡す${RESOURCE[offer.want][1]}が足りません（手札${have}枚／必要${offer.wantCount}枚）。`;
+}
+function showTradeOffer(g,me,offer) {
+  activeTradeOfferId=offer.id;seenTradeOfferIds.add(offer.id);
+  $("tradeOfferSender").textContent=`${g.players.find(p=>p.id===offer.fromId)?.name||"プレイヤー"} からの提案`;
+  const card=(type,n,label)=>`<div class="trade-material"><b>${label}</b><img src="/assets/${type}.svg" alt="${RESOURCE[type][1]}"><strong>${RESOURCE[type][1]} ×${n}</strong></div>`;
+  $("tradeOfferMaterials").innerHTML=card(offer.give,offer.giveCount,"あなたが受け取る")+'<span class="trade-offer-arrow">⇄</span>'+card(offer.want,offer.wantCount,"あなたが渡す");
+  updateTradeOfferAvailability(me,offer);
+  if(!$("tradeOfferDialog").open)$("tradeOfferDialog").showModal();
+}
+async function replyToTradeOffer(accept) {
+  if(tradeReplyInFlight)return;
+  const offer=incomingTradeOffers(currentGame).find(o=>o.id===activeTradeOfferId);
+  if(!offer){$("tradeOfferDialog").close();showToast("この交換の提案は終了しました。");return;}
+  tradeReplyInFlight=true;const me=currentGame.players.find(p=>p.id===playerId);updateTradeOfferAvailability(me,offer);
+  try { if(await act("respondTrade",{offerId:offer.id,accept})){$("tradeOfferDialog").close();activeTradeOfferId=null;showToast(accept?"交換が成立しました。":"交換を断りました。");}else await refresh(); }
+  finally {tradeReplyInFlight=false;const remaining=incomingTradeOffers(currentGame).find(o=>o.id===activeTradeOfferId);if(remaining)updateTradeOfferAvailability(currentGame.players.find(p=>p.id===playerId),remaining);}
+}
+$("acceptTradeOffer").onclick=()=>replyToTradeOffer(true);
+$("declineTradeOffer").onclick=()=>replyToTradeOffer(false);
+$("closeTradeOffer").onclick=()=>$("tradeOfferDialog").close();
+$("laterTradeOffer").onclick=()=>$("tradeOfferDialog").close();
+
 function diceFace(value) {
   const dots={1:[[20,20]],2:[[10,10],[30,30]],3:[[10,10],[20,20],[30,30]],4:[[10,10],[30,10],[10,30],[30,30]],5:[[10,10],[30,10],[20,20],[10,30],[30,30]],6:[[10,9],[30,9],[10,20],[30,20],[10,31],[30,31]]};
   return `<svg viewBox="0 0 40 40" role="img" aria-label="${value}"><rect x="1" y="1" width="38" height="38" rx="7" fill="#fff9e6" stroke="#a68a58"/>${(dots[value]||[]).map(([x,y])=>`<circle cx="${x}" cy="${y}" r="3.3" fill="#443927"/>`).join("")}</svg>`;
@@ -393,7 +440,7 @@ $("closeDiceResult").onclick=()=>$("diceResultDialog").close();
 $("acknowledgeDiceResult").onclick=()=>$("diceResultDialog").close();
 $("diceResultDialog").addEventListener("close",()=>{
   clearTimeout(diceResultTimer);diceResultTimer=null;
-  const me=currentGame?.players.find(p=>p.id===playerId);if(me)maybeShowTurnNotice(currentGame,me);
+  const me=currentGame?.players.find(p=>p.id===playerId);if(me){maybeShowTurnNotice(currentGame,me);maybeShowTradeOffer(currentGame,me);}
 });
 
 function renderLog(g) {
@@ -484,7 +531,7 @@ $("skipSpecialBuild").onclick=async()=>{
 $("expandLog").onclick=()=>{if($("turnDialog").open)$("turnDialog").close();$("logDialog").showModal();};
 $("closeLog").onclick=()=>$("logDialog").close();
 $("logDialog").addEventListener("close",()=>{if(pendingTurnNotice){const p=pendingTurnNotice;showTurnNotice(p.notice,p.name,p.color);}});
-for(const id of ["turnDialog","logDialog","diceResultDialog"])$(id).addEventListener("click",e=>{if(e.target!==$(id))return;const r=$(id).getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$(id).close();});
+for(const id of ["turnDialog","logDialog","diceResultDialog","tradeOfferDialog"])$(id).addEventListener("click",e=>{if(e.target!==$(id))return;const r=$(id).getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$(id).close();});
 
 function escapeHtml(value) { return String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 
