@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#142b2b">
+  <meta name="description" content="友達と3〜6人で遊べる、ブラウザ上の島開拓ボードゲーム。">
+  <title>島の開拓者 | オンライン対戦</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/"><span class="brand-mark">島</span><span><b>島の開拓者</b><small>ONLINE BOARD GAME</small></span></a>
+    <div class="top-meta"><span class="online-dot"></span><span id="connectionLabel">接続待ち</span><button id="soundToggle" class="icon-button" aria-label="効果音を切り替え">♪</button></div>
+  </header>
+
+  <main id="homeView" class="home-shell">
+    <section class="hero-card">
+      <div class="hero-copy">
+        <div class="eyebrow"><span></span> FRIENDS • 3–6 PLAYERS</div>
+        <h1>島を開拓し、<br><em>最初の10点</em>を目指そう。</h1>
+        <p>資源を集め、道を伸ばし、街を築く。部屋コードを共有すれば、友達とすぐに対戦できます。</p>
+        <div class="hero-tags"><span>ブラウザですぐ遊べる</span><span>スマホ・PC対応</span><span>無料・アカウント不要</span></div>
+      </div>
+      <div class="hero-art" aria-hidden="true"><div class="sun"></div><div class="art-hex h1"></div><div class="art-hex h2"></div><div class="art-hex h3"></div><div class="art-hex h4"></div><div class="art-hex h5"></div><div class="art-hex h6"></div><div class="art-hex h7"></div><div class="art-hex h8"></div><div class="art-road"></div><div class="art-house">⌂</div></div>
+    </section>
+
+    <section class="lobby-card">
+      <div class="lobby-tabs"><button class="tab active" data-tab="create">部屋を作る</button><button class="tab" data-tab="join">部屋に参加</button></div>
+      <label class="field-label" for="playerName">プレイヤー名</label>
+      <input id="playerName" class="text-input" maxlength="16" placeholder="名前を入力" autocomplete="nickname">
+      <div id="createFields">
+        <div class="lobby-note"><span class="note-icon">✦</span><span>部屋を作成したら、表示されたコードを友達に共有してください。3〜6人で開始できます。</span></div>
+        <button id="createRoom" class="primary-button">新しい部屋を作る <span>→</span></button>
+      </div>
+      <div id="joinFields" hidden>
+        <label class="field-label" for="roomCode">部屋コード</label>
+        <input id="roomCode" class="text-input code-input" maxlength="6" placeholder="例：A8K2PQ" autocomplete="off">
+        <button id="joinRoom" class="primary-button">部屋に参加する <span>→</span></button>
+      </div>
+      <p id="homeError" class="error-message" role="status"></p>
+      <div class="fine-print">このゲームはCATANを参考にした非公式のファン向け試作版です。公式の画像・素材は使用していません。</div>
+    </section>
+    <section class="howto"><div><span class="step-no">01</span><b>部屋を作る</b><small>名前を入れてコードを発行</small></div><span class="step-arrow">→</span><div><span class="step-no">02</span><b>友達を招待</b><small>コードを共有して合流</small></div><span class="step-arrow">→</span><div><span class="step-no">03</span><b>島を開拓</b><small>3人集まったらゲーム開始</small></div></section>
+  </main>
+
+  <main id="gameView" class="game-shell" hidden>
+    <div class="game-heading"><div><div class="eyebrow"><span></span><span id="gameStatusLabel">ROOM</span></div><h1 id="gameTitle">対戦ルーム</h1></div><div class="room-share"><span>部屋コード</span><b id="roomCodeDisplay">------</b><button id="copyCode" title="コードをコピー">コピー</button></div></div>
+    <div class="game-layout">
+      <section class="board-card"><div class="board-toolbar"><span id="turnBanner">プレイヤーの参加を待っています</span><span id="diceDisplay" class="dice-display"></span></div><div id="boardWrap" class="board-wrap"><div id="boardEmpty" class="board-empty"><div class="empty-symbol">⌂</div><h2>島がまだありません</h2><p>3人集まると、ホストがゲームを開始できます。</p><div id="lobbyPlayers" class="lobby-players"></div><button id="startGame" class="primary-button start-button" hidden>ゲームを開始 <span>→</span></button></div><svg id="board" viewBox="0 0 900 680" role="img" aria-label="ゲーム盤面" hidden></svg><div id="selectionHint" class="selection-hint" hidden></div></div><div class="board-legend"><span><i class="legend-dot dot-wood"></i>森林</span><span><i class="legend-dot dot-brick"></i>丘陵</span><span><i class="legend-dot dot-sheep"></i>牧草地</span><span><i class="legend-dot dot-wheat"></i>畑</span><span><i class="legend-dot dot-ore"></i>山地</span></div></section>
+      <aside class="side-column">
+        <section class="panel players-panel"><div class="panel-head"><h2>プレイヤー</h2><span id="playerCount" class="count-pill">0 / 6</span></div><div id="playersList" class="players-list"></div></section>
+        <section id="actionPanel" class="panel action-panel"><div class="panel-head"><h2>あなたの手札</h2><span id="handTotal" class="hand-total">0枚</span></div><div id="resourceHand" class="resource-hand"></div><div id="phaseNotice" class="phase-notice">部屋に参加するとゲームが始まります。</div><div id="mainActions" class="action-buttons"></div><div id="buildActions" class="build-actions"></div><div id="tradeActions" class="trade-actions" hidden></div><div id="devActions" class="dev-actions"></div></section>
+        <section class="panel log-panel"><div class="panel-head"><h2>ゲームログ</h2><span class="live-label"><i></i> LIVE</span></div><div id="gameLog" class="game-log"><p>部屋の作成を待っています。</p></div></section>
+        <button id="leaveRoom" class="leave-button">部屋を退出</button>
+      </aside>
+    </div>
+    <footer class="game-footer"><span>ゲームの状態は部屋ごとに保存されます。</span><span>島の開拓者 <b>β</b></span></footer>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/app.js" defer></script>
+</body>
+</html>
