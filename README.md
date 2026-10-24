@@ -1,6 +1,6 @@
 # 島の開拓者 — Cloudflare版
 
-CATANを参考にした、3〜6人用のブラウザ対戦ゲームです。公式の画像・素材は使用していません。Cloudflare WorkersがAPIと静的ファイルを配信し、Durable Objectsがルームごとの対戦状態を保持します。
+CATANを参考にした、3〜6人用のブラウザ対戦ゲームです。地形イラストには公式ルールブックに掲載された紙版の画像を使用しています。出典はASSETS.mdに記載しています。CATANやBoard Game Arenaの公式サービスではありません。Cloudflare WorkersがAPIと静的ファイルを配信し、Durable Objectsがルームごとの対戦状態を保持します。
 
 ## 対応している遊び方
 

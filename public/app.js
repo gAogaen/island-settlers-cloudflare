@@ -85,7 +85,7 @@ function renderPlayers(g, me) {
 function renderHand(me) {
   const hand = me.hand || Object.fromEntries(RESOURCES.map(r => [r, 0])), total = RESOURCES.reduce((n, r) => n + hand[r], 0);
   $("handTotal").textContent = `${total}枚`;
-  $("resourceHand").innerHTML = RESOURCES.map(r => `<div class="resource-card"><span class="res-symbol">${RESOURCE[r][0]}</span><b>${hand[r]}</b><small>${RESOURCE[r][1]}</small></div>`).join("");
+  $("resourceHand").innerHTML = RESOURCES.map(r => `<div class="resource-card"><span class="res-symbol"><img src="/assets/${r}.svg" alt="${RESOURCE[r][1]}" /></span><b>${hand[r]}</b><small>${RESOURCE[r][1]}</small></div>`).join("");
 }
 function renderActions(g, me, isMyTurn) {
   let notice = ""; const main = [], build = [], dev = [];
@@ -184,28 +184,39 @@ function drawBoard(g, me) {
   const svg = $("board"); if (!g.map) return;
   const map = g.map, vertices = new Map(map.vertices.map(v => [v.id, v])), edges = new Map(map.edges.map(e => [e.id, e]));
   const maxX = Math.max(...map.vertices.map(v=>v.x))-Math.min(...map.vertices.map(v=>v.x)), maxY = Math.max(...map.vertices.map(v=>v.y))-Math.min(...map.vertices.map(v=>v.y));
-  const scale = Math.min(map.large ? 48 : 59, 590 / maxX, 590 / maxY), px = v => 450 + (v.x - map.centerX) * scale, py = v => 335 + (v.y - map.centerY) * scale;
-  let content = "";
+  const scale = Math.min(740 / (maxX + 3.5), 600 / (maxY + 3.5)), px = v => 450 + (v.x - map.centerX) * scale, py = v => 335 + (v.y - map.centerY) * scale;
+  let content = `<defs><pattern id="ocean-waves" width="44" height="30" patternUnits="userSpaceOnUse"><rect width="44" height="30" fill="#168ba7"/><path d="M-10 9 Q0 3 11 9 T33 9 T55 9 M12 24 Q23 18 34 24 T56 24" fill="none" stroke="#6bd3db" stroke-width="1.1" opacity=".3"/></pattern><filter id="token-shadow" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="2" stdDeviation="1.3" flood-opacity=".4"/></filter></defs>`;
+  const landCoords = new Set(map.hexes.map(h => `${h.q},${h.r}`)), seaCoords = new Map();
+  for (const h of map.hexes) for (const [dq, dr] of [[1,0],[-1,0],[0,1],[0,-1],[1,-1],[-1,1]]) {
+    const q=h.q+dq,r=h.r+dr,key=`${q},${r}`;if(!landCoords.has(key)) seaCoords.set(key,{q,r});
+  }
+  for(const {q,r} of seaCoords.values()) {
+    const cx=450+(Math.sqrt(3)*(q+r/2)-map.centerX)*scale,cy=335+(1.5*r-map.centerY)*scale;
+    const points=[-90,-30,30,90,150,210].map(a=>`${cx+scale*Math.cos(a*Math.PI/180)},${cy+scale*Math.sin(a*Math.PI/180)}`).join(' ');
+    content+=`<polygon points="${points}" fill="url(#ocean-waves)" stroke="#126d87" stroke-width="1"/>`;
+  }
   for (const h of map.hexes) {
     const points = h.corners.map(id => { const v=vertices.get(id); return `${px(v)},${py(v)}`; }).join(" ");
     const [terrainLabel, icon] = TERRAIN[h.terrain];
-    content += `<polygon class="hex hex-${h.terrain}" points="${points}" data-hex="${h.id}"/>`;
-    content += `<text class="hex-terrain" x="${450+(h.x-map.centerX)*scale}" y="${335+(h.y-map.centerY)*scale-13}">${icon}</text>`;
+    const hx=450+(h.x-map.centerX)*scale,hy=335+(h.y-map.centerY)*scale;
+    content += `<defs><clipPath id="clip-${h.id}"><polygon points="${points}"/></clipPath></defs><polygon class="hex hex-${h.terrain}" points="${points}" data-hex="${h.id}"/><image href="/assets/${h.terrain}.svg" x="${hx-Math.sqrt(3)*scale/2}" y="${hy-scale}" width="${Math.sqrt(3)*scale}" height="${2*scale}" preserveAspectRatio="none" clip-path="url(#clip-${h.id})" pointer-events="none"/><polygon points="${points}" class="tile-rim"/>`;
     if (h.number) {
-      const hot = h.number === 6 || h.number === 8, cx=450+(h.x-map.centerX)*scale, cy=335+(h.y-map.centerY)*scale+14;
-      content += `<circle class="hex-number ${hot ? "hot" : ""}" cx="${cx}" cy="${cy}" r="13"/><text class="hex-num-text" x="${cx}" y="${cy}">${h.number}</text><text class="hex-num-pips" x="${cx}" y="${cy+19}">${"•".repeat(Math.max(1, 6-Math.abs(7-h.number)))}</text>`;
+      const hot = h.number === 6 || h.number === 8, cx=450+(h.x-map.centerX)*scale, cy=335+(h.y-map.centerY)*scale;
+      content += `<circle class="hex-number ${hot ? "hot" : ""}" cx="${cx}" cy="${cy}" r="17"/><text class="hex-num-text ${hot ? 'hot' : ''}" x="${cx}" y="${cy-3}">${h.number}</text><text class="hex-num-pips ${hot ? 'hot' : ''}" x="${cx}" y="${cy+9}">${"•".repeat(Math.max(1, 6-Math.abs(7-h.number)))}</text>`;
     }
-    if (h.id === map.robber) content += `<text class="robber-marker" x="${450+(h.x-map.centerX)*scale}" y="${335+(h.y-map.centerY)*scale+2}">♟</text>`;
+    if (h.id === map.robber) content += `<g transform="translate(${hx+24},${hy-8})" class="wood-robber"><ellipse cx="0" cy="19" rx="10" ry="4" fill="#16344266"/><path d="M-9 16 Q-7 4 -4 0 Q-10 -11 0 -13 Q10 -11 4 0 Q7 4 9 16 Z" fill="#5e6770" stroke="#202f37" stroke-width="2"/><path d="M-3 -8 Q0 -10 2 -7 M-3 3 L-5 12" stroke="#c9d0d0" stroke-width="2" fill="none"/></g>`;
     content += `<polygon class="hex-select" points="${points}" data-robber-hex="${h.id}"/>`;
   }
   for (const port of g.ports || []) {
     const a=vertices.get(port.a),b=vertices.get(port.b),cx=(px(a)+px(b))/2,cy=(py(a)+py(b))/2;
-    content += `<g class="port-marker"><circle cx="${cx}" cy="${cy}" r="9" fill="#f6f3e5" stroke="#879c8f"/><text class="port-tag" x="${cx}" y="${cy}">${port.type}</text></g>`;
+    const dx=cx-450,dy=cy-335,n=Math.hypot(dx,dy)||1,ox=cx+dx/n*31,oy=cy+dy/n*31;
+    const label=port.type==='3:1'?'3:1':RESOURCE[port.type][1]+' 2:1';
+    content += `<g class="port-marker" pointer-events="none"><path d="M${px(a)} ${py(a)} L${ox} ${oy} L${px(b)} ${py(b)}" fill="none" stroke="#f5e7b3" stroke-width="2" stroke-dasharray="3 2"/><g transform="translate(${ox},${oy})"><path d="M-13 3 H13 L8 9 H-8Z" fill="#6b3e25" stroke="#efd7a0"/><path d="M0 -16 V3 M-1 -14 L-11 0 H-1Z M2 -12 L11 -1 H2Z" fill="#fff1ce" stroke="#a67e45" stroke-width=".7"/><rect x="-24" y="12" width="48" height="14" rx="4" fill="#f8e9bf" stroke="#9f7d44"/><text class="port-tag" x="0" y="19">${label}</text></g></g>`;
   }
   const roads = new Map(); for (const p of g.players) for (const edgeId of p.roads || []) roads.set(edgeId,p);
   for (const e of map.edges) {
     const a=vertices.get(e.a),b=vertices.get(e.b),owner=roads.get(e.id); const x1=px(a),y1=py(a),x2=px(b),y2=py(b);
-    if (owner) content += `<line class="edge-road" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:${owner.color}"/>`;
+    if (owner) content += `<g class="wood-road" pointer-events="none"><line x1="${x1}" y1="${y1+3}" x2="${x2}" y2="${y2+3}" stroke="#203132" stroke-width="11"/><line class="edge-road" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:${owner.color}"/><line x1="${x1}" y1="${y1-2}" x2="${x2}" y2="${y2-2}" stroke="#ffffff66" stroke-width="2"/></g>`;
     content += `<line class="edge-hit" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" data-edge="${e.id}"/>`;
   }
   for (const v of map.vertices) {
@@ -213,9 +224,11 @@ function drawBoard(g, me) {
     if (owner) {
       const city=owner.cities.includes(v.id), x=px(v),y=py(v);
       const shape = city ? `M ${x-13} ${y+9} V ${y-4} L ${x-5} ${y-12} L ${x+2} ${y-5} V ${y-15} H ${x+12} V ${y+9} Z` : `M ${x-11} ${y+9} V ${y-3} L ${x} ${y-14} L ${x+11} ${y-3} V ${y+9} Z`;
-      content += `<g class="building-piece"><title>${escapeHtml(owner.name)}：${city ? "都市" : "開拓地"}</title><circle cx="${x}" cy="${y}" r="18" class="building-base"/><path d="${shape}" fill="${owner.color}" class="building-outline"/><path d="${shape}" fill="${owner.color}" class="building-face"/><rect x="${x-3}" y="${y+1}" width="6" height="8" rx="1" fill="#fff9e8"/>${city ? `<rect x="${x+5}" y="${y-10}" width="4" height="4" fill="#fff9e8"/>` : ""}</g>`;
+      content += `<g class="building-piece wooden-piece"><title>${escapeHtml(owner.name)}：${city ? "都市" : "開拓地"}</title><path d="${shape}" fill="#263032" transform="translate(3,4)" class="piece-depth"/><path d="${shape}" fill="${owner.color}" class="building-outline"/><path d="${shape}" fill="${owner.color}" class="building-face"/><rect x="${x-3}" y="${y+1}" width="6" height="8" rx="1" fill="#fff9e8"/>${city ? `<rect x="${x+5}" y="${y-10}" width="4" height="4" fill="#fff9e8"/>` : ""}</g>`;
     }
-    content += `<circle class="vertex-hit" cx="${px(v)}" cy="${py(v)}" r="19" data-vertex="${v.id}"/>`;
+    const placing = (mode === "settlement" || mode === "city" || g.phase === "setup" && g.setupStep === "settlement" && g.players[g.activeIndex]?.id === playerId);
+    if (placing && !owner) content += `<circle cx="${px(v)}" cy="${py(v)}" r="3.5" fill="#fff8dc" stroke="#5e472c" stroke-width="1" pointer-events="none"/>`;
+    content += `<circle class="vertex-hit ${placing ? 'placement-target' : ''}" cx="${px(v)}" cy="${py(v)}" r="19" data-vertex="${v.id}"/>`;
   }
   svg.innerHTML = content;
   const robberTargets = g.phase === "robber" && g.players[g.activeIndex]?.id === playerId || (mode === "devKnightPending");
