@@ -3,6 +3,7 @@ const RESOURCES = ["wood", "brick", "sheep", "wheat", "ore"];
 const RESOURCE = { wood: ["🌲", "木材"], brick: ["🧱", "レンガ"], sheep: ["🐑", "羊毛"], wheat: ["🌾", "小麦"], ore: ["⛰️", "鉱石"] };
 const TERRAIN = { wood: ["森林", "🌲"], brick: ["丘陵", "🧱"], sheep: ["牧草地", "🐑"], wheat: ["畑", "🌾"], ore: ["山地", "⛰️"], desert: ["砂漠", "🏜️"] };
 let boardZoom = 1, boardPan = {x:0,y:0}, boardFrame = null, boardDragged = false;
+let lastTurnNotice = null, pendingTurnNotice = null;
 let currentGame = null, playerId = null, roomCode = null, mode = null, selectedRobberHex = null, selectedVictim = "", pendingRoadCard = [], polling = false, soundOn = true, toastTimer;
 
 async function api(path, options = {}) {
@@ -52,7 +53,7 @@ $("joinRoom").addEventListener("click", async () => {
 $("roomCode").addEventListener("input", e => e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));
 $("startGame").addEventListener("click", () => act("start"));
 $("copyCode").addEventListener("click", async () => { try { await navigator.clipboard.writeText(roomCode); showToast("部屋コードをコピーしました。"); } catch (_) { showToast(`部屋コード：${roomCode}`); } });
-$("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; localStorage.removeItem(`island-room-${$("roomCodeDisplay").textContent}`); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
+$("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); $("turnDialog").close();$("logDialog").close();lastTurnNotice=null;pendingTurnNotice=null; if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; localStorage.removeItem(`island-room-${$("roomCodeDisplay").textContent}`); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
 $("soundToggle").addEventListener("click", e => { soundOn = !soundOn; e.currentTarget.textContent = soundOn ? "♪" : "×"; showToast(soundOn ? "効果音をオンにしました。" : "効果音をオフにしました。"); });
 
 function render() {
@@ -79,7 +80,7 @@ function render() {
     else $("turnBanner").textContent = `${active?.name} のターン${isMyTurn ? " · あなたの番" : ""}`;
     renderActions(g, me, isMyTurn);
   }
-  renderPlayers(g, me); renderHand(me); renderLog(g); renderBuildingGuide(g, me);
+  renderPlayers(g, me); renderHand(me); renderLog(g); renderBuildingGuide(g, me); maybeShowTurnNotice(g, me);
 }
 function renderPlayers(g, me) {
   $("playersList").innerHTML = g.players.map((p, i) => `<div class="player-row ${g.status === "playing" && (g.phase === "special" ? p.id === g.specialPlayerId : i === g.activeIndex) ? "active" : ""}"><i class="player-swatch" style="background:${p.color}"></i><div class="player-row-main"><div class="player-row-name">${escapeHtml(p.name)}${p.id === g.hostId ? '<span class="host-tag">HOST</span>' : ""}${p.id === playerId ? " <span style=\"color:#82968d;font-weight:500\">(あなた)</span>" : ""}</div><div class="player-row-meta">手札 ${p.handCount || 0}枚 · 道 ${p.roads?.length || 0}</div></div><span class="player-points">${p.victoryPoints ?? "—"}点</span></div>`).join("");
@@ -295,7 +296,43 @@ function renderBuildingGuide(g,me) {
   document.querySelectorAll('[data-recipe]').forEach(b=>b.onclick=()=>{const m=b.dataset.recipe;if(m==='development')act('buyDevelopment');else{mode=m;render();$("boardWrap").scrollIntoView({block:'nearest',behavior:'smooth'});}});
 }
 
-function renderLog(g) { $("gameLog").innerHTML = (g.log?.length ? g.log : ["対戦ログがここに表示されます。"]).slice(0, 12).map(line => `<p>${escapeHtml(line)}</p>`).join(""); }
+function renderLog(g) {
+  const lines=g.log?.length?g.log:["対戦ログがここに表示されます。"];
+  $("gameLog").innerHTML=lines.slice(0,12).map(line=>`<p>${escapeHtml(line)}</p>`).join("");
+  const panel=$("expandedGameLog"),scroll=panel.scrollTop;
+  panel.innerHTML=lines.map((line,i)=>`<div class="expanded-log-row"><span class="log-index">${lines.length-i}</span><p>${escapeHtml(line)}</p></div>`).join("");
+  panel.scrollTop=scroll;$("expandedLogCount").textContent=`最新${g.log?.length||0}件 · 対戦中も自動更新`;
+}
+function turnNotice(g,me) {
+  if(g.status!=="playing"||g.winner)return null;
+  if(g.phase==="special") {
+    if(g.specialPlayerId!==me.id)return null;
+    return {key:`${g.code}:special:${g.turnNumber}:${me.id}`,type:"special",title:"あなたの特別建設です",description:"通常の手番の間に、手持ちの資源で建設・購入できます。",rules:"できること：道・開拓地・都市の建設、発展カードの購入。\nできないこと：サイコロ、資源交換、発展カードの使用。",button:"盤面で建設する",tag:"SPECIAL BUILD",emblem:"⌂"};
+  }
+  if(g.players[g.activeIndex]?.id!==me.id)return null;
+  if(g.phase==="setup")return {key:`${g.code}:setup:${g.setupIndex}:${me.id}`,type:"setup",title:"あなたの初期配置です",description:"開拓地を置き、その開拓地に接する道を1本配置してください。",rules:"開拓地同士は隣り合わせに置けません。\n開拓地 → 道の順に盤面を選びます。",button:"初期配置をはじめる",tag:"INITIAL PLACEMENT",emblem:"⌂"};
+  return {key:`${g.code}:turn:${g.turnNumber}:${me.id}`,type:"normal",title:"あなたのターンです",description:g.rolled?"手持ちの資源で交換・建設・購入を行えます。":"まずサイコロを振り、資源を受け取りましょう。",rules:"交換・建設・発展カードの購入ができます。\n行動が終わったら「ターン終了」を押してください。",button:g.rolled?"盤面へ進む":"ターンをはじめる",tag:"YOUR TURN",emblem:"🎲"};
+}
+function maybeShowTurnNotice(g,me) {
+  const notice=turnNotice(g,me);
+  if(!notice){pendingTurnNotice=null;if($("turnDialog").open)$("turnDialog").close();return;}
+  if(notice.key===lastTurnNotice)return;
+  if($("logDialog").open){pendingTurnNotice={notice,name:me.name,color:me.color};return;}
+  showTurnNotice(notice,me.name,me.color);
+}
+function showTurnNotice(notice,name,color) {
+  const dialog=$("turnDialog");if(dialog.open)dialog.close();
+  lastTurnNotice=notice.key;pendingTurnNotice=null;
+  dialog.dataset.type=notice.type;dialog.style.setProperty("--turn-color",color);
+  $("turnDialogTag").textContent=notice.tag;$("turnDialogEmblem").textContent=notice.emblem;
+  $("turnDialogPlayer").textContent=name;$("turnDialogTitle").textContent=notice.title;$("turnDialogDescription").textContent=notice.description;$("turnDialogRules").textContent=notice.rules;$("acknowledgeTurn").textContent=notice.button;dialog.showModal();
+}
+$("acknowledgeTurn").onclick=()=>$("turnDialog").close();
+$("expandLog").onclick=()=>{if($("turnDialog").open)$("turnDialog").close();$("logDialog").showModal();};
+$("closeLog").onclick=()=>$("logDialog").close();
+$("logDialog").addEventListener("close",()=>{if(pendingTurnNotice){const p=pendingTurnNotice;showTurnNotice(p.notice,p.name,p.color);}});
+for(const id of ["turnDialog","logDialog"])$(id).addEventListener("click",e=>{if(e.target!==$(id))return;const r=$(id).getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$(id).close();});
+
 function escapeHtml(value) { return String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 
 const params = new URLSearchParams(location.search), requestedCode = params.get("room")?.toUpperCase();

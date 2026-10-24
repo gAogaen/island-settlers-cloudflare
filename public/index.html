@@ -51,13 +51,18 @@
       <aside class="side-column">
         <section class="panel players-panel"><div class="panel-head"><h2>プレイヤー</h2><span id="playerCount" class="count-pill">0 / 6</span></div><div id="playersList" class="players-list"></div></section>
         <section id="actionPanel" class="panel action-panel"><div class="panel-head"><h2>あなたの手札</h2><span id="handTotal" class="hand-total">0枚</span></div><div id="resourceHand" class="resource-hand"></div><div id="phaseNotice" class="phase-notice">部屋に参加するとゲームが始まります。</div><div id="mainActions" class="action-buttons"></div><div id="buildActions" class="build-actions"></div><div id="tradeActions" class="trade-actions" hidden></div><div id="devActions" class="dev-actions"></div></section>
-        <section class="panel log-panel"><div class="panel-head"><h2>ゲームログ</h2><span class="live-label"><i></i> LIVE</span></div><div id="gameLog" class="game-log"><p>部屋の作成を待っています。</p></div></section>
+        <section class="panel log-panel"><div class="panel-head"><h2>ゲームログ</h2><button id="expandLog" class="expand-log-button" aria-label="ゲームログを拡大表示">⤢ 拡大</button></div><div id="gameLog" class="game-log"><p>部屋の作成を待っています。</p></div></section>
         <button id="leaveRoom" class="leave-button">部屋を退出</button>
       </aside>
     </div>
     <section id="buildingGuide" class="building-guide" aria-label="建設に必要な資源"></section>
     <footer class="game-footer"><span>ゲームの状態は部屋ごとに保存されます。</span><span>島の開拓者 <b>β</b></span></footer>
   </main>
+  <dialog id="turnDialog" class="game-dialog turn-dialog" aria-labelledby="turnDialogTitle" aria-describedby="turnDialogDescription">
+    <div class="turn-dialog-banner"><span id="turnDialogTag">YOUR TURN</span><span class="turn-dialog-emblem" id="turnDialogEmblem">🎲</span></div>
+    <div class="turn-dialog-content"><p class="turn-dialog-player" id="turnDialogPlayer"></p><h2 id="turnDialogTitle">あなたの番です</h2><p id="turnDialogDescription"></p><div id="turnDialogRules" class="turn-dialog-rules"></div><button id="acknowledgeTurn" class="primary-button">確認して始める</button><small>確認ボタンを押しても、サイコロや建設は自動実行されません。</small></div>
+  </dialog>
+  <dialog id="logDialog" class="game-dialog log-dialog" aria-labelledby="logDialogTitle"><header class="log-dialog-header"><div><h2 id="logDialogTitle">ゲームログ</h2><p id="expandedLogCount"></p></div><button id="closeLog" class="dialog-close" aria-label="ログを閉じる">×</button></header><div id="expandedGameLog" class="expanded-game-log" tabindex="0"></div><footer>新しい履歴が上に表示されます。</footer></dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="/app.js" defer></script>
 </body>
