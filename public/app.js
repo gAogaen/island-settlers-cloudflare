@@ -4,6 +4,7 @@ const RESOURCE = { wood: ["🌲", "木材"], brick: ["🧱", "レンガ"], sheep
 const TERRAIN = { wood: ["森林", "🌲"], brick: ["丘陵", "🧱"], sheep: ["牧草地", "🐑"], wheat: ["畑", "🌾"], ore: ["山地", "⛰️"], desert: ["砂漠", "🏜️"] };
 let boardZoom = 1, boardPan = {x:0,y:0}, boardFrame = null, boardDragged = false;
 let activeTradeOfferId = null, seenTradeOfferIds = new Set(), tradeReplyInFlight = false;
+let lastVictoryNoticeKey = null, pendingVictorySoundKey = null;
 let lastDiceResultKey = null, diceResultTimer = null;
 let lastTurnNotice = null, pendingTurnNotice = null;
 let audioContext = null, lastTurnSoundKey = null, pendingTurnSoundKey = null;
@@ -64,6 +65,7 @@ async function unlockAudio() {
     const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;
     if(!audioContext||audioContext.state==="closed")audioContext=new Audio();
     if(audioContext.state==="suspended")await audioContext.resume();
+    if(pendingVictorySoundKey&&currentGame?.winner&&pendingVictorySoundKey===`${currentGame.code}:${currentGame.winner}`&&playVictoryFanfare()){pendingVictorySoundKey=null;pendingTurnSoundKey=null;return;}
     if(pendingTurnSoundKey&&pendingTurnSoundKey===getTurnSoundKey(currentGame)&&playTurnChime())pendingTurnSoundKey=null;
   } catch (_) {}
 }
@@ -103,8 +105,8 @@ $("joinRoom").addEventListener("click", async () => {
 $("roomCode").addEventListener("input", e => e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));
 $("startGame").addEventListener("click", () => act("start"));
 $("copyCode").addEventListener("click", async () => { try { await navigator.clipboard.writeText(roomCode); showToast("部屋コードをコピーしました。"); } catch (_) { showToast(`部屋コード：${roomCode}`); } });
-$("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); $("turnDialog").close();$("logDialog").close();$("diceResultDialog").close();$("tradeOfferDialog").close();activeTradeOfferId=null;seenTradeOfferIds.clear();lastTurnNotice=null;pendingTurnNotice=null; if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; localStorage.removeItem(`island-room-${$("roomCodeDisplay").textContent}`); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
-$("soundToggle").addEventListener("click", () => { soundOn=!soundOn;localStorage.setItem("island-sound-on",soundOn?"1":"0");if(!soundOn)pendingTurnSoundKey=null;else unlockAudio();syncSoundButton();showToast(soundOn?"通知音をオンにしました。":"通知音をオフにしました。"); });
+$("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); $("turnDialog").close();$("logDialog").close();$("diceResultDialog").close();$("tradeOfferDialog").close();$("victoryDialog").close();activeTradeOfferId=null;seenTradeOfferIds.clear();lastTurnNotice=null;pendingTurnNotice=null; if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; localStorage.removeItem(`island-room-${$("roomCodeDisplay").textContent}`); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
+$("soundToggle").addEventListener("click", () => { soundOn=!soundOn;localStorage.setItem("island-sound-on",soundOn?"1":"0");if(!soundOn){pendingTurnSoundKey=null;pendingVictorySoundKey=null;}else unlockAudio();syncSoundButton();showToast(soundOn?"通知音をオンにしました。":"通知音をオフにしました。"); });
 syncSoundButton();
 
 function render() {
@@ -131,7 +133,7 @@ function render() {
     else $("turnBanner").textContent = `${active?.name} のターン${isMyTurn ? " · あなたの番" : ""}`;
     renderActions(g, me, isMyTurn);
   }
-  renderPlayers(g, me); renderHand(me,g); renderLog(g); renderBuildingGuide(g, me); maybePlayTurnSound(g); maybeShowDiceResult(g); maybeShowTurnNotice(g, me); maybeShowTradeOffer(g,me);
+  renderPlayers(g, me); renderHand(me,g); renderLog(g); renderBuildingGuide(g, me); maybePlayTurnSound(g); maybeShowDiceResult(g); maybeShowTurnNotice(g, me); maybeShowTradeOffer(g,me); saveOwnMatchResult(g,me); maybeShowVictory(g);
 }
 function renderPlayers(g, me) {
   $("playersList").innerHTML=g.players.map((p,i)=>{
@@ -208,10 +210,11 @@ function renderActions(g, me, isMyTurn) {
   }
   if (g.phase === "main" && !isMyTurn && (g.tradeOffers || []).some(o => o.status === "pending" && o.toId === playerId)) main.push(`<button class="action-btn" data-action="playerTradeToggle">交換の提示を見る</button>`);
   if (g.phase === "main" && mode === "playerTrade") { $("tradeActions").hidden = false; renderPlayerTrades(g); }
-  if (g.winner) { main.push(`<button class="action-btn" onclick="location.href='/'">新しいゲームを始める</button>`); }
+  if (g.winner) { main.push(`<button class="action-btn primary" data-action="viewResults">🏆 結果を見る</button><button class="action-btn" onclick="location.href='/'">新しいゲームを始める</button>`); }
   $("phaseNotice").textContent = notice; $("mainActions").innerHTML = main.join(""); $("buildActions").innerHTML = build.join(""); $("devActions").innerHTML = dev.join("");
   document.querySelectorAll("[data-action]").forEach(button => button.addEventListener("click", () => {
     const action = button.dataset.action;
+    if(action==="viewResults"){showVictory(currentGame);return;}
     if (action === "bankToggle") { mode = mode === "bank" ? null : "bank"; render(); return; }
     if (action === "playerTradeToggle") { const me=currentGame.players.find(p=>p.id===playerId),incoming=incomingTradeOffers(currentGame)[0]; if(incoming){showTradeOffer(currentGame,me,incoming);return;} mode = mode === "playerTrade" ? null : "playerTrade"; render(); return; }
     if (action === "roll") return act("roll");
@@ -376,6 +379,52 @@ function renderBuildingGuide(g,me) {
 
 
 
+
+
+function playVictoryFanfare() {
+  if(!soundOn||!audioContext||audioContext.state!=="running")return false;
+  try {
+    const now=audioContext.currentTime;
+    const note=(frequency,start,duration,volume=.07)=>{
+      const at=now+start;
+      for(const [type,ratio,level] of [["triangle",1,volume],["sine",2,volume*.18]]) {
+        const oscillator=audioContext.createOscillator(),gain=audioContext.createGain();oscillator.type=type;oscillator.frequency.value=frequency*ratio;
+        gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(level,at+.02);gain.gain.exponentialRampToValueAtTime(.0001,at+duration);
+        oscillator.connect(gain);gain.connect(audioContext.destination);oscillator.start(at);oscillator.stop(at+duration+.04);oscillator.onended=()=>{oscillator.disconnect();gain.disconnect();};
+      }
+    };
+    [[523.25,0,.18],[523.25,.18,.18],[523.25,.36,.25],[659.25,.66,.28],[783.99,.96,.3],[1046.5,1.3,1.6]].forEach(n=>note(...n));
+    [261.63,329.63,392].forEach(f=>note(f,1.3,1.7,.035));
+    return true;
+  }catch(_){return false;}
+}
+
+function maybeShowVictory(g) {
+  if(!g.winner)return;
+  const key=`${g.code}:${g.winner}`;
+  if(key===lastVictoryNoticeKey||sessionStorage.getItem("island-victory-seen-"+g.code)===key)return;
+  lastVictoryNoticeKey=key;sessionStorage.setItem("island-victory-seen-"+g.code,key);pendingVictorySoundKey=soundOn&&!playVictoryFanfare()?key:null;showVictory(g);
+}
+function showVictory(g) {
+  const winner=g.players.find(p=>p.id===g.winner);if(!winner)return;
+  pendingTurnNotice=null;pendingTurnSoundKey=null;clearTimeout(diceResultTimer);
+  for(const id of ["turnDialog","diceResultDialog","tradeOfferDialog","logDialog"])if($(id).open)$(id).close();
+  $("victoryTitle").textContent=winner.id===playerId?"あなたの勝利！":`${winner.name} の勝利！`;
+  $("victorySubtitle").textContent=`${winner.name} が島の開拓を制しました。`;
+  $("victoryScore").textContent=String(winner.victoryPoints||10);
+  $("victoryAwards").innerHTML=(g.largestArmyOwner===winner.id?'<span>♞ 最大騎士力</span>':'')+(g.longestRoadOwner===winner.id?'<span>━ 最長交易路</span>':'');
+  const players=[...g.players].sort((a,b)=>(b.victoryPoints||0)-(a.victoryPoints||0));
+  $("victoryStandings").innerHTML=players.map((p,i)=>{
+    const rank=players.findIndex(x=>(x.victoryPoints||0)===(p.victoryPoints||0))+1;
+    return `<div class="victory-result-row ${p.id===winner.id?'champion':''}"><span class="victory-rank">${p.id===winner.id?'♛':rank}</span><i style="background:${p.color}"></i><div><b>${escapeHtml(p.name)}${p.id===playerId?'（あなた）':''}</b><small>開拓地 ${p.settlements?.length||0} · 都市 ${p.cities?.length||0} · 騎士 ${p.playedKnights||0}回</small></div><strong>${p.victoryPoints||0}<small>点</small></strong></div>`;
+  }).join('');
+  const colors=["#f4cf68","#fff4c5","#7fbfa1","#e79868","#c9b7ec"];
+  $("victoryConfetti").innerHTML=Array.from({length:48},(_,i)=>`<i style="--x:${(i*37)%100}%;--delay:${(i%9)*.1}s;--duration:${2.4+(i%7)*.22}s;--color:${colors[i%colors.length]};--rotate:${i*47}deg"></i>`).join('');
+  const dialog=$("victoryDialog");if(!dialog.open)dialog.showModal();
+}
+$("closeVictory").onclick=()=>$("victoryDialog").close();
+$("acknowledgeVictory").onclick=()=>$("victoryDialog").close();
+
 function incomingTradeOffers(g) {
   if(g.status!=="playing"||g.winner||g.phase!=="main")return [];
   return (g.tradeOffers||[]).filter(o=>o.status==="pending"&&o.toId===playerId&&g.players[g.activeIndex]?.id===o.fromId);
@@ -538,6 +587,32 @@ $("logDialog").addEventListener("close",()=>{if(pendingTurnNotice){const p=pendi
 for(const id of ["turnDialog","logDialog","diceResultDialog","tradeOfferDialog"])$(id).addEventListener("click",e=>{if(e.target!==$(id))return;const r=$(id).getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$(id).close();});
 
 function escapeHtml(value) { return String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+
+function readMatchHistory() {
+  try {
+    const value=JSON.parse(localStorage.getItem("island-match-history-v1")||"[]");
+    return Array.isArray(value)?value.filter(r=>r&&typeof r.key==="string"&&typeof r.won==="boolean"):[];
+  }catch(_){return [];}
+}
+function saveOwnMatchResult(g,me) {
+  if(!g.winner||!me)return;
+  const key=`${g.code}:${g.createdAt||""}:${me.id}`,history=readMatchHistory();
+  if(history.some(r=>r.key===key))return;
+  const winner=g.players.find(p=>p.id===g.winner);
+  history.push({key,at:Date.now(),won:g.winner===me.id,points:me.victoryPoints||0,name:me.name,winnerName:winner?.name||"",players:g.players.length,roomCode:g.code});
+  try {localStorage.setItem("island-match-history-v1",JSON.stringify(history));renderHomeStats();}catch(_){showToast("ブラウザに戦績を保存できませんでした。");}
+}
+function renderHomeStats() {
+  const history=readMatchHistory(),games=history.length,wins=history.filter(r=>r.won).length,best=Math.max(0,...history.map(r=>Number(r.points)||0));
+  const totals=[["対戦数",games+"戦"],["勝利数",wins+"勝"],["勝率",games?Math.round(wins/games*100)+"%":"—"],["最高得点",games?best+"点":"—"]];
+  $("homeStatsSummary").innerHTML=totals.map(([label,value])=>`<div><small>${label}</small><strong>${value}</strong></div>`).join("");
+  $("homeMatchHistory").innerHTML=games?history.slice(-8).reverse().map(r=>{
+    const date=new Date(r.at).toLocaleString("ja-JP",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"});
+    return `<div class="home-match-row"><span class="match-result ${r.won?'won':'lost'}">${r.won?'WIN':'LOSE'}</span><div class="match-history-main"><b>${escapeHtml(r.name)} <span>${r.points}点</span></b><small>${r.players}人対戦 · 勝者：${escapeHtml(r.winnerName)}</small></div><time>${date}</time></div>`;
+  }).join(""):'<div class="empty-match-history">まだ戦績がありません。ゲームが終了すると、ここに結果が残ります。</div>';
+}
+renderHomeStats();
 
 const params = new URLSearchParams(location.search), requestedCode = params.get("room")?.toUpperCase();
 if (requestedCode) {
