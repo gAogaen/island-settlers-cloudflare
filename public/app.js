@@ -4,6 +4,7 @@ const RESOURCE = { wood: ["🌲", "木材"], brick: ["🧱", "レンガ"], sheep
 const TERRAIN = { wood: ["森林", "🌲"], brick: ["丘陵", "🧱"], sheep: ["牧草地", "🐑"], wheat: ["畑", "🌾"], ore: ["山地", "⛰️"], desert: ["砂漠", "🏜️"] };
 let boardZoom = 1, boardPan = {x:0,y:0}, boardFrame = null, boardDragged = false;
 let lastTurnNotice = null, pendingTurnNotice = null;
+let autoSkipSpecial = localStorage.getItem("island-auto-skip-special")==="1", autoSkipInFlight = false, autoSkipLastKey = null;
 let currentGame = null, playerId = null, roomCode = null, mode = null, selectedRobberHex = null, selectedVictim = "", pendingRoadCard = [], polling = false, soundOn = true, toastTimer;
 
 async function api(path, options = {}) {
@@ -314,6 +315,10 @@ function turnNotice(g,me) {
   return {key:`${g.code}:turn:${g.turnNumber}:${me.id}`,type:"normal",title:"あなたのターンです",description:g.rolled?"手持ちの資源で交換・建設・購入を行えます。":"まずサイコロを振り、資源を受け取りましょう。",rules:"交換・建設・発展カードの購入ができます。\n行動が終わったら「ターン終了」を押してください。",button:g.rolled?"盤面へ進む":"ターンをはじめる",tag:"YOUR TURN",emblem:"🎲"};
 }
 function maybeShowTurnNotice(g,me) {
+  syncAutoSkipControls();
+  if(autoSkipSpecial&&g.status==="playing"&&!g.winner&&g.phase==="special"&&g.specialPlayerId===me.id){
+    pendingTurnNotice=null;if($("turnDialog").open)$("turnDialog").close();autoSkipSpecialTurn(g,me);return;
+  }
   const notice=turnNotice(g,me);
   if(!notice){pendingTurnNotice=null;if($("turnDialog").open)$("turnDialog").close();return;}
   if(notice.key===lastTurnNotice)return;
@@ -323,11 +328,38 @@ function maybeShowTurnNotice(g,me) {
 function showTurnNotice(notice,name,color) {
   const dialog=$("turnDialog");if(dialog.open)dialog.close();
   lastTurnNotice=notice.key;pendingTurnNotice=null;
-  $("skipSpecialBuild").hidden=notice.type!=="special";
+  $("skipSpecialBuild").hidden=notice.type!=="special";$("modalAutoSkipControl").hidden=notice.type!=="special";
   dialog.dataset.type=notice.type;dialog.style.setProperty("--turn-color",color);
   $("turnDialogTag").textContent=notice.tag;$("turnDialogEmblem").textContent=notice.emblem;
   $("turnDialogPlayer").textContent=name;$("turnDialogTitle").textContent=notice.title;$("turnDialogDescription").textContent=notice.description;$("turnDialogRules").textContent=notice.rules;$("acknowledgeTurn").textContent=notice.button;dialog.showModal();
 }
+
+function syncAutoSkipControls() {
+  for(const id of ["autoSkipSpecial","modalAutoSkipSpecial"])$(id).checked=autoSkipSpecial;
+}
+function setAutoSkipSpecial(enabled) {
+  autoSkipSpecial=enabled;localStorage.setItem("island-auto-skip-special",enabled?"1":"0");autoSkipLastKey=null;syncAutoSkipControls();
+  showToast(enabled?"特別建設を毎回自動でスキップします。":"特別建設の自動スキップを解除しました。");
+  const me=currentGame?.players.find(p=>p.id===playerId);if(me)maybeShowTurnNotice(currentGame,me);
+}
+async function autoSkipSpecialTurn(g,me) {
+  const key=`${g.code}:special:${g.turnNumber}:${me.id}`;
+  if(autoSkipInFlight||autoSkipLastKey===key)return;
+  autoSkipLastKey=key;autoSkipInFlight=true;
+  try {
+    const ok=await act("endSpecial");
+    if(ok)showToast("特別建設を自動スキップしました。");
+    else {
+      autoSkipSpecial=false;localStorage.setItem("island-auto-skip-special","0");syncAutoSkipControls();
+      showToast("自動スキップに失敗したため、モードを解除しました。");
+      const player=currentGame?.players.find(p=>p.id===playerId);if(player)maybeShowTurnNotice(currentGame,player);
+    }
+  } finally { autoSkipInFlight=false; }
+}
+$("autoSkipSpecial").onchange=e=>setAutoSkipSpecial(e.target.checked);
+$("modalAutoSkipSpecial").onchange=e=>setAutoSkipSpecial(e.target.checked);
+syncAutoSkipControls();
+
 $("acknowledgeTurn").onclick=()=>$("turnDialog").close();
 $("skipSpecialBuild").onclick=async()=>{
   if(currentGame?.phase!=="special"||currentGame.specialPlayerId!==playerId)return;
