@@ -2,6 +2,7 @@ const $ = id => document.getElementById(id);
 const RESOURCES = ["wood", "brick", "sheep", "wheat", "ore"];
 const RESOURCE = { wood: ["🌲", "木材"], brick: ["🧱", "レンガ"], sheep: ["🐑", "羊毛"], wheat: ["🌾", "小麦"], ore: ["⛰️", "鉱石"] };
 const TERRAIN = { wood: ["森林", "🌲"], brick: ["丘陵", "🧱"], sheep: ["牧草地", "🐑"], wheat: ["畑", "🌾"], ore: ["山地", "⛰️"], desert: ["砂漠", "🏜️"] };
+let boardZoom = 1, boardPan = {x:0,y:0}, boardFrame = null, boardDragged = false;
 let currentGame = null, playerId = null, roomCode = null, mode = null, selectedRobberHex = null, selectedVictim = "", pendingRoadCard = [], polling = false, soundOn = true, toastTimer;
 
 async function api(path, options = {}) {
@@ -14,6 +15,7 @@ function rememberName() { return ($("playerName").value || "プレイヤー").tr
 function setError(message = "") { $("homeError").textContent = message; }
 function showToast(message) { const el = $("toast"); el.textContent = message; el.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 2400); }
 function enterRoom(code, id) {
+  document.body.classList.add("in-room"); boardZoom=1;boardPan={x:0,y:0};
   roomCode = code.toUpperCase(); playerId = id; localStorage.setItem(`island-room-${roomCode}`, id); localStorage.setItem("island-last-name", rememberName());
   $("homeView").hidden = true; $("gameView").hidden = false; $("roomCodeDisplay").textContent = roomCode; $("connectionLabel").textContent = "オンライン"; refresh();
   if (window.pollTimer) clearInterval(window.pollTimer); window.pollTimer = setInterval(refresh, 2200);
@@ -50,7 +52,7 @@ $("joinRoom").addEventListener("click", async () => {
 $("roomCode").addEventListener("input", e => e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));
 $("startGame").addEventListener("click", () => act("start"));
 $("copyCode").addEventListener("click", async () => { try { await navigator.clipboard.writeText(roomCode); showToast("部屋コードをコピーしました。"); } catch (_) { showToast(`部屋コード：${roomCode}`); } });
-$("leaveRoom").addEventListener("click", () => { if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; localStorage.removeItem(`island-room-${$("roomCodeDisplay").textContent}`); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
+$("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; localStorage.removeItem(`island-room-${$("roomCodeDisplay").textContent}`); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
 $("soundToggle").addEventListener("click", e => { soundOn = !soundOn; e.currentTarget.textContent = soundOn ? "♪" : "×"; showToast(soundOn ? "効果音をオンにしました。" : "効果音をオフにしました。"); });
 
 function render() {
@@ -77,7 +79,7 @@ function render() {
     else $("turnBanner").textContent = `${active?.name} のターン${isMyTurn ? " · あなたの番" : ""}`;
     renderActions(g, me, isMyTurn);
   }
-  renderPlayers(g, me); renderHand(me); renderLog(g);
+  renderPlayers(g, me); renderHand(me); renderLog(g); renderBuildingGuide(g, me);
 }
 function renderPlayers(g, me) {
   $("playersList").innerHTML = g.players.map((p, i) => `<div class="player-row ${g.status === "playing" && (g.phase === "special" ? p.id === g.specialPlayerId : i === g.activeIndex) ? "active" : ""}"><i class="player-swatch" style="background:${p.color}"></i><div class="player-row-main"><div class="player-row-name">${escapeHtml(p.name)}${p.id === g.hostId ? '<span class="host-tag">HOST</span>' : ""}${p.id === playerId ? " <span style=\"color:#82968d;font-weight:500\">(あなた)</span>" : ""}</div><div class="player-row-meta">手札 ${p.handCount || 0}枚 · 道 ${p.roads?.length || 0}</div></div><span class="player-points">${p.victoryPoints ?? "—"}点</span></div>`).join("");
@@ -231,14 +233,27 @@ function drawBoard(g, me) {
     content += `<circle class="vertex-hit ${placing ? 'placement-target' : ''}" cx="${px(v)}" cy="${py(v)}" r="19" data-vertex="${v.id}"/>`;
   }
   svg.innerHTML = content;
+  const xs=map.vertices.map(px),ys=map.vertices.map(py),margin=scale*.85;
+  boardFrame={x:Math.min(...xs)-margin,y:Math.min(...ys)-margin,w:Math.max(...xs)-Math.min(...xs)+margin*2,h:Math.max(...ys)-Math.min(...ys)+margin*2};
+  applyBoardCamera();
+  let drag=null;
+  svg.onpointerdown=e=>{ if(e.button!==0)return;boardDragged=false;drag={x:e.clientX,y:e.clientY,pan:{...boardPan}}; };
+  svg.onpointermove=e=>{
+    if(!drag)return; const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+    if(Math.hypot(dx,dy)>7) {boardDragged=true;const box=svg.getBoundingClientRect(),ratio=Math.max(boardFrame.w/boardZoom/box.width,boardFrame.h/boardZoom/box.height);boardPan={x:drag.pan.x-dx*ratio,y:drag.pan.y-dy*ratio};svg.setPointerCapture(e.pointerId);applyBoardCamera();}
+  };
+  svg.onpointerup=()=>{drag=null;};svg.onpointercancel=()=>{drag=null;};
+
   const robberTargets = g.phase === "robber" && g.players[g.activeIndex]?.id === playerId || (mode === "devKnightPending");
-  document.querySelectorAll("[data-robber-hex]").forEach(el => { el.style.fill = "transparent"; el.style.stroke = "transparent"; el.style.pointerEvents = robberTargets ? "all" : "none"; el.style.cursor = robberTargets ? "pointer" : "default"; el.addEventListener("click", () => { if (!robberTargets || el.dataset.robberHex === map.robber) return; selectedRobberHex = el.dataset.robberHex; selectedVictim = ""; render(); }); });
+  document.querySelectorAll("[data-robber-hex]").forEach(el => { el.style.fill = "transparent"; el.style.stroke = "transparent"; el.style.pointerEvents = robberTargets ? "all" : "none"; el.style.cursor = robberTargets ? "pointer" : "default"; el.addEventListener("click", () => { if (boardDragged || !robberTargets || el.dataset.robberHex === map.robber) return; selectedRobberHex = el.dataset.robberHex; selectedVictim = ""; render(); }); });
   document.querySelectorAll("[data-edge]").forEach(el => el.addEventListener("click", () => {
+    if(boardDragged)return;
     const edgeId=el.dataset.edge;
     if (mode === "road" || (g.phase === "setup" && g.setupStep === "road" && g.players[g.activeIndex]?.id === playerId)) act("buildRoad",{edgeId});
     else if (mode === "roadCard") { pendingRoadCard.push(edgeId); if (pendingRoadCard.length === Math.min(2, 15 - me.roads.length)) act("playCard",{card:"road",edgeIds:pendingRoadCard}); else showToast("もう1本、道を選んでください。"); }
   }));
   document.querySelectorAll("[data-vertex]").forEach(el => el.addEventListener("click", () => {
+    if(boardDragged)return;
     const vertexId=el.dataset.vertex;
     if (mode === "settlement" || (g.phase === "setup" && g.setupStep === "settlement" && g.players[g.activeIndex]?.id === playerId)) act("buildSettlement",{vertexId});
     else if (mode === "city") act("buildCity",{vertexId});
@@ -253,6 +268,33 @@ function drawBoard(g, me) {
   else if (mode === "roadCard") hintText=`街道建設：道を選択（${pendingRoadCard.length}/2）`;
   hint.hidden = !hintText; hint.textContent = hintText;
 }
+
+function applyBoardCamera() {
+  if(!boardFrame)return;
+  const w=boardFrame.w/boardZoom,h=boardFrame.h/boardZoom;
+  boardPan.x=Math.max(-boardFrame.w*.45,Math.min(boardFrame.w*.45,boardPan.x));
+  boardPan.y=Math.max(-boardFrame.h*.45,Math.min(boardFrame.h*.45,boardPan.y));
+  $("board").setAttribute("viewBox",`${boardFrame.x+(boardFrame.w-w)/2+boardPan.x} ${boardFrame.y+(boardFrame.h-h)/2+boardPan.y} ${w} ${h}`);
+  $("zoomReset").textContent=boardZoom===1?"全体":Math.round(boardZoom*100)+"%";
+}
+$("zoomIn").onclick=()=>{boardZoom=Math.min(2.5,boardZoom+.25);applyBoardCamera();};
+$("zoomOut").onclick=()=>{boardZoom=Math.max(1,boardZoom-.25);if(boardZoom===1)boardPan={x:0,y:0};applyBoardCamera();};
+$("zoomReset").onclick=()=>{boardZoom=1;boardPan={x:0,y:0};applyBoardCamera();};
+function renderBuildingGuide(g,me) {
+  const recipes=[{name:"道",icon:"━",mode:"road",cost:{wood:1,brick:1},stock:15-(me.roads?.length||0)},
+    {name:"開拓地",icon:"⌂",mode:"settlement",cost:{wood:1,brick:1,sheep:1,wheat:1},stock:5-(me.settlements?.length||0)},
+    {name:"都市",icon:"▥",mode:"city",cost:{wheat:2,ore:3},stock:4-(me.cities?.length||0)},
+    {name:"発展カード",icon:"▤",mode:"development",cost:{sheep:1,wheat:1,ore:1},stock:g.devDeckCount??0}];
+  const active=g.phase==="special"?g.specialPlayerId===playerId:g.players[g.activeIndex]?.id===playerId;
+  const phaseAllowed=g.status==="playing"&&!g.winner&&active&&["main","special"].includes(g.phase);
+  $("buildingGuide").innerHTML='<div class="guide-heading"><b>建設・購入に必要な資源</b><small>数字は必要枚数</small></div><div class="recipe-grid">'+recipes.map(r=>{
+    const affordable=Object.entries(r.cost).every(([k,n])=>(me.hand?.[k]||0)>=n),hasCityBase=r.mode!=="city"||me.settlements.length>0;
+    const canBuild=affordable&&r.stock>0&&hasCityBase;
+    return `<button class="recipe ${canBuild?'affordable':''}" data-recipe="${r.mode}" ${phaseAllowed&&canBuild?'':'disabled'}><span class="recipe-name"><i>${r.icon}</i>${r.name}</span><span class="recipe-cost">${Object.entries(r.cost).map(([k,n])=>`<span class="recipe-resource ${(me.hand?.[k]||0)<n?'missing':''}"><img src="/assets/${k}.svg" alt="${RESOURCE[k][1]}"><span>${RESOURCE[k][1]}<b>×${n}</b></span></span>`).join('')}</span><span class="recipe-status">${r.stock<1?'駒・カードなし':!hasCityBase?'自分の開拓地が必要':canBuild?(phaseAllowed?'建設・購入できます':'必要な資源あり'):'資源が足りません'}</span></button>`;
+  }).join('')+'</div>';
+  document.querySelectorAll('[data-recipe]').forEach(b=>b.onclick=()=>{const m=b.dataset.recipe;if(m==='development')act('buyDevelopment');else{mode=m;render();$("boardWrap").scrollIntoView({block:'nearest',behavior:'smooth'});}});
+}
+
 function renderLog(g) { $("gameLog").innerHTML = (g.log?.length ? g.log : ["対戦ログがここに表示されます。"]).slice(0, 12).map(line => `<p>${escapeHtml(line)}</p>`).join(""); }
 function escapeHtml(value) { return String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 
