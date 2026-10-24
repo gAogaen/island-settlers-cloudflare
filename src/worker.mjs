@@ -251,6 +251,7 @@ function rollDice(game) {
   if (game.phase !== "play" || game.rolled) throw Error("このターンはすでにサイコロを振っています。");
   const a = 1 + crypto.getRandomValues(new Uint32Array(1))[0] % 6, b = 1 + crypto.getRandomValues(new Uint32Array(1))[0] % 6;
   game.dice = [a, b]; game.rolled = true;
+  game.lastRoll={id:crypto.randomUUID(),turnNumber:game.turnNumber,playerId:game.players[game.activeIndex].id,playerName:game.players[game.activeIndex].name,dice:[a,b]};
   if (a + b === 7) {
     game.discardPending = {};
     for (const p of game.players) { const total = totalCards(p.hand); if (total > 7) game.discardPending[p.id] = Math.floor(total / 2); }

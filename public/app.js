@@ -3,6 +3,7 @@ const RESOURCES = ["wood", "brick", "sheep", "wheat", "ore"];
 const RESOURCE = { wood: ["🌲", "木材"], brick: ["🧱", "レンガ"], sheep: ["🐑", "羊毛"], wheat: ["🌾", "小麦"], ore: ["⛰️", "鉱石"] };
 const TERRAIN = { wood: ["森林", "🌲"], brick: ["丘陵", "🧱"], sheep: ["牧草地", "🐑"], wheat: ["畑", "🌾"], ore: ["山地", "⛰️"], desert: ["砂漠", "🏜️"] };
 let boardZoom = 1, boardPan = {x:0,y:0}, boardFrame = null, boardDragged = false;
+let lastDiceResultKey = null, diceResultTimer = null;
 let lastTurnNotice = null, pendingTurnNotice = null;
 let autoSkipSpecial = localStorage.getItem("island-auto-skip-special")==="1", autoSkipInFlight = false, autoSkipLastKey = null;
 let currentGame = null, playerId = null, roomCode = null, mode = null, selectedRobberHex = null, selectedVictim = "", pendingRoadCard = [], polling = false, soundOn = true, toastTimer;
@@ -18,7 +19,7 @@ function setError(message = "") { $("homeError").textContent = message; }
 function showToast(message) { const el = $("toast"); el.textContent = message; el.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 2400); }
 function enterRoom(code, id) {
   document.body.classList.add("in-room"); boardZoom=1;boardPan={x:0,y:0};
-  roomCode = code.toUpperCase(); playerId = id; localStorage.setItem(`island-room-${roomCode}`, id); localStorage.setItem("island-last-name", rememberName());
+  roomCode = code.toUpperCase(); lastDiceResultKey=sessionStorage.getItem(`island-dice-seen-${roomCode}`); playerId = id; localStorage.setItem(`island-room-${roomCode}`, id); localStorage.setItem("island-last-name", rememberName());
   $("homeView").hidden = true; $("gameView").hidden = false; $("roomCodeDisplay").textContent = roomCode; $("connectionLabel").textContent = "オンライン"; refresh();
   if (window.pollTimer) clearInterval(window.pollTimer); window.pollTimer = setInterval(refresh, 2200);
   history.replaceState({}, "", `/?room=${roomCode}`);
@@ -54,7 +55,7 @@ $("joinRoom").addEventListener("click", async () => {
 $("roomCode").addEventListener("input", e => e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));
 $("startGame").addEventListener("click", () => act("start"));
 $("copyCode").addEventListener("click", async () => { try { await navigator.clipboard.writeText(roomCode); showToast("部屋コードをコピーしました。"); } catch (_) { showToast(`部屋コード：${roomCode}`); } });
-$("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); $("turnDialog").close();$("logDialog").close();lastTurnNotice=null;pendingTurnNotice=null; if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; localStorage.removeItem(`island-room-${$("roomCodeDisplay").textContent}`); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
+$("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); $("turnDialog").close();$("logDialog").close();$("diceResultDialog").close();lastTurnNotice=null;pendingTurnNotice=null; if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; localStorage.removeItem(`island-room-${$("roomCodeDisplay").textContent}`); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
 $("soundToggle").addEventListener("click", e => { soundOn = !soundOn; e.currentTarget.textContent = soundOn ? "♪" : "×"; showToast(soundOn ? "効果音をオンにしました。" : "効果音をオフにしました。"); });
 
 function render() {
@@ -81,7 +82,7 @@ function render() {
     else $("turnBanner").textContent = `${active?.name} のターン${isMyTurn ? " · あなたの番" : ""}`;
     renderActions(g, me, isMyTurn);
   }
-  renderPlayers(g, me); renderHand(me); renderLog(g); renderBuildingGuide(g, me); maybeShowTurnNotice(g, me);
+  renderPlayers(g, me); renderHand(me); renderLog(g); renderBuildingGuide(g, me); maybeShowDiceResult(g); maybeShowTurnNotice(g, me);
 }
 function renderPlayers(g, me) {
   $("playersList").innerHTML = g.players.map((p, i) => `<div class="player-row ${g.status === "playing" && (g.phase === "special" ? p.id === g.specialPlayerId : i === g.activeIndex) ? "active" : ""}"><i class="player-swatch" style="background:${p.color}"></i><div class="player-row-main"><div class="player-row-name">${escapeHtml(p.name)}${p.id === g.hostId ? '<span class="host-tag">HOST</span>' : ""}${p.id === playerId ? " <span style=\"color:#82968d;font-weight:500\">(あなた)</span>" : ""}</div><div class="player-row-meta">手札 ${p.handCount || 0}枚 · 道 ${p.roads?.length || 0}</div></div><span class="player-points">${p.victoryPoints ?? "—"}点</span></div>`).join("");
@@ -297,6 +298,33 @@ function renderBuildingGuide(g,me) {
   document.querySelectorAll('[data-recipe]').forEach(b=>b.onclick=()=>{const m=b.dataset.recipe;if(m==='development')act('buyDevelopment');else{mode=m;render();$("boardWrap").scrollIntoView({block:'nearest',behavior:'smooth'});}});
 }
 
+
+function diceFace(value) {
+  const dots={1:[[20,20]],2:[[10,10],[30,30]],3:[[10,10],[20,20],[30,30]],4:[[10,10],[30,10],[10,30],[30,30]],5:[[10,10],[30,10],[20,20],[10,30],[30,30]],6:[[10,9],[30,9],[10,20],[30,20],[10,31],[30,31]]};
+  return `<svg viewBox="0 0 40 40" role="img" aria-label="${value}"><rect x="1" y="1" width="38" height="38" rx="7" fill="#fff9e6" stroke="#a68a58"/>${(dots[value]||[]).map(([x,y])=>`<circle cx="${x}" cy="${y}" r="3.3" fill="#443927"/>`).join("")}</svg>`;
+}
+function maybeShowDiceResult(g) {
+  if(g.status!=="playing"||g.winner)return;
+  const event=g.lastRoll||(g.dice?{id:`${g.turnNumber}:${g.dice.join("-")}`,playerName:g.players[g.activeIndex]?.name,dice:g.dice}:null);
+  if(!event||!Array.isArray(event.dice)||event.dice.length!==2||!event.dice.every(n=>Number.isInteger(n)&&n>=1&&n<=6))return;
+  const key=`${g.code}:${event.id}`;if(key===lastDiceResultKey)return;
+  lastDiceResultKey=key;sessionStorage.setItem(`island-dice-seen-${g.code}`,key);
+  if($("turnDialog").open)$("turnDialog").close();
+  const sum=event.dice[0]+event.dice[1];
+  $("diceRollerName").textContent=`${event.playerName||"プレイヤー"} がサイコロを振りました`;
+  $("diceResultFaces").innerHTML=diceFace(event.dice[0])+'<span>＋</span>'+diceFace(event.dice[1]);
+  $("diceResultTotal").textContent=String(sum);
+  $("diceResultHelp").textContent=sum===7?"7が出ました。必要な手札調整のあと、盗賊を移動します。":"出目に対応するタイルから資源が生産されます。";
+  const dialog=$("diceResultDialog");if(!dialog.open)dialog.showModal();
+  clearTimeout(diceResultTimer);diceResultTimer=setTimeout(()=>dialog.close(),3000);
+}
+$("closeDiceResult").onclick=()=>$("diceResultDialog").close();
+$("acknowledgeDiceResult").onclick=()=>$("diceResultDialog").close();
+$("diceResultDialog").addEventListener("close",()=>{
+  clearTimeout(diceResultTimer);diceResultTimer=null;
+  const me=currentGame?.players.find(p=>p.id===playerId);if(me)maybeShowTurnNotice(currentGame,me);
+});
+
 function renderLog(g) {
   const lines=g.log?.length?g.log:["対戦ログがここに表示されます。"];
   $("gameLog").innerHTML=lines.slice(0,12).map(line=>`<p>${escapeHtml(line)}</p>`).join("");
@@ -326,6 +354,7 @@ function maybeShowTurnNotice(g,me) {
   showTurnNotice(notice,me.name,me.color);
 }
 function showTurnNotice(notice,name,color) {
+  if($("diceResultDialog").open){pendingTurnNotice={notice,name,color};return;}
   const dialog=$("turnDialog");if(dialog.open)dialog.close();
   lastTurnNotice=notice.key;pendingTurnNotice=null;
   $("skipSpecialBuild").hidden=notice.type!=="special";
@@ -384,7 +413,7 @@ $("skipSpecialBuild").onclick=async()=>{
 $("expandLog").onclick=()=>{if($("turnDialog").open)$("turnDialog").close();$("logDialog").showModal();};
 $("closeLog").onclick=()=>$("logDialog").close();
 $("logDialog").addEventListener("close",()=>{if(pendingTurnNotice){const p=pendingTurnNotice;showTurnNotice(p.notice,p.name,p.color);}});
-for(const id of ["turnDialog","logDialog"])$(id).addEventListener("click",e=>{if(e.target!==$(id))return;const r=$(id).getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$(id).close();});
+for(const id of ["turnDialog","logDialog","diceResultDialog"])$(id).addEventListener("click",e=>{if(e.target!==$(id))return;const r=$(id).getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$(id).close();});
 
 function escapeHtml(value) { return String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 
