@@ -312,7 +312,7 @@ function turnNotice(g,me) {
   }
   if(g.players[g.activeIndex]?.id!==me.id)return null;
   if(g.phase==="setup")return {key:`${g.code}:setup:${g.setupIndex}:${me.id}`,type:"setup",title:"あなたの初期配置です",description:"開拓地を置き、その開拓地に接する道を1本配置してください。",rules:"開拓地同士は隣り合わせに置けません。\n開拓地 → 道の順に盤面を選びます。",button:"初期配置をはじめる",tag:"INITIAL PLACEMENT",emblem:"⌂"};
-  return {key:`${g.code}:turn:${g.turnNumber}:${me.id}`,type:"normal",title:"あなたのターンです",description:g.rolled?"手持ちの資源で交換・建設・購入を行えます。":"まずサイコロを振り、資源を受け取りましょう。",rules:"交換・建設・発展カードの購入ができます。\n行動が終わったら「ターン終了」を押してください。",button:g.rolled?"盤面へ進む":"ターンをはじめる",tag:"YOUR TURN",emblem:"🎲"};
+  return {key:`${g.code}:turn:${g.turnNumber}:${me.id}`,type:"normal",title:"あなたのターンです",description:g.rolled?"手持ちの資源で交換・建設・購入を行えます。":"まずサイコロを振り、資源を受け取りましょう。",rules:"交換・建設・発展カードの購入ができます。\n行動が終わったら「ターン終了」を押してください。",button:g.phase==="play"&&!g.rolled?"🎲 サイコロを振る":"盤面へ進む",tag:"YOUR TURN",emblem:"🎲"};
 }
 function maybeShowTurnNotice(g,me) {
   syncAutoSkipControls();
@@ -331,7 +331,7 @@ function showTurnNotice(notice,name,color) {
   $("skipSpecialBuild").hidden=notice.type!=="special";
   dialog.dataset.type=notice.type;dialog.style.setProperty("--turn-color",color);
   $("turnDialogTag").textContent=notice.tag;$("turnDialogEmblem").textContent=notice.emblem;
-  $("turnDialogPlayer").textContent=name;$("turnDialogTitle").textContent=notice.title;$("turnDialogDescription").textContent=notice.description;$("turnDialogRules").textContent=notice.rules;$("acknowledgeTurn").textContent=notice.button;dialog.showModal();
+  $("turnDialogPlayer").textContent=name;$("turnDialogTitle").textContent=notice.title;$("turnDialogDescription").textContent=notice.description;$("turnDialogRules").textContent=notice.rules;$("acknowledgeTurn").textContent=notice.button;$("acknowledgeTurn").disabled=false;$("turnDialogFootnote").textContent=notice.type==="normal"&&currentGame?.phase==="play"&&!currentGame.rolled?"ボタンを押すとサイコロを振り、結果を盤面に表示します。":"盤面に戻って操作してください。";dialog.showModal();
 }
 
 function syncAutoSkipControls() {
@@ -362,7 +362,19 @@ $("autoSkipSpecial").onchange=e=>setAutoSkipSpecial(e.target.checked);
 
 syncAutoSkipControls();
 
-$("acknowledgeTurn").onclick=()=>$("turnDialog").close();
+$("acknowledgeTurn").onclick=async()=>{
+  const button=$("acknowledgeTurn"),dialog=$("turnDialog");
+  if(button.disabled)return;
+  const canRoll=dialog.dataset.type==="normal"&&currentGame?.status==="playing"&&!currentGame.winner&&currentGame.phase==="play"&&!currentGame.rolled&&currentGame.players[currentGame.activeIndex]?.id===playerId;
+  if(!canRoll){dialog.close();return;}
+  button.disabled=true;button.textContent="サイコロを振っています…";
+  try {
+    if(await act("roll")){
+      dialog.close();
+      if(currentGame?.dice)showToast(`🎲 ${currentGame.dice[0]} ＋ ${currentGame.dice[1]} ＝ ${currentGame.dice[0]+currentGame.dice[1]}`);
+    }
+  } finally {button.disabled=false;button.textContent="🎲 サイコロを振る";}
+};
 $("skipSpecialBuild").onclick=async()=>{
   if(currentGame?.phase!=="special"||currentGame.specialPlayerId!==playerId)return;
   const button=$("skipSpecialBuild");button.disabled=true;button.textContent="次の人へ移動中…";

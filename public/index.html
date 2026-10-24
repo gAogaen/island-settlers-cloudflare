@@ -60,7 +60,7 @@
   </main>
   <dialog id="turnDialog" class="game-dialog turn-dialog" aria-labelledby="turnDialogTitle" aria-describedby="turnDialogDescription">
     <div class="turn-dialog-banner"><span id="turnDialogTag">YOUR TURN</span><span class="turn-dialog-emblem" id="turnDialogEmblem">🎲</span></div>
-    <div class="turn-dialog-content"><p class="turn-dialog-player" id="turnDialogPlayer"></p><h2 id="turnDialogTitle">あなたの番です</h2><p id="turnDialogDescription"></p><div id="turnDialogRules" class="turn-dialog-rules"></div><button id="acknowledgeTurn" class="primary-button">確認して始める</button><button id="skipSpecialBuild" class="skip-special-button" hidden>特別建設をスキップ</button><small>確認ボタンを押しても、サイコロや建設は自動実行されません。</small></div>
+    <div class="turn-dialog-content"><p class="turn-dialog-player" id="turnDialogPlayer"></p><h2 id="turnDialogTitle">あなたの番です</h2><p id="turnDialogDescription"></p><div id="turnDialogRules" class="turn-dialog-rules"></div><button id="acknowledgeTurn" class="primary-button">確認して始める</button><button id="skipSpecialBuild" class="skip-special-button" hidden>特別建設をスキップ</button><small id="turnDialogFootnote">盤面に戻って操作してください。</small></div>
   </dialog>
   <dialog id="logDialog" class="game-dialog log-dialog" aria-labelledby="logDialogTitle"><header class="log-dialog-header"><div><h2 id="logDialogTitle">ゲームログ</h2><p id="expandedLogCount"></p></div><button id="closeLog" class="dialog-close" aria-label="ログを閉じる">×</button></header><div id="expandedGameLog" class="expanded-game-log" tabindex="0"></div><footer>新しい履歴が上に表示されます。</footer></dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
