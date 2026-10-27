@@ -15,7 +15,7 @@ let currentGame = null, playerId = null, roomCode = null, mode = null, selectedR
 
 // Count inactivity only while this browser has an outstanding game action.
 const IDLE_REMINDER_MS = 60_000, defaultPageTitle = document.title || "島の開拓者 | オンライン対戦";
-let idleTaskKey = null, idleLastActivity = 0;
+let idleTaskKey = null, idleLastActivity = 0, idleReminderVisible = false;
 function pendingIdleTask(g) {
   if(spectating || !g || g.status!=="playing" || g.winner || !playerId)return null;
   const base=`${g.code}:${g.matchId||g.createdAt}:${g.turnNumber||0}:${playerId}`;
@@ -35,6 +35,8 @@ function updateIdleReminder(now=Date.now()) {
   const task=pendingIdleTask(currentGame);
   if(task?.key!==idleTaskKey){idleTaskKey=task?.key||null;idleLastActivity=now;}
   const show=!!task && now-idleLastActivity>=IDLE_REMINDER_MS;
+  if(show && !idleReminderVisible)playIdleReminderSound();
+  idleReminderVisible=show;
   $("idleReminder").hidden=!show;
   $("turnIdleReminder").hidden=!show;
   if(show){$("idleReminderTitle").textContent=task.title;$("idleReminderText").textContent=task.text;$("turnIdleReminder").textContent=`⏳ ${task.title}：${task.text}`;}
@@ -82,6 +84,20 @@ async function act(type, args = {}) {
 function getTurnSoundKey(g) {
   if(g?.status!=="playing"||g.winner||["setup","special","finished"].includes(g.phase)||g.players[g.activeIndex]?.id!==playerId)return null;
   return `${g.code}:${g.matchId||g.createdAt}:turn:${g.turnNumber}:${playerId}`;
+}
+function playIdleReminderSound() {
+  if(!soundOn||!audioContext||audioContext.state!=="running")return false;
+  try {
+    const now=audioContext.currentTime;
+    [659.25,783.99,659.25].forEach((frequency,i)=>{
+      const at=now+i*.18, oscillator=audioContext.createOscillator(), gain=audioContext.createGain();
+      oscillator.type="sine";oscillator.frequency.value=frequency;
+      gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(.11,at+.015);gain.gain.exponentialRampToValueAtTime(.0001,at+.4);
+      oscillator.connect(gain);gain.connect(audioContext.destination);oscillator.start(at);oscillator.stop(at+.43);
+      oscillator.onended=()=>{oscillator.disconnect();gain.disconnect();};
+    });
+    return true;
+  } catch (_) {return false;}
 }
 function playTurnChime() {
   if(!soundOn||!audioContext||audioContext.state!=="running")return false;
