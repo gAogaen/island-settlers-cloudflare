@@ -15,7 +15,7 @@ let currentGame = null, playerId = null, roomCode = null, mode = null, selectedR
 
 // Count inactivity only while this browser has an outstanding game action.
 const IDLE_REMINDER_MS = 60_000, defaultPageTitle = document.title || "島の開拓者 | オンライン対戦";
-let idleTaskKey = null, idleLastActivity = 0, idleReminderVisible = false;
+let idleTaskKey = null, idleLastActivity = 0, idleReminderVisible = false, idleReminderCount = 0;
 function pendingIdleTask(g) {
   if(spectating || !g || g.status!=="playing" || g.winner || !playerId)return null;
   const base=`${g.code}:${g.matchId||g.createdAt}:${g.turnNumber||0}:${playerId}`;
@@ -33,13 +33,15 @@ function pendingIdleTask(g) {
 }
 function updateIdleReminder(now=Date.now()) {
   const task=pendingIdleTask(currentGame);
-  if(task?.key!==idleTaskKey){idleTaskKey=task?.key||null;idleLastActivity=now;}
+  if(task?.key!==idleTaskKey){idleTaskKey=task?.key||null;idleLastActivity=now;idleReminderCount=0;}
   const show=!!task && now-idleLastActivity>=IDLE_REMINDER_MS;
-  if(show && !idleReminderVisible)playIdleReminderSound();
+  const count=show?Math.floor((now-idleLastActivity)/IDLE_REMINDER_MS):0;
+  if(count>idleReminderCount)playIdleReminderSound();
+  idleReminderCount=count;
   idleReminderVisible=show;
   $("idleReminder").hidden=!show;
   $("turnIdleReminder").hidden=!show;
-  if(show){$("idleReminderTitle").textContent=task.title;$("idleReminderText").textContent=task.text;$("turnIdleReminder").textContent=`⏳ ${task.title}：${task.text}`;}
+  if(show){$("idleReminderTitle").textContent=`${task.title}（${count}分経過）`;$("idleReminderText").textContent=task.text;$("turnIdleReminder").textContent=`⏳ ${task.title}：${task.text}`;}
   document.title=show?`【操作待ち】${defaultPageTitle}`:defaultPageTitle;
 }
 function noteIdleActivity() {if(idleTaskKey){idleLastActivity=Date.now();updateIdleReminder(idleLastActivity);}}
