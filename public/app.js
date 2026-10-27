@@ -12,6 +12,7 @@ let audioContext = null, lastTurnSoundKey = null, pendingTurnSoundKey = null;
 let autoSkipSpecial = localStorage.getItem("island-auto-skip-special")==="1", autoSkipInFlight = false, autoSkipLastKey = null;
 let spectating = false;
 let notificationCursor=null, notificationItems=[], notificationEpoch=0;
+let impactCursor=null, impactTimer=null, impactHex=null;
 let currentGame = null, playerId = null, roomCode = null, mode = null, selectedRobberHex = null, selectedVictim = "", pendingRoadCard = [], polling = false, soundOn = localStorage.getItem("island-sound-on")!=="0", toastTimer;
 
 // Count inactivity only while this browser has an outstanding game action.
@@ -62,6 +63,7 @@ function setError(message = "") { $("homeError").textContent = message; }
 function showToast(message) { const el = $("toast"); el.textContent = message; el.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 2400); }
 function resetActionNotifications() {
   notificationEpoch++;notificationCursor=null;notificationItems=[];$("actionNotifications").innerHTML="";
+  impactCursor=null;impactHex=null;clearTimeout(impactTimer);$("impactNotice").hidden=true;$("diceImpact").hidden=true;
 }
 function renderActionNotifications() {
   $("actionNotifications").innerHTML=notificationItems.map(item=>`<div class="action-notification"><span aria-hidden="true">●</span><p>${escapeHtml(item.message)}</p></div>`).join("");
@@ -76,6 +78,30 @@ function syncActionNotifications(g) {
     notificationItems.push(entry);notificationItems=notificationItems.slice(-4);renderActionNotifications();
     setTimeout(()=>{if(epoch!==notificationEpoch)return;notificationItems=notificationItems.filter(x=>x!==entry);renderActionNotifications();},4000);
   }
+}
+function syncImpactEffects(g) {
+  const revision=Number(g.revision)||0;
+  if(impactCursor===null){impactCursor=revision;return;}
+  const events=(g.actionEvents||[]).filter(e=>e.revision>impactCursor&&e.revision<=revision&&e.impact).sort((a,b)=>a.revision-b.revision);
+  impactCursor=Math.max(impactCursor,revision);
+  if(spectating)return;
+  for(const event of events){
+    const effect=event.impact;
+    if(effect.type==="burst"&&(!g.discardPending?.[playerId]||g.phase!=="discard"))continue;
+    if(effect.type!=="burst"&&effect.type!=="robber")continue;
+    showImpactEffect(effect);
+  }
+}
+function showImpactEffect(effect) {
+  const burst=effect.type==="burst";impactHex=burst?null:effect.hexId;
+  $("impactIcon").textContent=burst?"💥":"♟";
+  $("impactTitle").textContent=burst?"バースト！":"あなたの土地に盗賊！";
+  $("impactText").textContent=burst?`手札から${effect.count}枚を捨ててください。`:"この土地の資源は盗賊がいる間、生産されません。";
+  $("impactNotice").hidden=false;
+  $("diceImpact").hidden=!burst;
+  $("diceImpact").textContent=burst?`💥 バースト！ 資源を${effect.count}枚捨ててください。`:"";
+  clearTimeout(impactTimer);const epoch=notificationEpoch;
+  impactTimer=setTimeout(()=>{if(epoch!==notificationEpoch)return;impactHex=null;$("impactNotice").hidden=true;$("diceImpact").hidden=true;if(currentGame?.map)drawBoard(currentGame,currentGame.players.find(p=>p.id===playerId));},4500);
 }
 function enterRoom(code, id, asSpectator = false) {
   resetActionNotifications();
@@ -196,7 +222,7 @@ syncSoundButton();
 
 function render() {
   if (!currentGame) return;
-  syncActionNotifications(currentGame);
+  syncActionNotifications(currentGame); syncImpactEffects(currentGame);
   const g = currentGame, me = spectating ? {id:playerId,hand:{},devCards:[],roads:[],settlements:[],cities:[]} : g.players.find(p => p.id === playerId), active = g.phase === "special" ? g.players.find(p => p.id === g.specialPlayerId) : g.players[g.activeIndex];
   if (!me) return;
   if(renderedMatchId!==(g.matchId||g.createdAt)){
@@ -411,6 +437,7 @@ function drawBoard(g, me) {
     const [terrainLabel, icon] = TERRAIN[h.terrain];
     const hx=450+(h.x-map.centerX)*scale,hy=335+(h.y-map.centerY)*scale;
     content += `<defs><clipPath id="clip-${h.id}"><polygon points="${points}"/></clipPath></defs><polygon class="hex hex-${h.terrain}" points="${points}" data-hex="${h.id}"/><image href="/assets/${h.terrain}.svg" x="${hx-Math.sqrt(3)*scale/2}" y="${hy-scale}" width="${Math.sqrt(3)*scale}" height="${2*scale}" preserveAspectRatio="none" clip-path="url(#clip-${h.id})" pointer-events="none"/><polygon points="${points}" class="tile-rim"/>`;
+    if(impactHex===h.id)content+=`<polygon points="${points}" class="robber-impact-tile"/>`;
     if(g.dice&&g.lastProduction?.id===g.lastRoll?.id){
       if(g.lastProduction.tiles.includes(h.id))content+=`<polygon points="${points}" class="produced-tile"/>`;
       if(g.lastProduction.blockedTiles.includes(h.id))content+=`<polygon points="${points}" class="blocked-production-tile"/>`;

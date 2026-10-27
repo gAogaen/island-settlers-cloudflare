@@ -81,7 +81,13 @@ export class GameRoom {
         const message=actionLog(next, nextPlayer, body);
         pushLog(next, message);
         next.actionEvents ||= [];
-        next.actionEvents.push({revision:next.revision,actorId:nextPlayer.id,message,at:Date.now()});
+        const event={revision:next.revision,actorId:nextPlayer.id,message,at:Date.now()};
+        if(body.type==="roll" && next.phase==="discard")event.impact={type:"burst",targets:{...next.discardPending}};
+        if(body.type==="moveRobber") {
+          const hex=next.map.hexes.find(h=>h.id===body.hexId);
+          if(hex)event.impact={type:"robber",hexId:hex.id,targets:Object.fromEntries(next.players.filter(p=>p.id!==nextPlayer.id&&[...p.settlements,...p.cities].some(v=>hex.corners.includes(v))).map(p=>[p.id,true]))};
+        }
+        next.actionEvents.push(event);
         next.actionEvents=next.actionEvents.slice(-50);
         await this.storage.put("game", next);
         return json({ game: publicGame(next, playerId) });
@@ -487,6 +493,11 @@ function publicGame(game, viewerId) {
   delete output.devDeck;
   output.tradeRates = Object.fromEntries(RESOURCES.map(r => [r, tradeRate(game, game.players.find(p => p.id === viewerId) || game.players[0], r)]));
   output.players.forEach(p => { if (p.id !== viewerId && !game.winner) p.victoryPoints = (p.victoryPoints || 0) - game.players.find(x => x.id === p.id).devCards.filter(c => c.type === "victory").length; });
+  output.actionEvents=(output.actionEvents||[]).map(event=>{
+    const impact=event.impact;delete event.impact;
+    if(impact?.targets?.[viewerId])event.impact={type:impact.type,hexId:impact.hexId,count:impact.type==="burst"?impact.targets[viewerId]:undefined};
+    return event;
+  });
   output.bankResources=Object.fromEntries(RESOURCES.map(r=>[r,bankAvailable(game,r)]));
   output.legalMoves=legalBuildTargets(game,game.players.find(p=>p.id===viewerId));
   output.log = output.log || [];
