@@ -171,7 +171,7 @@ $("spectateRoom").addEventListener("click", async () => {
 $("roomCode").addEventListener("input", e => e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));
 $("startGame").addEventListener("click", () => act("start"));
 $("copyCode").addEventListener("click", async () => { try { await navigator.clipboard.writeText(roomCode); showToast("部屋コードをコピーしました。"); } catch (_) { showToast(`部屋コード：${roomCode}`); } });
-$("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); $("turnDialog").close();$("logDialog").close();$("diceResultDialog").close();$("tradeOfferDialog").close();$("victoryDialog").close();activeTradeOfferId=null;seenTradeOfferIds.clear();lastTurnNotice=null;pendingTurnNotice=null; if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; spectating=false; updateIdleReminder(); renderResumeRooms();renderHomeStats(); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
+$("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); $("turnDialog").close();$("developmentDialog").close();$("logDialog").close();$("diceResultDialog").close();$("tradeOfferDialog").close();$("victoryDialog").close();activeTradeOfferId=null;seenTradeOfferIds.clear();lastTurnNotice=null;pendingTurnNotice=null; if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; spectating=false; updateIdleReminder(); renderResumeRooms();renderHomeStats(); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
 $("soundToggle").addEventListener("click", () => { soundOn=!soundOn;localStorage.setItem("island-sound-on",soundOn?"1":"0");if(!soundOn){pendingTurnSoundKey=null;pendingVictorySoundKey=null;}else unlockAudio();syncSoundButton();showToast(soundOn?"通知音をオンにしました。":"通知音をオフにしました。"); });
 syncSoundButton();
 
@@ -206,7 +206,7 @@ function render() {
     else $("turnBanner").textContent = `${active?.name} のターン${isMyTurn ? " · あなたの番" : ""}`;
     renderActions(g, me, isMyTurn);
   }
-  renderPlayers(g, me); if(!spectating)renderHand(me,g); renderLog(g); if(!spectating)renderBuildingGuide(g, me); renderProduction(g); maybePlayTurnSound(g); maybeShowDiceResult(g); if(!spectating){maybeShowTurnNotice(g, me); maybeShowTradeOffer(g,me); saveOwnMatchResult(g,me);} maybeShowVictory(g); updateIdleReminder();
+  renderPlayers(g, me); if(!spectating)renderHand(me,g); renderLog(g); if(!spectating)renderBuildingGuide(g, me); renderProduction(g); maybePlayTurnSound(g); maybeShowDiceResult(g); if(!spectating){maybeShowTurnNotice(g, me); maybeShowTradeOffer(g,me); saveOwnMatchResult(g,me);} maybeShowVictory(g); if($("developmentDialog").open)updateDevelopmentDialog(); updateIdleReminder();
 }
 function renderPlayers(g, me) {
   $("playersList").innerHTML=g.players.map((p,i)=>{
@@ -323,25 +323,52 @@ function renderPlayerTrades(g) {
   panel.querySelectorAll("[data-accept-offer]").forEach(b=>b.onclick=()=>act("respondTrade",{offerId:b.dataset.acceptOffer,accept:true}));
   panel.querySelectorAll("[data-decline-offer]").forEach(b=>b.onclick=()=>act("respondTrade",{offerId:b.dataset.declineOffer,accept:false}));
 }
-async function useDevelopment(type) {
-  if (type === "knight") { await act("playCard", { card: type }); return; }
-  if (type === "monopoly") { const resource = askResource("独占する資源の番号を入力してください。"); if (resource) act("playCard", { card: type, resource }); return; }
-  if (type === "plenty") {
-    const first = askResource("豊作：1枚目の資源番号を入力してください。"); if (!first) return;
-    const second = askResource("豊作：2枚目の資源番号を入力してください。"); if (!second) return;
-    const cards = Object.fromEntries(RESOURCES.map(r => [r, Number(r === first) + Number(r === second)])); act("playCard", { card: type, cards }); return;
-  }
-  if (type === "road") { mode = mode === "roadCard" ? null : "roadCard"; pendingRoadCard = []; render(); showToast("光っている道を選び、確定してください。キャンセルもできます。"); }
+let developmentDraft=null,developmentSubmitting=false;
+const DEVELOPMENT_INFO={
+  knight:{name:"騎士",effect:"盗賊を別の地形へ移動し、その地形に建物がある相手から資源を1枚奪います。",instructions:"カードを使ったあと、盤面で盗賊の移動先を選びます。"},
+  plenty:{name:"豊作",effect:"銀行から好きな資源を合計2枚受け取ります。同じ資源を2枚選ぶこともできます。",instructions:"受け取る資源を合計2枚選んでください。銀行にない資源は選べません。"},
+  monopoly:{name:"独占",effect:"選んだ資源を、他の全プレイヤーからすべて受け取ります。",instructions:"独占する資源を1種類選んでください。"},
+  road:{name:"街道建設",effect:"資源を払わずに道を最大2本建設します。通常の道の接続ルールが適用されます。",instructions:"盤面に戻ったら光っている辺を1〜2本選び、「道を確定」を押してください。確定前ならキャンセルできます。"}
+};
+function useDevelopment(type) {
+  if(!DEVELOPMENT_INFO[type]||spectating)return;
+  developmentDraft={type,cards:Object.fromEntries(RESOURCES.map(r=>[r,0])),resource:null};
+  $("developmentDialogTitle").textContent=DEVELOPMENT_INFO[type].name+"を使う";
+  $("developmentEffect").textContent=DEVELOPMENT_INFO[type].effect;
+  $("developmentInstructions").textContent=DEVELOPMENT_INFO[type].instructions;
+  updateDevelopmentDialog();
+  if(!$("developmentDialog").open)$("developmentDialog").showModal();
 }
-function askResource(title) {
-  const list = RESOURCES.map((r, i) => `${i + 1}：${RESOURCE[r][1]}`).join("\n");
-  const answer = prompt(`${title}\n${list}`, "1");
-  if (answer === null) return null;
-  const n = Number(answer.trim()); if (Number.isInteger(n) && n >= 1 && n <= RESOURCES.length) return RESOURCES[n - 1];
-  const direct = RESOURCES.find(r => r === answer.trim()) || RESOURCES.find(r => RESOURCE[r][1] === answer.trim());
-  if (!direct) showToast("資源の番号か名前を入力してください。");
-  return direct || null;
+function updateDevelopmentDialog() {
+  if(!developmentDraft)return;
+  const {type,cards,resource}=developmentDraft, total=RESOURCES.reduce((n,r)=>n+cards[r],0), bank=currentGame?.bankResources;
+  const selecting=type==="plenty"||type==="monopoly";
+  $("developmentChoices").innerHTML=selecting?RESOURCES.map(r=>{
+    const n=cards[r],available=bank?.[r], selected=type==="monopoly"&&resource===r;
+    if(type==="plenty")return `<div class="development-choice"><img src="/assets/${r}.svg" alt=""><b>${RESOURCE[r][1]}</b><small>${available==null?"":"銀行 "+available+"枚"}</small><div class="development-stepper"><button type="button" data-dev-minus="${r}" aria-label="${RESOURCE[r][1]}を減らす" ${n===0?"disabled":""}>−</button><strong>${n}</strong><button type="button" data-dev-plus="${r}" aria-label="${RESOURCE[r][1]}を増やす" ${total>=2||(available!=null&&n>=available)?"disabled":""}>＋</button></div></div>`;
+    return `<button type="button" class="development-choice development-resource ${selected?"selected":""}" data-dev-resource="${r}" aria-pressed="${selected}"><img src="/assets/${r}.svg" alt=""><b>${RESOURCE[r][1]}</b><small>${selected?"選択中":"選ぶ"}</small></button>`;
+  }).join(""):"";
+  const panel=$("developmentChoices");
+  panel.querySelectorAll("[data-dev-minus]").forEach(b=>b.onclick=()=>{cards[b.dataset.devMinus]--;updateDevelopmentDialog();});
+  panel.querySelectorAll("[data-dev-plus]").forEach(b=>b.onclick=()=>{const r=b.dataset.devPlus;if(RESOURCES.reduce((n,k)=>n+cards[k],0)<2&&(bank?.[r]==null||cards[r]<bank[r]))cards[r]++;updateDevelopmentDialog();});
+  panel.querySelectorAll("[data-dev-resource]").forEach(b=>b.onclick=()=>{developmentDraft.resource=b.dataset.devResource;updateDevelopmentDialog();});
+  $("developmentSelection").textContent=type==="plenty"?(total===2?"受け取る資源："+resourceBundleText(cards):`あと${2-total}枚選んでください`):type==="monopoly"?(resource?"独占する資源："+RESOURCE[resource][1]:"資源を1種類選んでください"):"";
+  const unavailable=type==="plenty"&&bank&&RESOURCES.some(r=>cards[r]>(bank[r]??0));
+  if(unavailable)$("developmentSelection").textContent="銀行の残数が変わりました。選び直してください。";
+  $("confirmDevelopment").disabled=developmentSubmitting||!!unavailable||(type==="plenty"&&total!==2)||(type==="monopoly"&&!resource);
+  $("confirmDevelopment").textContent=type==="road"?"盤面で道を選ぶ":type==="knight"?"騎士を使う":type==="plenty"?"この資源を受け取る":"この資源を独占する";
 }
+$("closeDevelopment").onclick=()=>$("developmentDialog").close();
+$("cancelDevelopment").onclick=()=>$("developmentDialog").close();
+$("developmentDialog").addEventListener("close",()=>{developmentDraft=null;});
+$("confirmDevelopment").onclick=async()=>{
+  if(!developmentDraft||developmentSubmitting||$("confirmDevelopment").disabled)return;
+  const {type,cards,resource}=developmentDraft;
+  if(type==="road"){$("developmentDialog").close();mode="roadCard";pendingRoadCard=[];render();showToast("光っている道を1〜2本選び、確定してください。");return;}
+  developmentSubmitting=true;updateDevelopmentDialog();
+  try {const ok=await act("playCard",{card:type,...(type==="plenty"?{cards:{...cards}}:type==="monopoly"?{resource}:{})});if(ok){$("developmentDialog").close();if(type==="knight")showToast("盗賊を移動するタイルを選んでください。");}}
+  finally {developmentSubmitting=false;updateDevelopmentDialog();}
+};
 
 function drawBoard(g, me) {
   const svg = $("board"); if (!g.map) return;

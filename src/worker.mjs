@@ -76,10 +76,11 @@ export class GameRoom {
     if (request.method === "POST" && url.pathname === "/action") {
       const body = await request.json();
       try {
-        applyAction(game, player, body);game.revision=(game.revision||0)+1;
-        pushLog(game, actionLog(game, player, body));
-        await this.storage.put("game", game);
-        return json({ game: publicGame(game, playerId) });
+        const next=structuredClone(game), nextPlayer=next.players.find(p=>p.id===playerId);
+        applyAction(next, nextPlayer, body);next.revision=(next.revision||0)+1;
+        pushLog(next, actionLog(next, nextPlayer, body));
+        await this.storage.put("game", next);
+        return json({ game: publicGame(next, playerId) });
       } catch (error) { return json({ error: error.message, game: publicGame(game, playerId) }, 400); }
     }
     return json({ error: "この操作には対応していません。" }, 404);
@@ -482,6 +483,7 @@ function publicGame(game, viewerId) {
   delete output.devDeck;
   output.tradeRates = Object.fromEntries(RESOURCES.map(r => [r, tradeRate(game, game.players.find(p => p.id === viewerId) || game.players[0], r)]));
   output.players.forEach(p => { if (p.id !== viewerId && !game.winner) p.victoryPoints = (p.victoryPoints || 0) - game.players.find(x => x.id === p.id).devCards.filter(c => c.type === "victory").length; });
+  output.bankResources=Object.fromEntries(RESOURCES.map(r=>[r,bankAvailable(game,r)]));
   output.legalMoves=legalBuildTargets(game,game.players.find(p=>p.id===viewerId));
   output.log = output.log || [];
   output.tradeOffers = output.tradeOffers || [];
