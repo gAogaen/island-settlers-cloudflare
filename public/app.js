@@ -63,7 +63,7 @@ function setError(message = "") { $("homeError").textContent = message; }
 function showToast(message) { const el = $("toast"); el.textContent = message; el.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 2400); }
 function resetActionNotifications() {
   notificationEpoch++;notificationCursor=null;notificationItems=[];$("actionNotifications").innerHTML="";
-  impactCursor=null;impactHex=null;clearTimeout(impactTimer);$("impactNotice").hidden=true;$("diceImpact").hidden=true;
+  impactCursor=null;impactHex=null;clearTimeout(impactTimer);$("impactNotice").hidden=true;$("diceImpact").hidden=true;$("impactEffect").hidden=true;$("diceImpactEffect").hidden=true;
 }
 function renderActionNotifications() {
   $("actionNotifications").innerHTML=notificationItems.map(item=>`<div class="action-notification"><span aria-hidden="true">●</span><p>${escapeHtml(item.message)}</p></div>`).join("");
@@ -94,6 +94,9 @@ function syncImpactEffects(g) {
 }
 function showImpactEffect(effect) {
   const burst=effect.type==="burst";impactHex=burst?null:effect.hexId;
+  const particles=Array.from({length:24},(_,i)=>`<i style="--angle:${i*15}deg;--distance:${120+(i%5)*35}px;--delay:${(i%4)*.035}s;--size:${6+(i%4)*3}px"></i>`).join("");
+  for(const id of ["impactEffect","diceImpactEffect"]){const el=$(id);el.hidden=id==="diceImpactEffect"&&!burst;el.dataset.type=effect.type;el.innerHTML=`<div class="impact-flash"></div><div class="impact-shockwave"></div><div class="impact-particles">${particles}</div><div class="impact-silhouette">${burst?"💥":"♟"}</div>`;}
+  playImpactSound(burst);
   $("impactIcon").textContent=burst?"💥":"♟";
   $("impactTitle").textContent=burst?"バースト！":"あなたの土地に盗賊！";
   $("impactText").textContent=burst?`手札から${effect.count}枚を捨ててください。`:"この土地の資源は盗賊がいる間、生産されません。";
@@ -101,7 +104,7 @@ function showImpactEffect(effect) {
   $("diceImpact").hidden=!burst;
   $("diceImpact").textContent=burst?`💥 バースト！ 資源を${effect.count}枚捨ててください。`:"";
   clearTimeout(impactTimer);const epoch=notificationEpoch;
-  impactTimer=setTimeout(()=>{if(epoch!==notificationEpoch)return;impactHex=null;$("impactNotice").hidden=true;$("diceImpact").hidden=true;if(currentGame?.map)drawBoard(currentGame,currentGame.players.find(p=>p.id===playerId));},4500);
+  impactTimer=setTimeout(()=>{if(epoch!==notificationEpoch)return;impactHex=null;$("impactNotice").hidden=true;$("diceImpact").hidden=true;$("impactEffect").hidden=true;$("diceImpactEffect").hidden=true;if(currentGame?.map)drawBoard(currentGame,currentGame.players.find(p=>p.id===playerId));},4500);
 }
 function enterRoom(code, id, asSpectator = false) {
   resetActionNotifications();
@@ -131,6 +134,19 @@ async function act(type, args = {}) {
 function getTurnSoundKey(g) {
   if(g?.status!=="playing"||g.winner||["setup","special","finished"].includes(g.phase)||g.players[g.activeIndex]?.id!==playerId)return null;
   return `${g.code}:${g.matchId||g.createdAt}:turn:${g.turnNumber}:${playerId}`;
+}
+function playImpactSound(burst) {
+  if(!soundOn||!audioContext||audioContext.state!=="running")return false;
+  try {
+    const now=audioContext.currentTime, notes=burst?[[160,0,.5,.12],[110,.12,.6,.12],[420,.07,.22,.045]]:[[260,0,.3,.08],[180,.22,.48,.1],[125,.45,.55,.09]];
+    for(const [frequency,delay,duration,volume] of notes){
+      const osc=audioContext.createOscillator(),gain=audioContext.createGain(),at=now+delay;
+      osc.type=burst?"triangle":"sine";osc.frequency.value=frequency;
+      gain.gain.setValueAtTime(.0001,at);gain.gain.linearRampToValueAtTime(volume,at+.018);gain.gain.exponentialRampToValueAtTime(.0001,at+duration);
+      osc.connect(gain);gain.connect(audioContext.destination);osc.start(at);osc.stop(at+duration+.02);osc.onended=()=>{osc.disconnect();gain.disconnect();};
+    }
+    return true;
+  }catch(_){return false;}
 }
 function playIdleReminderSound() {
   if(!soundOn||!audioContext||audioContext.state!=="running")return false;
