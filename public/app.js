@@ -13,6 +13,39 @@ let autoSkipSpecial = localStorage.getItem("island-auto-skip-special")==="1", au
 let spectating = false;
 let currentGame = null, playerId = null, roomCode = null, mode = null, selectedRobberHex = null, selectedVictim = "", pendingRoadCard = [], polling = false, soundOn = localStorage.getItem("island-sound-on")!=="0", toastTimer;
 
+// Count inactivity only while this browser has an outstanding game action.
+const IDLE_REMINDER_MS = 60_000, defaultPageTitle = document.title || "島の開拓者 | オンライン対戦";
+let idleTaskKey = null, idleLastActivity = 0;
+function pendingIdleTask(g) {
+  if(spectating || !g || g.status!=="playing" || g.winner || !playerId)return null;
+  const base=`${g.code}:${g.matchId||g.createdAt}:${g.turnNumber||0}:${playerId}`;
+  if(g.phase==="discard") {
+    const count=g.discardPending?.[playerId]||0;
+    return count ? {key:`${base}:discard`,title:"資源を捨てる番です",text:`手札から${count}枚選んで決定してください。`} : null;
+  }
+  if(g.phase==="special")return g.specialPlayerId===playerId?{key:`${base}:special`,title:"特別建設の番です",text:"建設するか、スキップして次へ進んでください。"}:null;
+  if(g.players[g.activeIndex]?.id!==playerId)return null;
+  if(g.phase==="setup")return {key:`${base}:setup:${g.setupIndex}`,title:"初期配置の番です",text:"盤面で開拓地と道を配置してください。"};
+  if(g.phase==="robber")return {key:`${base}:robber`,title:"盗賊を移動してください",text:"移動先のタイルを選んで決定してください。"};
+  if(g.phase==="play")return {key:`${base}:play`,title:"あなたのターンです",text:"サイコロを振ってゲームを進めましょう。"};
+  if(g.phase==="main")return {key:`${base}:main`,title:"あなたのターンです",text:"建設・交換を行うか、ターンを終了してください。"};
+  return null;
+}
+function updateIdleReminder(now=Date.now()) {
+  const task=pendingIdleTask(currentGame);
+  if(task?.key!==idleTaskKey){idleTaskKey=task?.key||null;idleLastActivity=now;}
+  const show=!!task && now-idleLastActivity>=IDLE_REMINDER_MS;
+  $("idleReminder").hidden=!show;
+  $("turnIdleReminder").hidden=!show;
+  if(show){$("idleReminderTitle").textContent=task.title;$("idleReminderText").textContent=task.text;$("turnIdleReminder").textContent=`⏳ ${task.title}：${task.text}`;}
+  document.title=show?`【操作待ち】${defaultPageTitle}`:defaultPageTitle;
+}
+function noteIdleActivity() {if(idleTaskKey){idleLastActivity=Date.now();updateIdleReminder(idleLastActivity);}}
+document.addEventListener("pointerdown",noteIdleActivity,{passive:true});
+document.addEventListener("keydown",noteIdleActivity);
+document.addEventListener("change",noteIdleActivity);
+setInterval(()=>updateIdleReminder(),1000);
+
 async function api(path, options = {}) {
   const response = await fetch(path, { ...options, headers: { "content-type": "application/json", ...(options.headers || {}) } });
   const data = await response.json();
@@ -120,7 +153,7 @@ $("spectateRoom").addEventListener("click", async () => {
 $("roomCode").addEventListener("input", e => e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));
 $("startGame").addEventListener("click", () => act("start"));
 $("copyCode").addEventListener("click", async () => { try { await navigator.clipboard.writeText(roomCode); showToast("部屋コードをコピーしました。"); } catch (_) { showToast(`部屋コード：${roomCode}`); } });
-$("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); $("turnDialog").close();$("logDialog").close();$("diceResultDialog").close();$("tradeOfferDialog").close();$("victoryDialog").close();activeTradeOfferId=null;seenTradeOfferIds.clear();lastTurnNotice=null;pendingTurnNotice=null; if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; spectating=false; renderResumeRooms();renderHomeStats(); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
+$("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); $("turnDialog").close();$("logDialog").close();$("diceResultDialog").close();$("tradeOfferDialog").close();$("victoryDialog").close();activeTradeOfferId=null;seenTradeOfferIds.clear();lastTurnNotice=null;pendingTurnNotice=null; if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; spectating=false; updateIdleReminder(); renderResumeRooms();renderHomeStats(); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
 $("soundToggle").addEventListener("click", () => { soundOn=!soundOn;localStorage.setItem("island-sound-on",soundOn?"1":"0");if(!soundOn){pendingTurnSoundKey=null;pendingVictorySoundKey=null;}else unlockAudio();syncSoundButton();showToast(soundOn?"通知音をオンにしました。":"通知音をオフにしました。"); });
 syncSoundButton();
 
@@ -155,7 +188,7 @@ function render() {
     else $("turnBanner").textContent = `${active?.name} のターン${isMyTurn ? " · あなたの番" : ""}`;
     renderActions(g, me, isMyTurn);
   }
-  renderPlayers(g, me); if(!spectating)renderHand(me,g); renderLog(g); if(!spectating)renderBuildingGuide(g, me); renderProduction(g); maybePlayTurnSound(g); maybeShowDiceResult(g); if(!spectating){maybeShowTurnNotice(g, me); maybeShowTradeOffer(g,me); saveOwnMatchResult(g,me);} maybeShowVictory(g);
+  renderPlayers(g, me); if(!spectating)renderHand(me,g); renderLog(g); if(!spectating)renderBuildingGuide(g, me); renderProduction(g); maybePlayTurnSound(g); maybeShowDiceResult(g); if(!spectating){maybeShowTurnNotice(g, me); maybeShowTradeOffer(g,me); saveOwnMatchResult(g,me);} maybeShowVictory(g); updateIdleReminder();
 }
 function renderPlayers(g, me) {
   $("playersList").innerHTML=g.players.map((p,i)=>{
