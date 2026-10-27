@@ -10,6 +10,7 @@ let lastDiceResultKey = null, diceResultTimer = null;
 let lastTurnNotice = null, pendingTurnNotice = null;
 let audioContext = null, lastTurnSoundKey = null, pendingTurnSoundKey = null;
 let autoSkipSpecial = localStorage.getItem("island-auto-skip-special")==="1", autoSkipInFlight = false, autoSkipLastKey = null;
+let robberGuideKey=null, robberSubmitting=false, tradeDialogMode=null;
 let spectating = false;
 let notificationCursor=null, notificationItems=[], notificationEpoch=0;
 let impactCursor=null, impactTimer=null, impactHex=null;
@@ -232,7 +233,7 @@ $("spectateRoom").addEventListener("click", async () => {
 $("roomCode").addEventListener("input", e => e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));
 $("startGame").addEventListener("click", () => act("start"));
 $("copyCode").addEventListener("click", async () => { try { await navigator.clipboard.writeText(roomCode); showToast("部屋コードをコピーしました。"); } catch (_) { showToast(`部屋コード：${roomCode}`); } });
-$("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); $("turnDialog").close();$("developmentDialog").close();$("logDialog").close();$("diceResultDialog").close();$("tradeOfferDialog").close();$("victoryDialog").close();activeTradeOfferId=null;seenTradeOfferIds.clear();lastTurnNotice=null;pendingTurnNotice=null; if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; spectating=false; resetActionNotifications(); updateIdleReminder(); renderResumeRooms();renderHomeStats(); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
+$("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); $("turnDialog").close();$("robberDialog").close();$("tradeDialog").close();robberGuideKey=null;$("developmentDialog").close();$("logDialog").close();$("diceResultDialog").close();$("tradeOfferDialog").close();$("victoryDialog").close();activeTradeOfferId=null;seenTradeOfferIds.clear();lastTurnNotice=null;pendingTurnNotice=null; if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; spectating=false; resetActionNotifications(); updateIdleReminder(); renderResumeRooms();renderHomeStats(); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
 $("soundToggle").addEventListener("click", () => { soundOn=!soundOn;localStorage.setItem("island-sound-on",soundOn?"1":"0");if(!soundOn){pendingTurnSoundKey=null;pendingVictorySoundKey=null;}else unlockAudio();syncSoundButton();showToast(soundOn?"通知音をオンにしました。":"通知音をオフにしました。"); });
 syncSoundButton();
 
@@ -268,7 +269,7 @@ function render() {
     else $("turnBanner").textContent = `${active?.name} のターン${isMyTurn ? " · あなたの番" : ""}`;
     renderActions(g, me, isMyTurn);
   }
-  renderPlayers(g, me); if(!spectating)renderHand(me,g); renderLog(g); if(!spectating)renderBuildingGuide(g, me); renderProduction(g); maybePlayTurnSound(g); maybeShowDiceResult(g); if(!spectating){maybeShowTurnNotice(g, me); maybeShowTradeOffer(g,me); saveOwnMatchResult(g,me);} maybeShowVictory(g); if($("developmentDialog").open)updateDevelopmentDialog(); updateIdleReminder();
+  renderPlayers(g, me); if(!spectating)renderHand(me,g); renderLog(g); if(!spectating)renderBuildingGuide(g, me); renderProduction(g); maybePlayTurnSound(g); maybeShowDiceResult(g); if(!spectating){maybeShowTurnNotice(g, me); maybeShowTradeOffer(g,me); saveOwnMatchResult(g,me);} maybeShowVictory(g); if($("developmentDialog").open)updateDevelopmentDialog(); syncGuidedDialogs(g); updateIdleReminder();
 }
 function renderPlayers(g, me) {
   $("playersList").innerHTML=g.players.map((p,i)=>{
@@ -307,7 +308,7 @@ document.addEventListener("pointerdown",e=>{if(!e.target.closest?.(".owned-dev-c
 document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".owned-dev-card[aria-expanded=true]").forEach(b=>b.setAttribute("aria-expanded","false"));});
 function renderActions(g, me, isMyTurn) {
   let notice = ""; const main = [], build = [], dev = [];
-  $("tradeActions").hidden = true;
+
   if (g.winner) notice = `${g.players.find(p => p.id === g.winner)?.name}が10点に到達しました。`;
   else if (g.phase === "setup") notice = isMyTurn ? (g.setupStep === "settlement" ? "盤面の交差点を選んで開拓地を置きます。" : "開拓地に接する辺を選んで道を置きます。") : `${g.players[g.activeIndex]?.name}の初期配置を待っています。`;
   else if (g.phase === "discard") {
@@ -316,11 +317,7 @@ function renderActions(g, me, isMyTurn) {
     if (need) main.push(`<div class="discard-row">${RESOURCES.map(r => `<label class="discard-label">${RESOURCE[r][0]}<select data-discard="${r}" class="discard-select">${Array.from({length:Math.min(need, me.hand[r])+1}, (_,i)=>`<option value="${i}">${i}</option>`).join("")}</select></label>`).join("")}<button class="action-btn primary" id="submitDiscard">決定</button></div>`);
   } else if (g.phase === "robber") {
     notice = isMyTurn ? (selectedRobberHex ? "盗賊を移動するタイルを確認し、相手を選んでください。" : "盤面の別の地形タイルを選び、盗賊を移動します。") : `${g.players[g.activeIndex]?.name}が盗賊を移動しています。`;
-    if (isMyTurn && selectedRobberHex) {
-      const h = g.map.hexes.find(x => x.id === selectedRobberHex);
-      const victims = g.players.filter(p => p.id !== playerId && [...p.settlements, ...p.cities].some(v => h.corners.includes(v)) && p.handCount > 0);
-      main.push(`<label style="grid-column:1/-1;font-size:9px;color:#637971">盗む相手<select id="victimSelect" class="discard-select" style="margin-left:8px">${victims.length ? victims.map(p=>`<option value="${p.id}" ${selectedVictim===p.id?"selected":""}>${escapeHtml(p.name)}</option>`).join("") : '<option value="">相手なし</option>'}</select></label><button class="action-btn primary" id="confirmRobber" style="grid-column:1/-1">このタイルに盗賊を移動</button>`);
-    }
+    if(isMyTurn)main.push(`<button class="action-btn primary" data-action="robberGuide">${selectedRobberHex?"盗賊の移動先を確認":"盗賊の移動方法を見る"}</button>`);
   } else if (g.phase === "play") {
     notice = isMyTurn ? "サイコロを振って資源を受け取ります。" : `${g.players[g.activeIndex]?.name}の手番です。`;
     if (isMyTurn) main.push(`<button class="action-btn primary" data-action="roll">🎲 サイコロを振る</button>`);
@@ -329,7 +326,7 @@ function renderActions(g, me, isMyTurn) {
     if (isMyTurn) {
       main.push(`<button class="action-btn" data-action="bankToggle">⇄ 銀行交換</button><button class="action-btn" data-action="playerTradeToggle">⇄ 交渉</button><button class="action-btn" data-action="endTurn" style="grid-column:1/-1">ターン終了 →</button>`);
       build.push(`<button class="action-btn ${mode === "road" ? "active-mode" : ""}" data-mode="road">道を建設</button><button class="action-btn ${mode === "settlement" ? "active-mode" : ""}" data-mode="settlement">開拓地を建設</button><button class="action-btn ${mode === "city" ? "active-mode" : ""}" data-mode="city">都市にする</button><button class="action-btn" data-action="buyDevelopment">発展カードを購入</button>`);
-      if (mode === "bank") { $("tradeActions").hidden = false; $("tradeActions").innerHTML = `<select id="tradeGive">${RESOURCES.map(r=>`<option value="${r}">${RESOURCE[r][1]}を出す（${g.tradeRates?.[r] || 4}枚）</option>`).join("")}</select><select id="tradeWant">${RESOURCES.map(r=>`<option value="${r}">${RESOURCE[r][1]}を得る</option>`).join("")}</select><button id="tradeButton" class="action-btn primary">交換</button>`; }
+
       if (me.devCards?.length) {
         const labels = { knight: "騎士", victory: "勝利点", road: "街道建設", plenty: "豊作", monopoly: "独占" };
 
@@ -344,7 +341,7 @@ function renderActions(g, me, isMyTurn) {
     }
   }
   if (g.phase === "main" && !isMyTurn && (g.tradeOffers || []).some(o => o.status === "pending" && o.toId === playerId)) main.push(`<button class="action-btn" data-action="playerTradeToggle">交換の提示を見る</button>`);
-  if (g.phase === "main" && mode === "playerTrade") { $("tradeActions").hidden = false; renderPlayerTrades(g); }
+
   if (g.winner && !spectating) { main.push(`<button class="action-btn primary" data-action="rematchReady">${(g.rematchReadyIds||[]).includes(playerId)?"再戦準備を取り消す":"同じメンバーで再戦"}（${g.rematchReadyIds?.length||0}/${g.players.length}）</button><button class="action-btn primary" data-action="viewResults">🏆 結果を見る</button><button class="action-btn" onclick="location.href='/'">新しいゲームを始める</button>`); }
   if(g.winner && spectating)main.push(`<button class="action-btn primary" data-action="viewResults">🏆 結果を見る</button>`);
   $("phaseNotice").textContent = notice; $("mainActions").innerHTML = main.join(""); $("buildActions").innerHTML = build.join(""); $("devActions").innerHTML = dev.join("");
@@ -352,8 +349,9 @@ function renderActions(g, me, isMyTurn) {
     const action = button.dataset.action;
     if(action==="viewResults"){showVictory(currentGame);return;}
     if(action==="rematchReady"){toggleRematchReady();return;}
-    if (action === "bankToggle") { mode = mode === "bank" ? null : "bank"; render(); return; }
-    if (action === "playerTradeToggle") { const me=currentGame.players.find(p=>p.id===playerId),incoming=incomingTradeOffers(currentGame)[0]; if(incoming){showTradeOffer(currentGame,me,incoming);return;} mode = mode === "playerTrade" ? null : "playerTrade"; render(); return; }
+    if (action === "robberGuide") { openRobberDialog(); return; }
+    if (action === "bankToggle") { openTradeDialog("bank"); return; }
+    if (action === "playerTradeToggle") { const me=currentGame.players.find(p=>p.id===playerId),incoming=incomingTradeOffers(currentGame)[0]; if(incoming){showTradeOffer(currentGame,me,incoming);return;} openTradeDialog("player"); return; }
     if (action === "roll") return act("roll");
     if (action === "endTurn") return act("endTurn");
     if (action === "endSpecial") return act("endSpecial");
@@ -362,10 +360,62 @@ function renderActions(g, me, isMyTurn) {
   document.querySelectorAll("[data-mode]").forEach(button => button.addEventListener("click", () => { mode = mode === button.dataset.mode ? null : button.dataset.mode;pendingRoadCard=[]; render(); }));
   document.querySelectorAll("[data-card]").forEach(button => button.addEventListener("click", () => useDevelopment(button.dataset.card)));
   const discardButton = $("submitDiscard"); if (discardButton) discardButton.onclick = () => { const cards = Object.fromEntries(RESOURCES.map(r => [r, Number(document.querySelector(`[data-discard="${r}"]`).value)])); act("discard", { cards }); };
-  const victimSelect = $("victimSelect"); if (victimSelect) victimSelect.onchange = () => selectedVictim = victimSelect.value;
-  const confirmRobber = $("confirmRobber"); if (confirmRobber) confirmRobber.onclick = () => act("moveRobber", { hexId: selectedRobberHex, victimId: selectedVictim });
-  const tradeButton = $("tradeButton"); if (tradeButton) tradeButton.onclick = () => act("tradeBank", { give: $("tradeGive").value, want: $("tradeWant").value });
 }
+function robberAvailable(g) {return !!g&&!spectating&&g.status==="playing"&&!g.winner&&g.phase==="robber"&&g.players[g.activeIndex]?.id===playerId;}
+function openRobberDialog() {
+  const g=currentGame;if(!robberAvailable(g))return;
+  const hex=g.map.hexes.find(h=>h.id===selectedRobberHex),panel=$("robberVictims");
+  $("robberDialogStep").textContent=hex?"② 相手を選んで確定":"① 盤面で移動先を選ぶ";
+  $("robberDialogInfo").textContent=hex?`移動先：${TERRAIN[hex.terrain][0]}${hex.number?"（数字 "+hex.number+"）":""}。盗賊がいる土地では資源が生産されません。`:"盗賊を今いる場所以外へ移します。移動先に相手の建物があれば、その相手から資源を1枚奪えます。";
+  const victims=hex?g.players.filter(p=>p.id!==playerId&&[...p.settlements,...p.cities].some(v=>hex.corners.includes(v))&&p.handCount>0):[];
+  if(!victims.some(p=>p.id===selectedVictim))selectedVictim=victims.length===1?victims[0].id:"";
+  panel.innerHTML=hex?(victims.length?'<b>資源を奪う相手</b>'+victims.map(p=>`<button type="button" class="robber-victim ${selectedVictim===p.id?"selected":""}" data-robber-victim="${p.id}" aria-pressed="${selectedVictim===p.id}"><i style="background:${p.color}"></i><span>${escapeHtml(p.name)}</span><small>手札 ${p.handCount}枚</small></button>`).join(""):'<p>奪える相手はいません。盗賊の移動のみ行います。</p>'):"";
+  panel.querySelectorAll("[data-robber-victim]").forEach(b=>b.onclick=()=>{selectedVictim=b.dataset.robberVictim;openRobberDialog();});
+  $("robberDialogStatus").textContent=hex?(victims.length>1&&!selectedVictim?"資源を奪う相手を1人選んでください。":"内容を確認して移動を確定してください。"):"盤面の土地をタップしてください。";
+  $("robberConfirm").hidden=!hex;$("robberConfirm").disabled=robberSubmitting||(victims.length>0&&!selectedVictim);
+  $("robberChooseTile").textContent=hex?"移動先を選び直す":"盤面で移動先を選ぶ";
+  if(!$("robberDialog").open)$("robberDialog").showModal();
+}
+$("closeRobberDialog").onclick=()=>$("robberDialog").close();
+$("robberChooseTile").onclick=()=>{$("robberDialog").close();$("boardWrap").scrollIntoView({block:"nearest",behavior:"smooth"});};
+$("robberConfirm").onclick=async()=>{if(robberSubmitting||$("robberConfirm").disabled||!selectedRobberHex)return;robberSubmitting=true;$("robberConfirm").disabled=true;try{if(await act("moveRobber",{hexId:selectedRobberHex,victimId:selectedVictim}))$("robberDialog").close();}finally{robberSubmitting=false;if($("robberDialog").open)openRobberDialog();}};
+function syncGuidedDialogs(g) {
+  if(!robberAvailable(g)){robberGuideKey=null;if($("robberDialog").open)$("robberDialog").close();}
+  else {const key=`${g.code}:${g.matchId||g.createdAt}:${g.turnNumber}:${g.lastRoll?.id||""}:${!!g.pendingDevKnight}`;
+    if(key!==robberGuideKey&&!selectedRobberHex&&!['diceResultDialog','turnDialog','developmentDialog','tradeOfferDialog','victoryDialog','logDialog'].some(id=>$(id).open)){robberGuideKey=key;openRobberDialog();}}
+  if($("tradeDialog").open&&(g.phase!=="main"||g.winner||g.players[g.activeIndex]?.id!==playerId))$("tradeDialog").close();
+  else if($("tradeDialog").open&&tradeDialogMode==="bank")updateBankTrade();
+}
+$("turnDialog").addEventListener("close",()=>{if(currentGame)syncGuidedDialogs(currentGame);});
+$("logDialog").addEventListener("close",()=>{if(currentGame)syncGuidedDialogs(currentGame);});
+function openTradeDialog(type) {
+  const g=currentGame;if(!g||spectating||g.phase!=="main"||g.players[g.activeIndex]?.id!==playerId)return;
+  tradeDialogMode=type;$("tradeDialogTitle").textContent=type==="bank"?"銀行・港と交換":"プレイヤーと交渉";
+  $("tradeDialogDescription").textContent=type==="bank"?"渡す資源と受け取る資源を選びます":"相手と、渡す・受け取る資源を選びます";
+  const panel=$("tradeActions");
+  if(type==="player")renderPlayerTrades(g);
+  else {panel.innerHTML=`<p class="guided-info">同じ資源を必要枚数渡し、好きな資源を1枚受け取ります。港を持っている場合は交換比率が下がります。</p><label class="trade-field">渡す資源<select id="modalTradeGive">${RESOURCES.map(r=>`<option value="${r}">${RESOURCE[r][1]}（${g.tradeRates?.[r]||4}枚必要・手札${g.players.find(p=>p.id===playerId).hand[r]}枚）</option>`).join("")}</select></label><label class="trade-field">受け取る資源<select id="modalTradeWant">${RESOURCES.map(r=>`<option value="${r}">${RESOURCE[r][1]}（銀行${g.bankResources?.[r]??"?"}枚）</option>`).join("")}</select></label><p id="bankTradeStatus" class="guided-status" aria-live="polite"></p><button id="confirmBankTrade" class="primary-button">この条件で交換</button>`;
+    if($("modalTradeWant"))$("modalTradeWant").value="brick";
+    if($("modalTradeGive"))$("modalTradeGive").onchange=updateBankTrade;
+    if($("modalTradeWant"))$("modalTradeWant").onchange=updateBankTrade;
+    if($("confirmBankTrade"))$("confirmBankTrade").onclick=async()=>{const give=$("modalTradeGive").value,want=$("modalTradeWant").value;if(await act("tradeBank",{give,want})){$("tradeDialog").close();showToast("銀行と交換しました。");}else updateBankTrade();};
+    updateBankTrade();}
+  if(!$("tradeDialog").open)$("tradeDialog").showModal();
+}
+function updateBankTrade() {
+  const give=$("modalTradeGive")?.value,want=$("modalTradeWant")?.value,button=$("confirmBankTrade"),status=$("bankTradeStatus"),g=currentGame,me=g?.players.find(p=>p.id===playerId);
+  if(!button||!status||!me||!give||!want)return;
+  const rate=g.tradeRates?.[give]||4;let message="";
+  if(g.phase!=="main"||g.players[g.activeIndex]?.id!==playerId)message="現在は交換できません。";
+  else if(give===want)message="異なる資源を選んでください。";
+  else if(me.hand[give]<rate)message=`${RESOURCE[give][1]}が${rate}枚必要です（手札${me.hand[give]}枚）。`;
+  else if(g.bankResources?.[want]===0)message="受け取る資源が銀行にありません。";
+  button.disabled=!!message;status.textContent=message||`${RESOURCE[give][1]} ${rate}枚 → ${RESOURCE[want][1]} 1枚`;
+}
+$("closeTradeDialog").onclick=()=>$("tradeDialog").close();
+$("cancelTradeDialog").onclick=()=>$("tradeDialog").close();
+$("tradeDialog").addEventListener("close",()=>{tradeDialogMode=null;const me=currentGame?.players.find(p=>p.id===playerId);if(me)maybeShowTradeOffer(currentGame,me);});
+
 function offerBundle(offer,side) {
   return Object.fromEntries(RESOURCES.map(r=>[r,Number(offer[side+"Cards"]?.[r]??(offer[side]===r?offer[side+"Count"]:0))||0]));
 }
@@ -381,7 +431,7 @@ function renderPlayerTrades(g) {
   panel.innerHTML=form+`<div class="offers-list">${offerMarkup||'<small class="no-offers">交換の提示はありません。</small>'}</div>`;
   if($("tradeTarget"))$("tradeTarget").onchange=e=>tradeDraft.toId=e.target.value;
   panel.querySelectorAll("[data-trade-side]").forEach(input=>input.oninput=()=>tradeDraft[input.dataset.tradeSide][input.dataset.resource]=Number(input.value));
-  if($("offerTradeButton"))$("offerTradeButton").onclick=()=>act("offerTrade",{toId:tradeDraft.toId,giveCards:{...tradeDraft.giveCards},wantCards:{...tradeDraft.wantCards}});
+  if($("offerTradeButton"))$("offerTradeButton").onclick=async()=>{if(await act("offerTrade",{toId:tradeDraft.toId,giveCards:{...tradeDraft.giveCards},wantCards:{...tradeDraft.wantCards}})){$("tradeDialog").close();showToast("交換の提案を送りました。");}};
   panel.querySelectorAll("[data-accept-offer]").forEach(b=>b.onclick=()=>act("respondTrade",{offerId:b.dataset.acceptOffer,accept:true}));
   panel.querySelectorAll("[data-decline-offer]").forEach(b=>b.onclick=()=>act("respondTrade",{offerId:b.dataset.declineOffer,accept:false}));
 }
@@ -422,7 +472,7 @@ function updateDevelopmentDialog() {
 }
 $("closeDevelopment").onclick=()=>$("developmentDialog").close();
 $("cancelDevelopment").onclick=()=>$("developmentDialog").close();
-$("developmentDialog").addEventListener("close",()=>{developmentDraft=null;});
+$("developmentDialog").addEventListener("close",()=>{developmentDraft=null;if(currentGame)syncGuidedDialogs(currentGame);});
 $("confirmDevelopment").onclick=async()=>{
   if(!developmentDraft||developmentSubmitting||$("confirmDevelopment").disabled)return;
   const {type,cards,resource}=developmentDraft;
@@ -453,6 +503,7 @@ function drawBoard(g, me) {
     const [terrainLabel, icon] = TERRAIN[h.terrain];
     const hx=450+(h.x-map.centerX)*scale,hy=335+(h.y-map.centerY)*scale;
     content += `<defs><clipPath id="clip-${h.id}"><polygon points="${points}"/></clipPath></defs><polygon class="hex hex-${h.terrain}" points="${points}" data-hex="${h.id}"/><image href="/assets/${h.terrain}.svg" x="${hx-Math.sqrt(3)*scale/2}" y="${hy-scale}" width="${Math.sqrt(3)*scale}" height="${2*scale}" preserveAspectRatio="none" clip-path="url(#clip-${h.id})" pointer-events="none"/><polygon points="${points}" class="tile-rim"/>`;
+    if(g.phase==="robber"&&g.players[g.activeIndex]?.id===playerId&&h.id!==map.robber)content+=`<polygon points="${points}" class="robber-target-outline"/>`;
     if(impactHex===h.id)content+=`<polygon points="${points}" class="robber-impact-tile"/>`;
     if(g.dice&&g.lastProduction?.id===g.lastRoll?.id){
       if(g.lastProduction.tiles.includes(h.id))content+=`<polygon points="${points}" class="produced-tile"/>`;
@@ -503,7 +554,7 @@ function drawBoard(g, me) {
   svg.onpointerup=()=>{drag=null;};svg.onpointercancel=()=>{drag=null;};
 
   const robberTargets = g.phase === "robber" && g.players[g.activeIndex]?.id === playerId || (mode === "devKnightPending");
-  document.querySelectorAll("[data-robber-hex]").forEach(el => { el.style.fill = "transparent"; el.style.stroke = "transparent"; el.style.pointerEvents = robberTargets ? "all" : "none"; el.style.cursor = robberTargets ? "pointer" : "default"; el.addEventListener("click", () => { if (boardDragged || !robberTargets || el.dataset.robberHex === map.robber) return; selectedRobberHex = el.dataset.robberHex; selectedVictim = ""; render(); }); });
+  document.querySelectorAll("[data-robber-hex]").forEach(el => { el.style.fill = "transparent"; el.style.stroke = "transparent"; el.style.pointerEvents = robberTargets ? "all" : "none"; el.style.cursor = robberTargets ? "pointer" : "default"; el.addEventListener("click", () => { if (boardDragged || !robberTargets || el.dataset.robberHex === map.robber) return; selectedRobberHex = el.dataset.robberHex; selectedVictim = ""; render(); openRobberDialog(); }); });
   document.querySelectorAll("[data-edge]").forEach(el => el.addEventListener("click", () => {
     if(boardDragged)return;
     const edgeId=el.dataset.edge;if(!targets.roads.has(edgeId)&&!(mode==="roadCard"&&pendingRoadCard.includes(edgeId)))return;
@@ -622,7 +673,7 @@ function maybeShowTradeOffer(g,me) {
     return;
   }
   const fresh=incoming.find(o=>!seenTradeOfferIds.has(o.id));
-  if(fresh&&!$("diceResultDialog").open)showTradeOffer(g,me,fresh);
+  if(fresh&&!$("diceResultDialog").open&&!$("tradeDialog").open)showTradeOffer(g,me,fresh);
 }
 function updateTradeOfferAvailability(me,offer) {
   const want=offerBundle(offer,"want"),missing=RESOURCES.filter(r=>(me.hand?.[r]||0)<want[r]);
@@ -672,7 +723,7 @@ $("closeDiceResult").onclick=()=>$("diceResultDialog").close();
 $("acknowledgeDiceResult").onclick=()=>$("diceResultDialog").close();
 $("diceResultDialog").addEventListener("close",()=>{
   clearTimeout(diceResultTimer);diceResultTimer=null;
-  const me=currentGame?.players.find(p=>p.id===playerId);if(me){maybeShowTurnNotice(currentGame,me);maybeShowTradeOffer(currentGame,me);}
+  const me=currentGame?.players.find(p=>p.id===playerId);if(me){maybeShowTurnNotice(currentGame,me);maybeShowTradeOffer(currentGame,me);syncGuidedDialogs(currentGame);}
 });
 
 function renderLog(g) {
@@ -683,7 +734,7 @@ function renderLog(g) {
   panel.scrollTop=scroll;$("expandedLogCount").textContent=`最新${g.log?.length||0}件 · 対戦中も自動更新`;
 }
 function turnNotice(g,me) {
-  if(g.status!=="playing"||g.winner)return null;
+  if(g.status!=="playing"||g.winner||["robber","discard"].includes(g.phase))return null;
   if(g.phase==="special") {
     if(g.specialPlayerId!==me.id)return null;
     return {key:`${g.code}:${g.matchId||g.createdAt}:special:${g.turnNumber}:${me.id}`,type:"special",title:"あなたの特別建設です",description:"通常の手番の間に、手持ちの資源で建設・購入できます。",rules:"できること：道・開拓地・都市の建設、発展カードの購入。\nできないこと：サイコロ、資源交換、発展カードの使用。",button:"盤面で建設する",tag:"SPECIAL BUILD",emblem:"⌂"};
