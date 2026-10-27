@@ -11,6 +11,7 @@ let lastTurnNotice = null, pendingTurnNotice = null;
 let audioContext = null, lastTurnSoundKey = null, pendingTurnSoundKey = null;
 let autoSkipSpecial = localStorage.getItem("island-auto-skip-special")==="1", autoSkipInFlight = false, autoSkipLastKey = null;
 let robberGuideKey=null, robberSubmitting=false, tradeDialogMode=null;
+let discardDraft=null, discardGuideKey=null, discardSubmitting=false;
 let spectating = false;
 let notificationCursor=null, notificationItems=[], notificationEpoch=0;
 let impactCursor=null, impactTimer=null, impactHex=null;
@@ -233,7 +234,7 @@ $("spectateRoom").addEventListener("click", async () => {
 $("roomCode").addEventListener("input", e => e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));
 $("startGame").addEventListener("click", () => act("start"));
 $("copyCode").addEventListener("click", async () => { try { await navigator.clipboard.writeText(roomCode); showToast("部屋コードをコピーしました。"); } catch (_) { showToast(`部屋コード：${roomCode}`); } });
-$("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); $("turnDialog").close();$("robberDialog").close();$("tradeDialog").close();robberGuideKey=null;$("developmentDialog").close();$("logDialog").close();$("diceResultDialog").close();$("tradeOfferDialog").close();$("victoryDialog").close();activeTradeOfferId=null;seenTradeOfferIds.clear();lastTurnNotice=null;pendingTurnNotice=null; if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; spectating=false; resetActionNotifications(); updateIdleReminder(); renderResumeRooms();renderHomeStats(); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
+$("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); $("turnDialog").close();$("discardDialog").close();discardDraft=null;discardGuideKey=null;$("robberDialog").close();$("tradeDialog").close();robberGuideKey=null;$("developmentDialog").close();$("logDialog").close();$("diceResultDialog").close();$("tradeOfferDialog").close();$("victoryDialog").close();activeTradeOfferId=null;seenTradeOfferIds.clear();lastTurnNotice=null;pendingTurnNotice=null; if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; spectating=false; resetActionNotifications(); updateIdleReminder(); renderResumeRooms();renderHomeStats(); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
 $("soundToggle").addEventListener("click", () => { soundOn=!soundOn;localStorage.setItem("island-sound-on",soundOn?"1":"0");if(!soundOn){pendingTurnSoundKey=null;pendingVictorySoundKey=null;}else unlockAudio();syncSoundButton();showToast(soundOn?"通知音をオンにしました。":"通知音をオフにしました。"); });
 syncSoundButton();
 
@@ -314,7 +315,7 @@ function renderActions(g, me, isMyTurn) {
   else if (g.phase === "discard") {
     const need = g.discardPending?.[playerId];
     notice = need ? `資源を${need}枚捨ててください。` : `${g.players.filter(p => g.discardPending?.[p.id]).map(p => p.name).join("、")}が資源を捨てています。`;
-    if (need) main.push(`<div class="discard-row">${RESOURCES.map(r => `<label class="discard-label">${RESOURCE[r][0]}<select data-discard="${r}" class="discard-select">${Array.from({length:Math.min(need, me.hand[r])+1}, (_,i)=>`<option value="${i}">${i}</option>`).join("")}</select></label>`).join("")}<button class="action-btn primary" id="submitDiscard">決定</button></div>`);
+    if(need)main.push(`<button class="action-btn primary" data-action="discardGuide">💥 捨てる資源を選ぶ（${need}枚）</button>`);
   } else if (g.phase === "robber") {
     notice = isMyTurn ? (selectedRobberHex ? "盗賊を移動するタイルを確認し、相手を選んでください。" : "盤面の別の地形タイルを選び、盗賊を移動します。") : `${g.players[g.activeIndex]?.name}が盗賊を移動しています。`;
     if(isMyTurn)main.push(`<button class="action-btn primary" data-action="robberGuide">${selectedRobberHex?"盗賊の移動先を確認":"盗賊の移動方法を見る"}</button>`);
@@ -349,6 +350,7 @@ function renderActions(g, me, isMyTurn) {
     const action = button.dataset.action;
     if(action==="viewResults"){showVictory(currentGame);return;}
     if(action==="rematchReady"){toggleRematchReady();return;}
+    if (action === "discardGuide") { openDiscardDialog(); return; }
     if (action === "robberGuide") { openRobberDialog(); return; }
     if (action === "bankToggle") { openTradeDialog("bank"); return; }
     if (action === "playerTradeToggle") { const me=currentGame.players.find(p=>p.id===playerId),incoming=incomingTradeOffers(currentGame)[0]; if(incoming){showTradeOffer(currentGame,me,incoming);return;} openTradeDialog("player"); return; }
@@ -359,8 +361,43 @@ function renderActions(g, me, isMyTurn) {
   }));
   document.querySelectorAll("[data-mode]").forEach(button => button.addEventListener("click", () => { mode = mode === button.dataset.mode ? null : button.dataset.mode;pendingRoadCard=[]; render(); }));
   document.querySelectorAll("[data-card]").forEach(button => button.addEventListener("click", () => useDevelopment(button.dataset.card)));
-  const discardButton = $("submitDiscard"); if (discardButton) discardButton.onclick = () => { const cards = Object.fromEntries(RESOURCES.map(r => [r, Number(document.querySelector(`[data-discard="${r}"]`).value)])); act("discard", { cards }); };
 }
+function discardAvailable(g) {return !!g&&!spectating&&g.status==="playing"&&!g.winner&&g.phase==="discard"&&Number(g.discardPending?.[playerId])>0;}
+function discardKey(g) {return `${g.code}:${g.matchId||g.createdAt}:${g.lastRoll?.id||g.turnNumber}:${playerId}`;}
+function openDiscardDialog() {
+  const g=currentGame;if(!discardAvailable(g))return;
+  const key=discardKey(g);if(!discardDraft||discardDraft.key!==key)discardDraft={key,cards:Object.fromEntries(RESOURCES.map(r=>[r,0]))};
+  updateDiscardDialog();if(!$("discardDialog").open)$("discardDialog").showModal();
+}
+function updateDiscardDialog() {
+  const g=currentGame,me=g?.players.find(p=>p.id===playerId);if(!discardDraft||!discardAvailable(g)||!me)return;
+  const need=g.discardPending[playerId],cards=discardDraft.cards,total=RESOURCES.reduce((sum,r)=>sum+cards[r],0);
+  $("discardExplanation").textContent=`手札が8枚以上のため、資源を${need}枚捨てます。＋と−で枚数を選び、最後に確定してください。`;
+  $("discardProgress").textContent=`${total} / ${need}枚`;
+  $("discardChoices").innerHTML=RESOURCES.map(r=>{const owned=me.hand?.[r]||0,n=cards[r];return `<div class="discard-choice"><img src="/assets/${r}.svg" alt=""><div class="discard-choice-name"><b>${RESOURCE[r][1]}</b><small>手札 ${owned}枚</small></div><div class="discard-stepper"><button type="button" data-discard-minus="${r}" aria-label="${RESOURCE[r][1]}を減らす" ${n<=0?"disabled":""}>−</button><strong>${n}</strong><button type="button" data-discard-plus="${r}" aria-label="${RESOURCE[r][1]}を増やす" ${n>=owned||total>=need?"disabled":""}>＋</button></div></div>`;}).join("");
+  const panel=$("discardChoices");
+  panel.querySelectorAll("[data-discard-minus]").forEach(b=>b.onclick=()=>adjustDiscard(b.dataset.discardMinus,-1));
+  panel.querySelectorAll("[data-discard-plus]").forEach(b=>b.onclick=()=>adjustDiscard(b.dataset.discardPlus,1));
+  const invalid=RESOURCES.some(r=>cards[r]>(me.hand?.[r]||0)||cards[r]<0);
+  $("discardStatus").textContent=invalid?"手札が変わりました。選択をリセットして選び直してください。":total===need?"この内容でよければ確定してください。":`あと${need-total}枚選んでください。`;
+  $("confirmDiscard").disabled=discardSubmitting||invalid||total!==need;
+}
+function adjustDiscard(resource,delta) {
+  if(!discardDraft||!RESOURCES.includes(resource)||![-1,1].includes(delta)||!discardAvailable(currentGame))return;
+  const cards=discardDraft.cards,me=currentGame.players.find(p=>p.id===playerId),total=RESOURCES.reduce((n,r)=>n+cards[r],0),next=cards[resource]+delta;
+  if(next<0||next>(me.hand?.[resource]||0)||(delta>0&&total>=currentGame.discardPending[playerId]))return;
+  cards[resource]=next;updateDiscardDialog();
+}
+$("closeDiscardDialog").onclick=()=>$("discardDialog").close();
+$("laterDiscard").onclick=()=>$("discardDialog").close();
+$("resetDiscard").onclick=()=>{if(discardDraft){for(const r of RESOURCES)discardDraft.cards[r]=0;updateDiscardDialog();}};
+$("confirmDiscard").onclick=async()=>{
+  if(discardSubmitting||!discardDraft||$("confirmDiscard").disabled)return;
+  const cards={...discardDraft.cards};discardSubmitting=true;updateDiscardDialog();
+  try{if(await act("discard",{cards})){if($("discardDialog").open)$("discardDialog").close();discardDraft=null;showToast("資源を捨てました。");}}
+  finally{discardSubmitting=false;if($("discardDialog").open)updateDiscardDialog();}
+};
+
 function robberAvailable(g) {return !!g&&!spectating&&g.status==="playing"&&!g.winner&&g.phase==="robber"&&g.players[g.activeIndex]?.id===playerId;}
 function openRobberDialog() {
   const g=currentGame;if(!robberAvailable(g))return;
@@ -380,9 +417,13 @@ $("closeRobberDialog").onclick=()=>$("robberDialog").close();
 $("robberChooseTile").onclick=()=>{$("robberDialog").close();$("boardWrap").scrollIntoView({block:"nearest",behavior:"smooth"});};
 $("robberConfirm").onclick=async()=>{if(robberSubmitting||$("robberConfirm").disabled||!selectedRobberHex)return;robberSubmitting=true;$("robberConfirm").disabled=true;try{if(await act("moveRobber",{hexId:selectedRobberHex,victimId:selectedVictim}))$("robberDialog").close();}finally{robberSubmitting=false;if($("robberDialog").open)openRobberDialog();}};
 function syncGuidedDialogs(g) {
+  if(!discardAvailable(g)){discardGuideKey=null;discardDraft=null;if($("discardDialog").open)$("discardDialog").close();}
+  else {const key=discardKey(g);
+    if($("discardDialog").open)updateDiscardDialog();
+    else if(key!==discardGuideKey&&!['diceResultDialog','turnDialog','developmentDialog','tradeOfferDialog','tradeDialog','victoryDialog','logDialog','robberDialog'].some(id=>$(id).open)){discardGuideKey=key;openDiscardDialog();}}
   if(!robberAvailable(g)){robberGuideKey=null;if($("robberDialog").open)$("robberDialog").close();}
   else {const key=`${g.code}:${g.matchId||g.createdAt}:${g.turnNumber}:${g.lastRoll?.id||""}:${!!g.pendingDevKnight}`;
-    if(key!==robberGuideKey&&!selectedRobberHex&&!['diceResultDialog','turnDialog','developmentDialog','tradeOfferDialog','victoryDialog','logDialog'].some(id=>$(id).open)){robberGuideKey=key;openRobberDialog();}}
+    if(key!==robberGuideKey&&!selectedRobberHex&&!['diceResultDialog','turnDialog','developmentDialog','tradeOfferDialog','victoryDialog','logDialog','discardDialog'].some(id=>$(id).open)){robberGuideKey=key;openRobberDialog();}}
   if($("tradeDialog").open&&(g.phase!=="main"||g.winner||g.players[g.activeIndex]?.id!==playerId))$("tradeDialog").close();
   else if($("tradeDialog").open&&tradeDialogMode==="bank")updateBankTrade();
 }
