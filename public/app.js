@@ -11,6 +11,7 @@ let lastTurnNotice = null, pendingTurnNotice = null;
 let audioContext = null, lastTurnSoundKey = null, pendingTurnSoundKey = null;
 let autoSkipSpecial = localStorage.getItem("island-auto-skip-special")==="1", autoSkipInFlight = false, autoSkipLastKey = null;
 let spectating = false;
+let notificationCursor=null, notificationItems=[], notificationEpoch=0;
 let currentGame = null, playerId = null, roomCode = null, mode = null, selectedRobberHex = null, selectedVictim = "", pendingRoadCard = [], polling = false, soundOn = localStorage.getItem("island-sound-on")!=="0", toastTimer;
 
 // Count inactivity only while this browser has an outstanding game action.
@@ -59,7 +60,25 @@ async function api(path, options = {}) {
 function rememberName() { return ($("playerName").value || "プレイヤー").trim().slice(0, 16) || "プレイヤー"; }
 function setError(message = "") { $("homeError").textContent = message; }
 function showToast(message) { const el = $("toast"); el.textContent = message; el.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 2400); }
+function resetActionNotifications() {
+  notificationEpoch++;notificationCursor=null;notificationItems=[];$("actionNotifications").innerHTML="";
+}
+function renderActionNotifications() {
+  $("actionNotifications").innerHTML=notificationItems.map(item=>`<div class="action-notification"><span aria-hidden="true">●</span><p>${escapeHtml(item.message)}</p></div>`).join("");
+}
+function syncActionNotifications(g) {
+  const revision=Number(g.revision)||0;
+  if(notificationCursor===null){notificationCursor=revision;return;}
+  const events=(g.actionEvents||[]).filter(e=>e.revision>notificationCursor&&e.revision<=revision&&e.actorId!==playerId).sort((a,b)=>a.revision-b.revision);
+  notificationCursor=Math.max(notificationCursor,revision);
+  for(const event of events){
+    const entry={id:event.revision,message:event.message}, epoch=notificationEpoch;
+    notificationItems.push(entry);notificationItems=notificationItems.slice(-4);renderActionNotifications();
+    setTimeout(()=>{if(epoch!==notificationEpoch)return;notificationItems=notificationItems.filter(x=>x!==entry);renderActionNotifications();},4000);
+  }
+}
 function enterRoom(code, id, asSpectator = false) {
+  resetActionNotifications();
   spectating=asSpectator;
   document.body.classList.add("in-room"); boardZoom=1;boardPan={x:0,y:0};
   currentGame=null;renderedMatchId=null;
@@ -171,12 +190,13 @@ $("spectateRoom").addEventListener("click", async () => {
 $("roomCode").addEventListener("input", e => e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));
 $("startGame").addEventListener("click", () => act("start"));
 $("copyCode").addEventListener("click", async () => { try { await navigator.clipboard.writeText(roomCode); showToast("部屋コードをコピーしました。"); } catch (_) { showToast(`部屋コード：${roomCode}`); } });
-$("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); $("turnDialog").close();$("developmentDialog").close();$("logDialog").close();$("diceResultDialog").close();$("tradeOfferDialog").close();$("victoryDialog").close();activeTradeOfferId=null;seenTradeOfferIds.clear();lastTurnNotice=null;pendingTurnNotice=null; if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; spectating=false; updateIdleReminder(); renderResumeRooms();renderHomeStats(); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
+$("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); $("turnDialog").close();$("developmentDialog").close();$("logDialog").close();$("diceResultDialog").close();$("tradeOfferDialog").close();$("victoryDialog").close();activeTradeOfferId=null;seenTradeOfferIds.clear();lastTurnNotice=null;pendingTurnNotice=null; if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; spectating=false; resetActionNotifications(); updateIdleReminder(); renderResumeRooms();renderHomeStats(); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
 $("soundToggle").addEventListener("click", () => { soundOn=!soundOn;localStorage.setItem("island-sound-on",soundOn?"1":"0");if(!soundOn){pendingTurnSoundKey=null;pendingVictorySoundKey=null;}else unlockAudio();syncSoundButton();showToast(soundOn?"通知音をオンにしました。":"通知音をオフにしました。"); });
 syncSoundButton();
 
 function render() {
   if (!currentGame) return;
+  syncActionNotifications(currentGame);
   const g = currentGame, me = spectating ? {id:playerId,hand:{},devCards:[],roads:[],settlements:[],cities:[]} : g.players.find(p => p.id === playerId), active = g.phase === "special" ? g.players.find(p => p.id === g.specialPlayerId) : g.players[g.activeIndex];
   if (!me) return;
   if(renderedMatchId!==(g.matchId||g.createdAt)){

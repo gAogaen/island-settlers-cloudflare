@@ -78,7 +78,11 @@ export class GameRoom {
       try {
         const next=structuredClone(game), nextPlayer=next.players.find(p=>p.id===playerId);
         applyAction(next, nextPlayer, body);next.revision=(next.revision||0)+1;
-        pushLog(next, actionLog(next, nextPlayer, body));
+        const message=actionLog(next, nextPlayer, body);
+        pushLog(next, message);
+        next.actionEvents ||= [];
+        next.actionEvents.push({revision:next.revision,actorId:nextPlayer.id,message,at:Date.now()});
+        next.actionEvents=next.actionEvents.slice(-50);
         await this.storage.put("game", next);
         return json({ game: publicGame(next, playerId) });
       } catch (error) { return json({ error: error.message, game: publicGame(game, playerId) }, 400); }
@@ -96,7 +100,7 @@ function randomCode() { return Array.from(crypto.getRandomValues(new Uint8Array(
 function json(value, status = 200) { return new Response(JSON.stringify(value), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } }); }
 function pushLog(game, message) { game.log ||= []; if (message) game.log.unshift(`${new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Tokyo" })}  ${message}`); game.log = game.log.slice(0, 50); }
 function actionLog(game, player, action) {
-  const actions = { start: "ゲームを開始しました。", rematchReady: action.ready ? "再戦準備ができました。" : "再戦準備を取り消しました。", roll: `サイコロは${game.dice?.[0] || "?"}と${game.dice?.[1] || "?"}。`, buildRoad: "道を建設しました。", buildSettlement: "開拓地を建設しました。", buildCity: "都市を建設しました。", buyDevelopment: "発展カードを購入しました。", tradeBank: `${CARD_NAMES[action.give] || "資源"}を銀行で交換しました。`, offerTrade: "交換を提示しました。", respondTrade: action.accept ? "交換が成立しました。" : "交換を断りました。", endTurn: "ターンを終了しました。", endSpecial: "特別建設を終了しました。", moveRobber: "盗賊を移動しました。", discard: "資源を捨てました。", playCard: "発展カードを使いました。" };
+  const actions = { start: "ゲームを開始しました。", rematchReady: action.ready ? "再戦準備ができました。" : "再戦準備を取り消しました。", roll: `サイコロは${game.dice?.[0] || "?"}と${game.dice?.[1] || "?"}。`, buildRoad: "道を建設しました。", buildSettlement: "開拓地を建設しました。", buildCity: "都市を建設しました。", buyDevelopment: "発展カードを購入しました。", tradeBank: `${CARD_NAMES[action.give] || "資源"}を銀行で交換しました。`, offerTrade: "交換を提示しました。", respondTrade: action.accept ? "交換が成立しました。" : "交換を断りました。", endTurn: "ターンを終了しました。", endSpecial: "特別建設を終了しました。", moveRobber: "盗賊を移動しました。", discard: "資源を捨てました。", playCard: `${({knight:"騎士",plenty:"豊作",monopoly:"独占",road:"街道建設"})[action.card] || "発展カード"}を使いました。` };
   return `${player.name}：${actions[action.type] || "操作しました。"}`;
 }
 function shuffled(items) { const a = [...items]; for (let i = a.length - 1; i > 0; i--) { const j = crypto.getRandomValues(new Uint32Array(1))[0] % (i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
