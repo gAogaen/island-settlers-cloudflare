@@ -31,7 +31,7 @@ export default {
         const body = await request.json();
         return room.fetch(`https://room/${route}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
       }
-      if (!route && request.method === "GET") return room.fetch(`https://room/state?playerId=${encodeURIComponent(url.searchParams.get("playerId") || "")}`);
+      if (!route && request.method === "GET") return room.fetch(`https://room/state?playerId=${encodeURIComponent(url.searchParams.get("playerId") || "")}&spectate=${url.searchParams.get("spectate") === "1" ? "1" : "0"}`);
       return json({ error: "この操作には対応していません。" }, 405);
     } catch (error) {
       return json({ error: error?.message || "サーバーでエラーが発生しました。" }, 400);
@@ -68,6 +68,7 @@ export class GameRoom {
       await this.storage.put("game", game);
       return json({ game: publicGame(game, player.id), playerId: player.id });
     }
+    if (request.method === "GET" && url.pathname === "/state" && url.searchParams.get("spectate") === "1") return json({ game: spectatorGame(game) });
     const playerId = url.searchParams.get("playerId") || (request.method === "POST" ? (await request.clone().json()).playerId : "");
     const player = game.players.find(p => p.id === playerId);
     if (!player) return json({ error: "参加者情報が確認できません。部屋コードから入り直してください。" }, 403);
@@ -445,7 +446,7 @@ function checkWinner(game) { if (game.phase === "special") return; const p = gam
 
 function legalBuildTargets(game,p) {
   const result={roads:[],settlements:[],cities:[],freeRoads:[]};
-  if(!game.map||game.winner)return result;
+  if(!p||!game.map||game.winner)return result;
   const ownsTurn=game.phase==="special"?game.specialPlayerId===p.id:game.players[game.activeIndex]?.id===p.id;
   if(!ownsTurn)return result;
   const setup=game.phase==="setup",regular=["main","special"].includes(game.phase);
@@ -485,4 +486,19 @@ function publicGame(game, viewerId) {
   output.log = output.log || [];
   output.tradeOffers = output.tradeOffers || [];
   return output;
+}
+
+// A spectator gets only public information and cannot receive player credentials.
+function spectatorGame(game) {
+  const output=publicGame(game, null);
+  output.tradeOffers=[];
+  delete output.tradeRates;
+  const aliases=new Map(game.players.map((p,i)=>[p.id,`seat-${i+1}`]));
+  function anonymize(value) {
+    if(typeof value === "string") return aliases.get(value)||value;
+    if(Array.isArray(value)) return value.map(anonymize);
+    if(value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([key,v])=>[aliases.get(key)||key,anonymize(v)]));
+    return value;
+  }
+  return anonymize(output);
 }

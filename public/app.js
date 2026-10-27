@@ -10,6 +10,7 @@ let lastDiceResultKey = null, diceResultTimer = null;
 let lastTurnNotice = null, pendingTurnNotice = null;
 let audioContext = null, lastTurnSoundKey = null, pendingTurnSoundKey = null;
 let autoSkipSpecial = localStorage.getItem("island-auto-skip-special")==="1", autoSkipInFlight = false, autoSkipLastKey = null;
+let spectating = false;
 let currentGame = null, playerId = null, roomCode = null, mode = null, selectedRobberHex = null, selectedVictim = "", pendingRoadCard = [], polling = false, soundOn = localStorage.getItem("island-sound-on")!=="0", toastTimer;
 
 async function api(path, options = {}) {
@@ -21,25 +22,26 @@ async function api(path, options = {}) {
 function rememberName() { return ($("playerName").value || "プレイヤー").trim().slice(0, 16) || "プレイヤー"; }
 function setError(message = "") { $("homeError").textContent = message; }
 function showToast(message) { const el = $("toast"); el.textContent = message; el.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 2400); }
-function enterRoom(code, id) {
+function enterRoom(code, id, asSpectator = false) {
+  spectating=asSpectator;
   document.body.classList.add("in-room"); boardZoom=1;boardPan={x:0,y:0};
   currentGame=null;renderedMatchId=null;
-  roomCode = code.toUpperCase(); lastDiceResultKey=sessionStorage.getItem(`island-dice-seen-${roomCode}`); playerId = id; localStorage.setItem(`island-room-${roomCode}`, id); localStorage.setItem("island-last-name", rememberName());
+  roomCode = code.toUpperCase(); lastDiceResultKey=sessionStorage.getItem(`island-dice-seen-${roomCode}`); playerId = asSpectator ? "__spectator__" : id; if(!asSpectator){localStorage.setItem(`island-room-${roomCode}`, id); localStorage.setItem("island-last-name", rememberName());}
   $("homeView").hidden = true; $("gameView").hidden = false; $("roomCodeDisplay").textContent = roomCode; $("connectionLabel").textContent = "オンライン"; refresh();
   if (window.pollTimer) clearInterval(window.pollTimer); window.pollTimer = setInterval(refresh, 2200);
-  history.replaceState({}, "", `/?room=${roomCode}`);
+  history.replaceState({}, "", `/?room=${roomCode}${spectating?"&spectate=1":""}`);
 }
 async function refresh() {
   if (!roomCode || polling||actionInFlight) return; polling = true;
   const requestedRoom=roomCode,requestedPlayer=playerId;
-  try { const data = await api(`/api/rooms/${roomCode}?playerId=${encodeURIComponent(playerId)}`); if(roomCode!==requestedRoom||playerId!==requestedPlayer)return;if(currentGame&&(data.game.revision||0)<(currentGame.revision||0))return;const changed = JSON.stringify(currentGame) !== JSON.stringify(data.game); currentGame = data.game; if (changed) render(); $("connectionLabel").textContent = "オンライン"; }
+  try { const data = await api(`/api/rooms/${roomCode}?${spectating?"spectate=1":`playerId=${encodeURIComponent(playerId)}`}`); if(roomCode!==requestedRoom||playerId!==requestedPlayer)return;if(currentGame&&(data.game.revision||0)<(currentGame.revision||0))return;const changed = JSON.stringify(currentGame) !== JSON.stringify(data.game); currentGame = data.game; if (changed) render(); $("connectionLabel").textContent = "オンライン"; }
   catch (error) { if(roomCode!==requestedRoom||playerId!==requestedPlayer)return;$("connectionLabel").textContent="再接続中";if([403,404].includes(error.status)){
     forgetRoom(roomCode,playerId);$("leaveRoom").click();showToast(error.message);
   } }
   finally { polling = false; }
 }
 async function act(type, args = {}) {
-  if(actionInFlight)return false;actionInFlight=true;const token={};activeActionToken=token;const actionRoom=roomCode,actionPlayer=playerId;
+  if(spectating||actionInFlight)return false;actionInFlight=true;const token={};activeActionToken=token;const actionRoom=roomCode,actionPlayer=playerId;
   try { const data = await api(`/api/rooms/${roomCode}/action`, { method: "POST", body: JSON.stringify({ playerId, type, ...args }) }); if(roomCode!==actionRoom||playerId!==actionPlayer)return false;currentGame = data.game; if(type==="offerTrade")tradeDraft={toId:"",giveCards:{},wantCards:{}}; mode = null; selectedRobberHex = null; pendingRoadCard = []; if(activeActionToken===token){actionInFlight=false;activeActionToken=null;} render(); if (soundOn) clickSound(); return true; }
   catch (error) { showToast(error.message); return false; }
   finally {if(activeActionToken===token){actionInFlight=false;activeActionToken=null;}}
@@ -111,24 +113,30 @@ $("joinRoom").addEventListener("click", async () => {
   try { const data = await api(`/api/rooms/${code}/join`, { method: "POST", body: JSON.stringify({ playerName: rememberName() }) }); enterRoom(code, data.playerId); }
   catch (e) { setError(e.message); }
 });
+$("spectateRoom").addEventListener("click", async () => {
+  setError(""); const code=$("roomCode").value.trim().toUpperCase(); if(!code)return setError("部屋コードを入力してください。");
+  try {await api(`/api/rooms/${code}?spectate=1`);enterRoom(code,null,true);}catch(e){setError(e.message);}
+});
 $("roomCode").addEventListener("input", e => e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));
 $("startGame").addEventListener("click", () => act("start"));
 $("copyCode").addEventListener("click", async () => { try { await navigator.clipboard.writeText(roomCode); showToast("部屋コードをコピーしました。"); } catch (_) { showToast(`部屋コード：${roomCode}`); } });
-$("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); $("turnDialog").close();$("logDialog").close();$("diceResultDialog").close();$("tradeOfferDialog").close();$("victoryDialog").close();activeTradeOfferId=null;seenTradeOfferIds.clear();lastTurnNotice=null;pendingTurnNotice=null; if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; renderResumeRooms();renderHomeStats(); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
+$("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); $("turnDialog").close();$("logDialog").close();$("diceResultDialog").close();$("tradeOfferDialog").close();$("victoryDialog").close();activeTradeOfferId=null;seenTradeOfferIds.clear();lastTurnNotice=null;pendingTurnNotice=null; if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; spectating=false; renderResumeRooms();renderHomeStats(); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
 $("soundToggle").addEventListener("click", () => { soundOn=!soundOn;localStorage.setItem("island-sound-on",soundOn?"1":"0");if(!soundOn){pendingTurnSoundKey=null;pendingVictorySoundKey=null;}else unlockAudio();syncSoundButton();showToast(soundOn?"通知音をオンにしました。":"通知音をオフにしました。"); });
 syncSoundButton();
 
 function render() {
   if (!currentGame) return;
-  const g = currentGame, me = g.players.find(p => p.id === playerId), active = g.phase === "special" ? g.players.find(p => p.id === g.specialPlayerId) : g.players[g.activeIndex];
+  const g = currentGame, me = spectating ? {id:playerId,hand:{},devCards:[],roads:[],settlements:[],cities:[]} : g.players.find(p => p.id === playerId), active = g.phase === "special" ? g.players.find(p => p.id === g.specialPlayerId) : g.players[g.activeIndex];
   if (!me) return;
   if(renderedMatchId!==(g.matchId||g.createdAt)){
     renderedMatchId=g.matchId||g.createdAt;mode=null;pendingRoadCard=[];selectedRobberHex=null;boardZoom=1;boardPan={x:0,y:0};
     if(!g.winner)for(const id of ["victoryDialog","turnDialog","diceResultDialog","tradeOfferDialog"])if($(id).open)$(id).close();
   }
-  rememberRoom(g,me);syncRematchUI(g,me);
+  if(!spectating)rememberRoom(g,me);syncRematchUI(g,me);
+  $("handTitle").textContent=spectating?"観戦中":"あなたの手札";
+  $("handTotal").hidden=spectating;$("resourceHand").hidden=spectating;$("developmentHand").hidden=spectating;$("autoSkipControl").hidden=spectating;$("buildingGuide").hidden=spectating;
   $("gameTitle").textContent = g.status === "lobby" ? "対戦ルーム" : (g.winner ? "ゲーム終了" : "島を開拓しよう" );
-  $("gameStatusLabel").textContent = g.status === "lobby" ? "ROOM LOBBY" : g.winner ? "GAME FINISHED" : `TURN ${g.turnNumber || 1}`;
+  $("gameStatusLabel").textContent = spectating ? "👀 観戦中" : g.status === "lobby" ? "ROOM LOBBY" : g.winner ? "GAME FINISHED" : `TURN ${g.turnNumber || 1}`;
   $("playerCount").textContent = `${g.players.length} / 6`;
   const isMyTurn = active?.id === playerId;
   if (g.status === "lobby") {
@@ -147,7 +155,7 @@ function render() {
     else $("turnBanner").textContent = `${active?.name} のターン${isMyTurn ? " · あなたの番" : ""}`;
     renderActions(g, me, isMyTurn);
   }
-  renderPlayers(g, me); renderHand(me,g); renderLog(g); renderBuildingGuide(g, me); renderProduction(g); maybePlayTurnSound(g); maybeShowDiceResult(g); maybeShowTurnNotice(g, me); maybeShowTradeOffer(g,me); saveOwnMatchResult(g,me); maybeShowVictory(g);
+  renderPlayers(g, me); if(!spectating)renderHand(me,g); renderLog(g); if(!spectating)renderBuildingGuide(g, me); renderProduction(g); maybePlayTurnSound(g); maybeShowDiceResult(g); if(!spectating){maybeShowTurnNotice(g, me); maybeShowTradeOffer(g,me); saveOwnMatchResult(g,me);} maybeShowVictory(g);
 }
 function renderPlayers(g, me) {
   $("playersList").innerHTML=g.players.map((p,i)=>{
@@ -224,7 +232,8 @@ function renderActions(g, me, isMyTurn) {
   }
   if (g.phase === "main" && !isMyTurn && (g.tradeOffers || []).some(o => o.status === "pending" && o.toId === playerId)) main.push(`<button class="action-btn" data-action="playerTradeToggle">交換の提示を見る</button>`);
   if (g.phase === "main" && mode === "playerTrade") { $("tradeActions").hidden = false; renderPlayerTrades(g); }
-  if (g.winner) { main.push(`<button class="action-btn primary" data-action="rematchReady">${(g.rematchReadyIds||[]).includes(playerId)?"再戦準備を取り消す":"同じメンバーで再戦"}（${g.rematchReadyIds?.length||0}/${g.players.length}）</button><button class="action-btn primary" data-action="viewResults">🏆 結果を見る</button><button class="action-btn" onclick="location.href='/'">新しいゲームを始める</button>`); }
+  if (g.winner && !spectating) { main.push(`<button class="action-btn primary" data-action="rematchReady">${(g.rematchReadyIds||[]).includes(playerId)?"再戦準備を取り消す":"同じメンバーで再戦"}（${g.rematchReadyIds?.length||0}/${g.players.length}）</button><button class="action-btn primary" data-action="viewResults">🏆 結果を見る</button><button class="action-btn" onclick="location.href='/'">新しいゲームを始める</button>`); }
+  if(g.winner && spectating)main.push(`<button class="action-btn primary" data-action="viewResults">🏆 結果を見る</button>`);
   $("phaseNotice").textContent = notice; $("mainActions").innerHTML = main.join(""); $("buildActions").innerHTML = build.join(""); $("devActions").innerHTML = dev.join("");
   document.querySelectorAll("[data-action]").forEach(button => button.addEventListener("click", () => {
     const action = button.dataset.action;
@@ -658,6 +667,7 @@ function renderResumeRooms() {
 }
 function syncRematchUI(g,me) {
   if(!g.winner){if($("victoryDialog").open)$("victoryDialog").close();return;}
+  $("rematchReadyButton").hidden=spectating;
   const ready=g.rematchReadyIds||[];
   $("rematchReadyButton").textContent=ready.includes(me?.id)?"再戦準備を取り消す":"同じメンバーで再戦する";
   $("rematchReadyStatus").textContent=`準備完了 ${ready.length}/${g.players.length}人。全員が準備すると新しい盤面で開始します。`;
@@ -694,6 +704,8 @@ renderHomeStats();
 const params = new URLSearchParams(location.search), requestedCode = params.get("room")?.toUpperCase();
 if (requestedCode) {
   const remembered = localStorage.getItem(`island-room-${requestedCode}`);
+  if(params.get("spectate")==="1") enterRoom(requestedCode,null,true);
+  else
   if (remembered) enterRoom(requestedCode, remembered);
   else { document.querySelector('[data-tab="join"]').click(); $("roomCode").value = requestedCode; }
 }
