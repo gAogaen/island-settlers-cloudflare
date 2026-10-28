@@ -175,8 +175,10 @@ function beginGame(game) {
   game.matchId=crypto.randomUUID();game.matchNumber=(game.matchNumber||0)+1;
   game.longestRoadOwner=null;game.largestArmyOwner=null;game.lastRoll=null;game.lastProduction=null;
   game.tradeOffers=[];game.rematchReadyIds=[];game.specialQueue=[];game.specialPlayerId=null;game.normalNextIndex=null;game.pendingDevKnight=false;
+  game.players = shuffled(game.players);
   game.map = createMap(game.players.length);
-  game.players.forEach((p, i) => { p.seat = i; p.color = PLAYER_COLORS[i]; p.hand = emptyHand(); p.roads = []; p.settlements = []; p.cities = []; p.devCards = []; p.playedKnights = 0; p.usedDevCard=false;p.victoryPoints=0;p.longestRoad=0; });
+  pushLog(game, `手番順：${game.players.map(p=>p.name).join(" → ")}`);
+  game.players.forEach((p, i) => { p.seat = i; p.hand = emptyHand(); p.roads = []; p.settlements = []; p.cities = []; p.devCards = []; p.playedKnights = 0; p.usedDevCard=false;p.victoryPoints=0;p.longestRoad=0; });
   game.activeIndex = 0; game.phase = "setup"; game.setupIndex = 0; game.setupStep = "settlement"; game.pendingVertex = null;
   game.turnNumber = 0; game.dice = null; game.rolled = false; game.discardPending = {}; game.winner = null;
   game.devDeck = shuffled([...[...Array(14)].map(() => "knight"), ...Array(5).fill("victory"), ...Array(2).fill("road"), ...Array(2).fill("plenty"), ...Array(2).fill("monopoly")]);
