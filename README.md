@@ -87,3 +87,9 @@ Durable ObjectはSQLiteストレージで作成する設定です。初回デプ
 - 本人の内訳を含め、伏せカードの種類の配列順を外部へ返しません。観戦者には非公開情報や参加トークンを返しません。
 
 `npm install` 後の `npm test` には、タイムボムのエンジン/APIテストとlinkedomによる複数クライアントのDOM結合テストも含まれます。実ブラウザの表示・音声確認を代替するものではありません。
+
+## boardgame.un0wn.workers.dev の入口
+
+`npm run deploy:boardgame` で、既存の `island-settlers-online` Workerに接続する `boardgame` Workerを作成します。Cloudflareアカウントのworkers.devサブドメインが `un0wn` の場合、URLは `https://boardgame.un0wn.workers.dev` になります。ゲーム本体を更新するGitHub連携は引き続き元のWorkerに接続します。入口は本体の最新版へリクエストを転送するため、通常のゲーム更新時には入口の再デプロイは不要です。元のWorkerは削除しないでください。
+
+URL変更でブラウザ内の保存領域は別になります。旧URLで保存された参加情報・戦績は新URLへ自動移行されません。新URLで新しく部屋を作って遊ぶ運用を推奨します。

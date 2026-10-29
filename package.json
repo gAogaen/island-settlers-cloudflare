@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "test": "node tests/game.test.cjs && node tests/ui.test.cjs && node tests/timebomb.test.cjs && node tests/timebomb-ui.test.cjs"
+    "test": "node tests/game.test.cjs && node tests/ui.test.cjs && node tests/timebomb.test.cjs && node tests/timebomb-ui.test.cjs",
+    "deploy:boardgame": "wrangler deploy --config wrangler.boardgame.jsonc"
   },
   "devDependencies": {
     "wrangler": "^4.0.0",

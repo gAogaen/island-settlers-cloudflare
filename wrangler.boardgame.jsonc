@@ -1,0 +1,10 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "boardgame",
+  "main": "src/gateway.mjs",
+  "compatibility_date": "2026-10-23",
+  "workers_dev": true,
+  "services": [
+    { "binding": "BOARDGAME_ORIGIN", "service": "island-settlers-online" }
+  ]
+}
