@@ -50,3 +50,5 @@ https://www.yellowsubmarine.co.jp/hobbybase/game/reddoor/top.htm
 ## 大富豪の素材
 
 `public/assets/daifugo/crown.svg` は独自の王冠イラストです。トランプはHTML/CSSで数字・マーク・ジョーカー・裏面を描画し、既製のカード画像は使用していません。フェルトと木枠の卓、手札の選択、紙吹雪はCSS、効果音はWeb Audio APIの合成音です。共有画像は既存のカフェ版を使用します。
+
+- `public/assets/reddoor/clown.svg`, `shadow.svg`: 本サイト用のオリジナルSVG。公式カード画像の複製ではありません。

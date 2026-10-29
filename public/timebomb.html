@@ -1,4 +1,4 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#163f3a"><title>タイムボム | ボードゲームオンライン</title><link rel="stylesheet" href="/timebomb.css"><link rel="stylesheet" href="/action-guide.css">
+<!doctype html><html lang="ja" data-game="timebomb"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#163f3a"><title>タイムボム | ボードゲームオンライン</title><link rel="stylesheet" href="/timebomb.css"><link rel="stylesheet" href="/action-guide.css">
   <meta name="description" content="3〜8人で遊ぶ、正体隠匿とブラフのタイムボム。相手の伏せカードをニッパーで切ろう。観戦・途中復帰にも対応。">
   <link rel="canonical" href="https://boardgame.un0wn.workers.dev/timebomb.html">
   <meta property="og:type" content="website">
@@ -18,7 +18,7 @@
   <meta name="twitter:description" content="3〜8人で遊ぶ、正体隠匿とブラフのタイムボム。相手の伏せカードをニッパーで切ろう。観戦・途中復帰にも対応。">
   <meta name="twitter:image" content="https://boardgame.un0wn.workers.dev/assets/og-boardgame-cafe-v2.jpg">
   <meta name="twitter:image:alt" content="ボードゲームオンライン。いつもの仲間と、ひと卓を囲もう。">
-</head><body>
+<link rel="stylesheet" href="/theme.css"><script src="/theme.js"></script></head><body>
 <header><a href="/">⚄ ボードゲームオンライン</a><div><span id="connection">接続待ち</span><button id="sound">♪ 音ON</button><button id="showActionGuide">次にすること</button><button id="rules">遊び方</button></div></header>
 <div id="mobileRoleBar" class="mobile-role-bar" role="status" hidden><span>あなたの役職</span><strong id="mobileRoleName"></strong></div>
 <main id="entry"><a href="/">← ゲーム一覧</a><div class="entry-layout"><div><small class="eyebrow">SOCIAL DEDUCTION · 3–8 PLAYERS</small><h1>タイム<span>ボム</span></h1><p>その1枚で、運命が変わる。</p><img class="entry-nippers" src="/assets/timebomb/nippers.svg" alt="ニッパー"><p>誰が解除を持っている？ 誰を信じる？<br>通話しながら、同じテーブルを囲むように遊ぼう。</p><small>非公式ファン版 · 基本ルール／3〜8人・スパイなし</small></div><section class="entry-form"><h2>みんなでテーブルへ</h2><label>あなたの名前<input id="name" maxlength="16" placeholder="名前を入力" autocomplete="nickname"></label><button id="create" class="primary">新しい部屋を作る</button><hr><label>部屋コード<input id="code" maxlength="6" placeholder="例：ABCD12" autocapitalize="characters"></label><button id="join">部屋に参加／復帰</button><button id="watch">観戦する</button><div id="saved"></div></section></div></main>

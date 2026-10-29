@@ -13,3 +13,6 @@ body #actionGuideLater{color:#d0b9a4}
 
 
 .doors{scroll-margin-top:185px}#chatForm button{white-space:nowrap;flex-shrink:0}
+
+.door-cell{min-width:0;display:flex;flex-direction:column;justify-content:end}.door-cell>.door{width:100%}.door-memory{display:flex;flex-direction:column;gap:3px;padding:6px 2px;font-size:11px;line-height:1.5;color:var(--paper);max-height:110px;overflow:auto}.door-memory span{background:#85624a38;border-radius:4px;padding:2px 5px}.door-memory b{color:#ffd7a1;background:#553b3380;padding:4px;border-radius:4px}.door-public small{display:block;font-size:10px}.manual{max-width:1360px;margin:30px auto;padding:28px}.manual .card-reference{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}.manual h2{font-size:26px}.manual a{text-decoration:underline}
+.expansion{border:1px solid var(--line);border-radius:10px;margin:12px 0;padding:14px}.expansion p,.expansion small{font-size:11px}.expansion label{display:block;margin:10px 0}.expansion input{width:auto}.expansion small{display:block;color:var(--muted)}
