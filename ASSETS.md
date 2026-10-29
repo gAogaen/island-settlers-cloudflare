@@ -18,3 +18,7 @@ Sea, ports, number tokens and wooden playing pieces are drawn as SVG by this pro
 - https://non-board.hatenablog.com/entry/timebomb
 
 公式サービスではなく、画像・ロゴの公式利用許諾を示すものではありません。
+
+## ペンギンパーティの素材
+
+`public/assets/penguin/` のペンギン5色・裏面・シャチは、このサイト向けのオリジナルSVGです。各色に異なるアクセサリーと記号を用い、色だけに依存せず選択できるようにしています。既製品のカードイラスト・ロゴの複製ではありません。

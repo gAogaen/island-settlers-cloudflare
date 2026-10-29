@@ -15,6 +15,8 @@ export default {
     const url = new URL(request.url);
     if (!url.pathname.startsWith("/api/")) return env.ASSETS.fetch(request);
     try {
+      const pg=url.pathname.match(/^\/api\/penguin(?:\/([A-Z0-9]{6})(?:\/(join|action))?)?$/i);
+      if(pg){const code=pg[1]?.toUpperCase()||randomCode(),route=pg[1]?(pg[2]||"state"):"create";if((route==="state"&&request.method!=="GET")||(route!=="state"&&request.method!=="POST"))return json({error:"操作が正しくありません。"},405);const room=env.ROOMS.get(env.ROOMS.idFromName("penguin:"+code));return room.fetch(`https://room/pg/${route}${url.search}`,request.method==="POST"?{method:"POST",body:JSON.stringify({...await request.json(),code})}:undefined);}
       const tb=url.pathname.match(/^\/api\/timebomb(?:\/([A-Z0-9]{6})(?:\/(join|action))?)?$/i);
       if(tb){
         const code=tb[1]?.toUpperCase()||randomCode();
@@ -56,6 +58,7 @@ export class GameRoom {
   }
 
   async handleRequest(request) {
+    if(new URL(request.url).pathname.startsWith("/pg/"))return handlePenguin(this.storage,request);
     if(new URL(request.url).pathname.startsWith("/tb/"))return handleTimebomb(this.storage,request);
     const url = new URL(request.url);
     if (request.method === "POST" && url.pathname === "/create") {
@@ -570,3 +573,40 @@ async function handleTimebomb(storage,request){
  tbAction(g,p,a);g.revision++;await storage.put('timebomb',g);return json({game:tbView(g,p)});
  }catch(e){return json({error:e.message||'処理に失敗しました。'},400);}
 }
+
+const PG_COLORS=['green','yellow','red','purple','blue'];
+function pgPlayer(name){return {id:crypto.randomUUID(),token:crypto.randomUUID(),name:cleanName(name),hand:[],score:0,out:false};}
+function pgPositions(g){
+ const board=g.board||[],at=(r,x)=>board.find(c=>c.r===r&&c.x===x),result=[];
+ const bottom=board.filter(c=>c.r===0);if(!bottom.length)return [{r:0,x:0,colors:[...PG_COLORS]}];
+ const lo=Math.min(...bottom.map(c=>c.x)),hi=Math.max(...bottom.map(c=>c.x));
+ if(hi-lo+1<g.base){result.push({r:0,x:lo-1,colors:[...PG_COLORS]},{r:0,x:hi+1,colors:[...PG_COLORS]});}
+ for(const c of board){if(c.r>=g.base-1||!at(c.r,c.x+1)||at(c.r+1,c.x))continue;result.push({r:c.r+1,x:c.x,colors:[...new Set([c.color,at(c.r,c.x+1).color])]});}
+ return result;
+}
+function pgLegal(g,p){if(!p||g.phase!=='playing'||g.players[g.activeIndex]?.id!==p.id||p.out)return [];return pgPositions(g).map(pos=>({...pos,colors:pos.colors.filter(c=>p.hand.some(card=>card.color===c))})).filter(pos=>pos.colors.length);}
+function pgEvent(g,text){g.log.unshift(text);g.log=g.log.slice(0,60);}
+function pgFinishRound(g){g.results=g.players.map(p=>({id:p.id,name:p.name,remaining:p.hand.length,delta:p.score-p.roundStartScore,score:p.score,hand:p.hand.map(c=>c.color)}));g.history.push({round:g.round,results:structuredClone(g.results)});g.phase=g.round===g.players.length?'finished':'roundEnd';if(g.phase==='finished'){const best=Math.min(...g.players.map(p=>p.score));g.winners=g.players.filter(p=>p.score===best).map(p=>p.id);}pgEvent(g,`ラウンド${g.round}終了。${g.phase==='finished'?'最終結果が出ました！':'次のパーティへ進みましょう。'}`);}
+function pgAdvance(g,from){for(let offset=1;offset<=g.players.length;offset++){const i=(from+offset)%g.players.length,p=g.players[i];if(p.out)continue;g.activeIndex=i;if(!p.hand.length){p.out=true;continue;}if(pgLegal(g,p).length)return;p.out=true;p.score+=p.hand.length;g.lastEvents.push({id:crypto.randomUUID(),type:'out',playerId:p.id,name:p.name,points:p.hand.length});pgEvent(g,`${p.name}は置けるカードがなく、${p.hand.length}失点。`);}pgFinishRound(g);}
+function pgDeal(g){const deck=shuffled(PG_COLORS.flatMap(color=>Array(color==='green'?8:7).fill(color))).map(color=>({id:crypto.randomUUID(),color}));const n=g.players.length,size=n===2?14:Math.floor(36/n);g.base=n===2?7:8;g.board=[];g.results=[];g.lastMove=null;g.lastEvents=[];g.phase='playing';g.players.forEach(p=>{p.hand=deck.splice(0,size);p.out=false;p.roundStartScore=p.score;});if(n===5){const card=deck.pop();g.board.push({...card,r:0,x:0,ownerId:null});}g.activeIndex=(g.firstStart+g.round-1)%n;pgEvent(g,`ラウンド${g.round}開始。${g.players[g.activeIndex].name}から！`);pgAdvance(g,(g.activeIndex+n-1)%n);}
+function pgStart(g){if(g.players.length<2||g.players.length>6)throw Error('2〜6人で開始できます。');g.matchId=crypto.randomUUID();g.round=1;g.firstStart=crypto.getRandomValues(new Uint32Array(1))[0]%g.players.length;g.players.forEach(p=>p.score=0);g.winners=[];g.history=[];g.log=[];pgDeal(g);}
+function pgAction(g,p,a){
+ if(a.type==='start'){if(p.id!==g.hostId||!['lobby','finished'].includes(g.phase))throw Error('ホストだけが開始できます。');pgStart(g);return;}
+ if(a.type==='chat'){const text=String(a.message||'').trim().slice(0,160);if(!text)throw Error('メッセージを入力してください。');g.messages.push({id:crypto.randomUUID(),name:p.name,text});g.messages=g.messages.slice(-50);return;}
+ if(a.type==='next'){if(p.id!==g.hostId||g.phase!=='roundEnd')throw Error('ホストが次のラウンドを始めます。');g.round++;pgDeal(g);return;}
+ if(a.type!=='place'||g.phase!=='playing'||g.players[g.activeIndex]?.id!==p.id||p.out)throw Error('あなたの手番ではありません。');
+ const card=p.hand.find(c=>c.id===a.cardId);if(!card)throw Error('手札のカードを選んでください。');const pos=pgLegal(g,p).find(pos=>pos.r===a.r&&pos.x===a.x&&pos.colors.includes(card.color));if(!pos)throw Error('その場所には置けません。');
+ p.hand=p.hand.filter(c=>c.id!==card.id);g.board.push({...card,r:pos.r,x:pos.x,ownerId:p.id});g.lastMove={id:crypto.randomUUID(),name:p.name,playerId:p.id,cardId:card.id,color:card.color,r:pos.r,x:pos.x};g.lastEvents=[];pgEvent(g,`${p.name}が${{green:'みどり',yellow:'きいろ',red:'あか',purple:'むらさき',blue:'あお'}[card.color]}のペンギンを配置。`);
+ if(!p.hand.length){const returned=Math.min(2,p.score);p.score-=returned;p.out=true;g.lastEvents.push({id:crypto.randomUUID(),type:'clear',playerId:p.id,name:p.name,points:returned});pgEvent(g,`${p.name}が手札を出し切りました！${returned}点返却。`);}
+ pgAdvance(g,g.activeIndex);
+}
+function pgView(g,p){return {code:g.code,revision:g.revision,phase:g.phase,matchId:g.matchId,hostId:g.hostId,round:g.round,totalRounds:g.players.length,base:g.base,activeId:g.players[g.activeIndex]?.id,board:g.board||[],lastMove:g.lastMove,lastEvents:g.lastEvents||[],results:g.results||[],history:g.history||[],winners:g.winners||[],log:g.log,messages:g.messages,me:p?{id:p.id,hand:p.hand}:null,legalMoves:pgLegal(g,p),players:g.players.map(x=>({id:x.id,name:x.name,score:x.score,out:x.out,handCount:x.hand.length}))};}
+async function handlePenguin(storage,request){const url=new URL(request.url),route=url.pathname.split('/').pop();try{let g=await storage.get('penguin');const a=request.method==='POST'?await request.json():{};
+ if(route==='create'){if(g)return json({error:'この部屋は使用中です。'},409);const p=pgPlayer(a.name);g={code:a.code,hostId:p.id,players:[p],phase:'lobby',revision:1,log:['氷のテーブルを用意しました。'],messages:[]};await storage.put('penguin',g);return json({game:pgView(g,p),token:p.token});}
+ if(!g)return json({error:'部屋が見つかりません。'},404);
+ if(route==='join'){const p=g.players.find(p=>p.name===cleanName(a.name));if(p)return json({game:pgView(g,p),token:p.token,rejoined:true});if(g.phase!=='lobby'||g.players.length>=6)return json({error:'開始済み、または満員です。'},409);const player=pgPlayer(a.name);g.players.push(player);g.revision++;pgEvent(g,`${player.name}が参加しました。`);await storage.put('penguin',g);return json({game:pgView(g,player),token:player.token});}
+ const token=a.token||url.searchParams.get('token'),p=g.players.find(p=>p.token===token);
+ if(route==='state'&&request.method==='GET'){if(!p&&url.searchParams.get('spectate')!=='1')return json({error:'参加者情報が確認できません。'},403);return json({game:pgView(g,p)});}
+ if(route!=='action'||request.method!=='POST'||!p)return json({error:'操作できません。'},403);
+ const next=structuredClone(g),actor=next.players.find(x=>x.id===p.id);pgAction(next,actor,a);next.revision++;await storage.put('penguin',next);return json({game:pgView(next,actor)});
+ }catch(e){return json({error:e.message||'処理に失敗しました。'},400);}}
