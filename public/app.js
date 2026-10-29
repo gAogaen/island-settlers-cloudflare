@@ -224,7 +224,7 @@ $("createRoom").addEventListener("click", async () => {
 $("joinRoom").addEventListener("click", async () => {
   setError(""); const code = $("roomCode").value.trim().toUpperCase(); if (!code) return setError("部屋コードを入力してください。");
   const remembered=localStorage.getItem(`island-room-${code}`);
-  if(remembered){try {await api(`/api/rooms/${code}?playerId=${encodeURIComponent(remembered)}`);enterRoom(code,remembered);return;}catch(error){if(![403,404].includes(error.status))return setError(error.message);}}
+  if(remembered){try {const saved=await api(`/api/rooms/${code}?playerId=${encodeURIComponent(remembered)}`);if(saved.game.players.find(p=>p.id===remembered)?.name===rememberName()){enterRoom(code,remembered);return;}}catch(error){if(![403,404].includes(error.status))return setError(error.message);}}
   try { const data = await api(`/api/rooms/${code}/join`, { method: "POST", body: JSON.stringify({ playerName: rememberName() }) }); enterRoom(code, data.playerId); }
   catch (e) { setError(e.message); }
 });

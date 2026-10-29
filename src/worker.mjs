@@ -70,6 +70,9 @@ export class GameRoom {
     if (!game) return json({ error: "部屋が見つかりません。" }, 404);
     if (request.method === "POST" && url.pathname === "/join") {
       const body = await request.json();
+      const matches=game.players.filter(p=>p.name===cleanName(body.playerName));
+      if(matches.length>1)return json({error:"同じ名前の参加者が複数いるため、保存済みの参加情報から復帰してください。"},409);
+      if(matches.length===1)return json({game:publicGame(game,matches[0].id),playerId:matches[0].id,rejoined:true});
       if (game.status !== "lobby") return json({ error: "ゲーム開始後の部屋には参加できません。" }, 409);
       if (game.players.length >= 6) return json({ error: "この部屋は満員です。" }, 409);
       const player = makePlayer(body.playerName, game.players.length);
@@ -560,7 +563,7 @@ async function handleTimebomb(storage,request){
  let g=await storage.get('timebomb');const a=request.method==='POST'?await request.json():{};
  if(route==='create'){if(g)return json({error:'この部屋は使用中です。'},409);const p=tbPlayer(a.name);g={code:a.code,hostId:p.id,players:[p],phase:'lobby',revision:1,log:['部屋を作りました。'],messages:[],discard:[]};await storage.put('timebomb',g);return json({game:tbView(g,p),token:p.token});}
  if(!g)return json({error:'部屋が見つかりません。'},404);
- if(route==='join'){if(g.phase!=='lobby'||g.players.length>=8)return json({error:'開始済み、または満員です。'},409);const p=tbPlayer(a.name);g.players.push(p);g.revision++;tbLog(g,`${p.name}が参加しました。`);await storage.put('timebomb',g);return json({game:tbView(g,p),token:p.token});}
+ if(route==='join'){const matches=g.players.filter(p=>p.name===cleanName(a.name));if(matches.length>1)return json({error:'同じ名前が複数あります。保存済みの参加情報から復帰してください。'},409);if(matches.length===1)return json({game:tbView(g,matches[0]),token:matches[0].token,rejoined:true});if(g.phase!=='lobby'||g.players.length>=8)return json({error:'開始済み、または満員です。'},409);const p=tbPlayer(a.name);g.players.push(p);g.revision++;tbLog(g,`${p.name}が参加しました。`);await storage.put('timebomb',g);return json({game:tbView(g,p),token:p.token});}
  const token=url.searchParams.get('token')||a.token,p=g.players.find(x=>x.token===token);
  if(route==='state'&&request.method==='GET'){if(!p&&url.searchParams.get('spectate')!=='1')return json({error:'参加者情報が確認できません。'},403);return json({game:tbView(g,p)});}
  if(route!=='action'||request.method!=='POST'||!p)return json({error:'操作できません。'},403);
