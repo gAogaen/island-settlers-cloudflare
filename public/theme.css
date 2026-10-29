@@ -4,17 +4,79 @@ html[data-theme=dark]{color-scheme:dark;--theme-bg:#101b1d;--theme-panel:#1b2a2d
 html[data-theme=light]{color-scheme:light;--theme-bg:#f4f3eb;--theme-panel:#fffdf6;--theme-text:#233c36;--theme-muted:#5d716a;--theme-line:#c9d1c4}
 html[data-theme=dark] body{background:var(--theme-bg);color:var(--theme-text)}
 html[data-theme=dark] :is(.topbar,.top,header,.panel,.paper,.entry-form,.entry-panel,.side-panel,.hand-dock,.status-strip,.mobile-role-bar,.room-bar,.score-row,.room-rule,.rule-option,.rule-select,.result-row,.result-player,.player,.player-card,.my-seat,.round-notice,.build-guide,.resource-guide,.game-card,.game-tile,.catalog-card,.settings-card,.stat-card,dialog){background:var(--theme-panel);color:var(--theme-text);border-color:var(--theme-line)}
-html[data-theme=dark] :is(input,select,textarea,button:not(.playing-card):not(.door):not(.primary):not(.danger):not(.penguin-card):not(.wire-card)){background-color:#23393b;color:var(--theme-text);border-color:var(--theme-line)}
+html[data-theme=dark] :is(input,select,textarea,button:where(:not(.playing-card):not(.door):not(.primary):not(.danger):not(.penguin-card):not(.wire-card):not(.owned-dev-card):not(.hand-card))){background:#23393b;color:var(--theme-text);border-color:var(--theme-line)}
 html[data-theme=dark] :is(.muted,.hint,.entry-note,.board-hint,.hero-meta,.rule-option small,.rule-select small,.hand-heading,.selection-info,.entry-layout h1,.entry-layout p,.room-heading,.notes,.room-rule p,.rules-copy,.card-reference,.card-reference h3,.card-reference p){color:var(--theme-text)}
 html[data-theme=dark] :is(.game-card,.game-tile,.catalog-card) :is(h2,h3,p,small){color:var(--theme-text)}
 html[data-theme=dark] :is(.log,.messages,.full-log,.room-steps,.effect-list,.warning,.round-results,.result-players,.scoreboard){color:var(--theme-text)}
-html[data-theme=dark] :is(.playing-card,.playing-card .corner,.playing-card .pip){color:#192e29}html[data-theme=dark] .playing-card.red{color:#b83942}html[data-theme=dark] .playing-card.joker{color:#6b43a0}
+html[data-theme=dark] .playing-card{color:#192e29}html[data-theme=dark] .playing-card :is(.corner,.pip){color:inherit}html[data-theme=dark] .playing-card.red{color:#b83942}html[data-theme=dark] .playing-card.joker{color:#6b43a0}
 html[data-theme=light][data-game=reddoor]{--bg:#f1e9df;--paper:#342632;--muted:#715f68;--line:#bb9f9355}html[data-theme=light][data-game=reddoor] body{color:#342632;background:#f1e9df}html[data-theme=light][data-game=reddoor] body:before{opacity:.12}html[data-theme=light][data-game=reddoor] :is(.panel,.top,.identity,.player,dialog,.room-steps,.note,.door-memory span){background:#fff8ef;color:#342632}html[data-theme=light][data-game=reddoor] :is(button:not(.primary):not(.danger):not(.door),input,select){background:#eee2dc;color:#342632}html[data-theme=light][data-game=reddoor] :is(.hero>p,.hero h1 span,.top>a,.top #connection,.eyebrow,.quiet,a,.door-memory b){color:#814234}html[data-theme=light][data-game=reddoor] .hero h1{text-shadow:none}html[data-theme=light][data-game=reddoor] .door-memory b{background:#f7ddba}
 @media(max-width:650px){header,.top,.topbar{height:auto!important;flex-wrap:wrap}.theme-picker select{max-width:130px}.theme-picker{margin-left:auto}}
 html[data-theme=dark] :is(.game-choice,.game-choice-copy,.players-panel,.production-panel,.resource-hand,.recipe,.build-guide,.build-costs,.trade-panel,.entry-card,.create-room-card,.join-room-card,.room-card,.settings-panel,.history-panel,.rules-panel,.round-notice,.turn-dialog-content,.trade-offer-body,.victory-result-row,.discard-dialog-content,.dev-card-dialog,.modal-card,.card-effect,.help-box,.result-player,#actionGuideDialog,#actionGuideSteps){background:var(--theme-panel)!important;color:var(--theme-text);border-color:var(--theme-line)}
-html[data-theme=dark] :is(.game-choice-copy,.entry-panel,.entry-form,.panel,.side-panel,.paper,.hand-dock,.rules-copy,.rule-form,.result-dialog,.game-picker,.home-shell) :is(h1,h2,h3,p,label,small,summary){color:var(--theme-text)}
+html[data-theme=dark] :is(.game-choice-copy,.entry-panel,.entry-form,.rules-copy,.rule-form,.game-picker) :is(h1,h2,h3,p,label,summary){color:var(--theme-text)}
 html[data-theme=dark] :is(#actionGuideTitle,#actionGuideDescription,#actionGuideSteps,#actionGuideLater,.game-choice-copy strong){color:var(--theme-text)}
 html[data-theme=dark] .game-choice-copy>div>span{background:#334e4b;color:#eaf6ed}html[data-theme=dark] .catalog-card{background:#fff8e9;color:#18392d}html[data-theme=dark] .catalog-card.red{color:#b83942}
 html[data-theme=light][data-game=reddoor] :is(.entry-panel,.lobby) :is(label,small,p){color:#55434b}
 html[data-theme=dark] .mini-key.known{font-size:9px;min-width:50px;height:auto;padding:3px}
 html[data-theme=dark][data-game=reddoor]{--paper:#eee5d7;--bg:#100e14}html[data-theme=dark][data-game=reddoor] .door-memory span{background:#3b3335;color:#f3e5d4}html[data-theme=light][data-game=reddoor] .door-memory span{color:#342632;background:#e8d8c6}html[data-theme=dark] .identity{background:#1d252d;color:var(--theme-text)}
+
+/* Ivory game pieces keep dark ink in both themes. Never recolor their text
+   through a surrounding panel or hand dock. Tooltips have a separate palette. */
+html[data-theme=dark] .resource-card{background:linear-gradient(#fffdf2,#f3e5c6);border-color:#cbb990;color:#352f24}
+html[data-theme=dark] .resource-card b{color:#352f24}
+html[data-theme=dark] .resource-card small{color:#665b45}
+html[data-theme=dark] .owned-dev-card{background:linear-gradient(135deg,#fff8df,#f0dfb6);border-color:#cbb887;color:#624e2e}
+html[data-theme=dark] .owned-dev-card.dev-knight{background:linear-gradient(135deg,#f7f0e4,#ded5c5)}
+html[data-theme=dark] .owned-dev-card.dev-victory{background:linear-gradient(135deg,#fff3c1,#ebd185)}
+html[data-theme=dark] .owned-dev-card :is(.owned-dev-symbol,.owned-dev-name,.owned-dev-count){color:#48381e}
+html[data-theme=dark] .owned-dev-card .owned-dev-timing{color:#665337}
+html[data-theme=dark] .dev-effect-tooltip{background:#233c34;color:#fffbee}
+html[data-theme=dark] .dev-effect-tooltip strong{color:#f0cf84}
+html[data-theme=dark] .dev-effect-tooltip em{color:#c2d1bc}
+/* Catan: player rows, controls and resource-choice dialogs. */
+html[data-theme=dark] :is(.player-row,.room-share,.building-guide,.phase-notice,.board-toolbar,.board-legend,.lobby-player-chip,.resume-room-list button,.development-help,.bank-trade-info,.dev-effect-info,.trade-field,.trade-material,.discard-resource,.discard-card,.dev-resource-choice,.robber-victim,.victory-result-row){background:#233438;color:#eff3ec;border-color:#4c6362}
+html[data-theme=dark] .player-row.active{background:#2c4842;box-shadow:inset 3px 0 #8ac8ac}
+html[data-theme=dark] :is(.player-row-name,.player-points,.player-public-stats,.player-public-stats b,.self-player-label,.player-row-meta,.hand-total,.game-log p,.game-log p:first-child,.board-toolbar,.guide-heading small,.recipe-status,.dev-help,.empty-development,.development-hand-heading small,.production-row small,.no-production,.production-seven,.board-empty p){color:#cadbd4}
+html[data-theme=dark] .player-row-name{color:#f2f5ef}
+html[data-theme=dark] :is(.count-pill,.knight-stat,.dev-chip,.player-award,.army-award,.road-award){background:#33483f;color:#edf2d5;border-color:#839773}
+html[data-theme=dark] .recipe{background:#26383a!important;color:#eff3ec}
+html[data-theme=dark] .recipe.affordable{background:#294739!important;border-color:#86b78c}
+html[data-theme=dark] .recipe :is(.recipe-name,.recipe-name i,.recipe-resource,.recipe-resource b,.recipe-status){color:#e6eedf}
+html[data-theme=dark] .recipe-resource.missing b{color:#ffb49b}
+html[data-theme=dark] .recipe.affordable .recipe-status{color:#b4e7ac}
+html[data-theme=dark] :is(input,textarea)::placeholder{color:#b6c7c0;opacity:1}
+html[data-theme=dark] .game-log p{border-color:#455a58}
+/* Penguin and Timebomb: dark seats, readable status chips, unchanged artwork. */
+html[data-theme=dark] :is(.player-chip,.seat,.memory>div,.seat-head,.table-notice,.result-row,.score-row,.target-card,.card-reference article){background:#203339;color:#eff3ec;border-color:#4b666c}
+html[data-theme=dark] .player-chip.active{background:#39453a;border-color:#e6bc5b}
+html[data-theme=dark] :is(.player-data b,.player-data small,.player-chip .player-status,.seat small,.hand-heading small,.hand-status,.hand-status small,.table-caption,.result-name small,.score-row small){color:#c9dedf}
+html[data-theme=dark] .memory :is(strong,small){color:#eff3ec}
+html[data-theme=dark] .role{background:#d9edf3;color:#15536e}
+html[data-theme=dark] .role.bomber{background:#f9ded4;color:#8a3025}
+html[data-theme=dark] #winnerDialog #roles .winner-player{background:#203339;color:#eff3ec;border-color:#4b666c}
+html[data-theme=dark] #winnerDialog .winner-player-name small{color:#bed4c9}
+/* Daifugo: the red/black ink belongs to the card, including all suit corners. */
+html[data-theme=dark] .playing-card{background:#fffaf0;color:#192e29}
+html[data-theme=dark] .playing-card.red{color:#b83942}
+html[data-theme=dark] .playing-card.joker{color:#6b43a0}
+html[data-theme=dark] .playing-card :is(.corner,.pip,.corner span,.corner small){color:inherit}
+html[data-theme=dark] :is(.room-rule p,.rule-option small,.rule-select small,.score-row small,.hand-heading small){color:#c6d8ce}
+html[data-theme=dark] :is(.warning,.effect-list,.room-steps){background:#30413c;color:#f2e4bf;border-color:#a59160}
+html[data-theme=dark] :is(.status-strip,.hand-dock){border-color:#5c7369}
+html[data-theme=dark] .primary-button{background:#27654f;color:#fff}
+html[data-theme=dark] :is(.winner-role.police){background:#d9edf3;color:#15536e}
+html[data-theme=dark] :is(.winner-role.bomber){background:#f9ded4;color:#8a3025}
+html[data-theme=dark] :is(.top>a,header>a,.brand,.brand b){color:#eff3ec}
+html[data-theme=dark] .score-row strong{color:#f2d899}
+html[data-theme=dark][data-game=penguin] :is(.stage-toolbar,.ice-legend){background:#20333b;color:#e8f4f8;border-color:#58727d}
+html[data-theme=dark][data-game=penguin] :is(.stage-toolbar b,.stage-toolbar p,.ice-legend small,.score,.score small){color:#d4e9ed}
+html[data-theme=dark][data-game=penguin] .board-scroll svg text{fill:#30586c}
+html[data-theme=dark] .sidebar-auto-skip{background:#233438;color:#eff3ec;border-color:#4c6362}
+html[data-theme=dark] .sidebar-auto-skip :is(small,label,span){color:#cadbd4}
+
+html[data-theme=dark] .sidebar-auto-skip b{color:#edf5eb}
+html[data-theme=dark] .sidebar-auto-skip:has(input:checked){background:#294739;border-color:#86b78c}
+html[data-theme=dark] :is(.discard-choice,.development-effect,.development-choice){background:#233438;color:#eff3ec;border-color:#61786c}
+html[data-theme=dark] :is(.development-resource.selected,.robber-victim.selected,.preset-buttons .selected){background:#315b47;color:#fff5d5;border-color:#c9ad67}
+html[data-theme=dark] .guided-status{color:#f2d899}
+html[data-theme=dark] .guided-info{background:#2b4039;color:#dcebdd;border-color:#617b68}
+html[data-theme=dark] :is(.expanded-game-log p,.log-dialog-header p,.guided-dialog-header p){color:#cadbd4}
