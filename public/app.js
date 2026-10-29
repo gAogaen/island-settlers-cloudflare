@@ -9,6 +9,7 @@ let lastVictoryNoticeKey = null, pendingVictorySoundKey = null;
 let lastDiceResultKey = null, diceResultTimer = null;
 let lastTurnNotice = null, pendingTurnNotice = null;
 let audioContext = null, lastTurnSoundKey = null, pendingTurnSoundKey = null;
+let developmentSceneKey=null,developmentSceneCursor=null,developmentSceneQueue=[],developmentSceneTimer=null,developmentSceneActive=false,developmentSceneEpoch=0;
 let autoSkipSpecial = localStorage.getItem("island-auto-skip-special")==="1", autoSkipInFlight = false, autoSkipLastKey = null;
 let robberGuideKey=null, robberSubmitting=false, tradeDialogMode=null;
 let discardDraft=null, discardGuideKey=null, discardSubmitting=false;
@@ -64,6 +65,7 @@ function rememberName() { return ($("playerName").value || "プレイヤー").tr
 function setError(message = "") { $("homeError").textContent = message; }
 function showToast(message) { const el = $("toast"); el.textContent = message; el.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 2400); }
 function resetActionNotifications() {
+  resetDevelopmentScenes();
   notificationEpoch++;notificationCursor=null;notificationItems=[];$("actionNotifications").innerHTML="";
   impactCursor=null;impactHex=null;clearTimeout(impactTimer);$("impactNotice").hidden=true;$("diceImpact").hidden=true;$("impactEffect").hidden=true;$("diceImpactEffect").hidden=true;
 }
@@ -271,7 +273,7 @@ function render() {
     else $("turnBanner").textContent = `${active?.name} のターン${isMyTurn ? " · あなたの番" : ""}`;
     renderActions(g, me, isMyTurn);
   }
-  renderPlayers(g, me); if(!spectating)renderHand(me,g); renderLog(g); if(!spectating)renderBuildingGuide(g, me); renderProduction(g); maybePlayTurnSound(g); maybeShowDiceResult(g); if(!spectating){maybeShowTurnNotice(g, me); maybeShowTradeOffer(g,me); saveOwnMatchResult(g,me);} maybeShowVictory(g); if($("developmentDialog").open)updateDevelopmentDialog(); syncGuidedDialogs(g); updateIdleReminder();
+  renderPlayers(g, me); if(!spectating)renderHand(me,g); renderLog(g); if(!spectating)renderBuildingGuide(g, me); renderProduction(g); maybePlayTurnSound(g); maybeShowDiceResult(g); if(!spectating){maybeShowTurnNotice(g, me); maybeShowTradeOffer(g,me); saveOwnMatchResult(g,me);} maybeShowVictory(g); if($("developmentDialog").open)updateDevelopmentDialog(); syncGuidedDialogs(g); updateIdleReminder(); syncDevelopmentScenes(g);
 }
 function renderPlayers(g, me) {
   $("playersList").innerHTML=g.players.map((p,i)=>{
@@ -949,3 +951,34 @@ $("chooseCatan").onclick=showCatanLobby;
 $("backToGames").onclick=()=>{$("homeView").hidden=true;$("gamePicker").hidden=false;history.replaceState({},"","/");};
 if(!requestedCode&&params.get("game")==="catan")showCatanLobby();
 if(requestedCode){$("gamePicker").hidden=true;if(!roomCode)$("homeView").hidden=false;}
+
+// Public card announcements are shown to every seat, including spectators.
+
+function resetDevelopmentScenes(){developmentSceneEpoch++;developmentSceneKey=null;developmentSceneCursor=null;developmentSceneQueue=[];developmentSceneActive=false;clearTimeout(developmentSceneTimer);const el=$("developmentScene");if(!el)return;try{el.hidePopover?.();}catch{}el.hidden=true;if(el.parentElement?.tagName==='DIALOG')document.body.append(el);}
+function syncDevelopmentScenes(g){
+ const key=g.code+':'+(g.matchId||g.createdAt),revision=Number(g.revision)||0;
+ if(key!==developmentSceneKey){resetDevelopmentScenes();developmentSceneKey=key;developmentSceneCursor=revision;return;}
+ const events=(g.actionEvents||[]).filter(e=>e.development&&e.revision>developmentSceneCursor&&e.revision<=revision).sort((a,b)=>a.revision-b.revision);
+ developmentSceneCursor=Math.max(developmentSceneCursor||0,revision);
+ for(const e of events)if(['monopoly','plenty','knight','road'].includes(e.development.card))developmentSceneQueue.push(e.development);
+ if(!developmentSceneActive)showNextDevelopmentScene();
+}
+function closeDevelopmentScene(){clearTimeout(developmentSceneTimer);const el=$("developmentScene");try{el.hidePopover?.();}catch{}el.hidden=true;if(el.parentElement?.tagName==='DIALOG')document.body.append(el);developmentSceneActive=false;showNextDevelopmentScene();}
+function showNextDevelopmentScene(){
+ if(developmentSceneActive||!developmentSceneQueue.length)return;
+ const effect=developmentSceneQueue.shift(),el=$("developmentScene"),cards={monopoly:['独占','資源をひとり占め！','✦'],plenty:['豊作','島に恵みがもたらされた！','❧'],knight:['騎士','騎士が出動！ 盗賊の移動先に注目！','♞'],road:['街道建設','新たな道が島をつなぐ！','━']},info=cards[effect.card];
+ if(!info)return;developmentSceneActive=true;el.dataset.card=effect.card;
+ $("developmentSceneActor").textContent=effect.playerName+' が発展カードを使用';
+ $("developmentSceneTitle").textContent=info[0];$("developmentSceneArt").textContent=info[2];
+ $("developmentSceneDetail").textContent=effect.card==='monopoly'&&RESOURCE[effect.resource]?RESOURCE[effect.resource][1]+'を合計'+effect.total+'枚獲得！':effect.card==='road'?effect.roads+'本の道を建設！':info[1];
+ const resources=effect.card==='monopoly'&&RESOURCE[effect.resource]?{[effect.resource]:effect.total}:effect.card==='plenty'?effect.resources||{}:{};
+ $("developmentSceneResources").innerHTML=RESOURCES.filter(r=>r in resources).map(r=>'<span><img src="/assets/'+r+'.svg" alt="'+RESOURCE[r][1]+'"><b>'+RESOURCE[r][1]+' ×'+Number(resources[r])+'</b></span>').join('');
+ el.querySelector('.development-scene-sparks').innerHTML=Array.from({length:18},(_,i)=>'<i style="--angle:'+(i*20)+'deg;--delay:'+((i%4)*.08)+'s"></i>').join('');
+ mountDevelopmentScene();
+ playDevelopmentSceneSound(effect.card);const epoch=developmentSceneEpoch;developmentSceneTimer=setTimeout(()=>{if(epoch===developmentSceneEpoch)closeDevelopmentScene();},4800);
+}
+function playDevelopmentSceneSound(card){if(!soundOn||!audioContext||audioContext.state!=='running')return;try{const notes=card==='monopoly'?[196,247,294,392]:card==='knight'?[262,392,523,784]:card==='plenty'?[330,440,554,660]:[294,370,440,587];notes.forEach((f,i)=>{const at=audioContext.currentTime+i*.12,osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.type='triangle';osc.frequency.setValueAtTime(f,at);gain.gain.setValueAtTime(.0001,at);gain.gain.exponentialRampToValueAtTime(.055,at+.025);gain.gain.exponentialRampToValueAtTime(.0001,at+.65);osc.connect(gain);gain.connect(audioContext.destination);osc.start(at);osc.stop(at+.67);osc.onended=()=>{osc.disconnect();gain.disconnect();};});}catch{}}
+$("closeDevelopmentScene").onclick=closeDevelopmentScene;
+
+function mountDevelopmentScene(){if(!developmentSceneActive)return;const el=$("developmentScene"),modal=document.querySelector("dialog[open]"),parent=modal||document.body;if(el.showPopover&&el.parentElement!==parent){try{el.hidePopover();}catch{}parent.append(el);}el.hidden=false;try{el.showPopover?.();}catch{}}
+document.querySelectorAll("dialog").forEach(d=>d.addEventListener("close",()=>{if(developmentSceneActive)mountDevelopmentScene();}));

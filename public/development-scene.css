@@ -1,0 +1,26 @@
+
+.development-scene{--scene-accent:#e6b958;position:fixed;inset:0;z-index:1000;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:20px;border:0;background:radial-gradient(ellipse,#071d28ae,transparent 76%);color:#fff3d2;overflow:hidden;pointer-events:none;display:grid;place-items:center;isolation:isolate}
+.development-scene[hidden]{display:none!important}.development-scene::backdrop{background:transparent;pointer-events:none}
+.development-scene[data-card=knight]{--scene-accent:#9ad7ed}.development-scene[data-card=plenty]{--scene-accent:#b3e292}.development-scene[data-card=road]{--scene-accent:#f4b47b}
+.development-scene-card{position:relative;z-index:2;width:min(560px,92vw);padding:28px 32px;text-align:center;border:2px solid var(--scene-accent);border-radius:24px;background:radial-gradient(ellipse at 50% 0,#536344,#173b37 58%,#122b30);color:#fff3d2;box-shadow:0 0 0 7px #e8c77022,0 0 95px #e7c36855,0 25px 90px #0008;animation:development-card-arrive .65s cubic-bezier(.16,.8,.2,1) both}
+.development-scene[data-card=knight] .development-scene-card{background:radial-gradient(ellipse at 50% 0,#396174,#152e44 70%)}
+.development-scene[data-card=monopoly] .development-scene-card{background:radial-gradient(ellipse at 50% 0,#78572d,#392b32 70%)}
+.development-scene-tag{font:700 11px system-ui;letter-spacing:.25em;color:var(--scene-accent)}
+.development-scene-card p{font-size:16px;line-height:1.7;margin:12px 0;color:#f4ead6}
+.development-scene-art{font:100px Georgia;color:var(--scene-accent);height:115px;line-height:1.1;filter:drop-shadow(0 0 22px #e7c46870);animation:development-emblem 1.6s ease-in-out infinite alternate}
+.development-scene-card h2{font-size:clamp(40px,7vw,68px);letter-spacing:.14em;margin:7px 0;color:var(--scene-accent);text-shadow:0 3px 16px #0005}
+.development-scene-resources{display:flex;justify-content:center;gap:14px;margin:14px 0}.development-scene-resources>span{display:flex;align-items:center;gap:8px;background:#071d2688;color:#fff3d2;border-radius:12px;padding:9px 13px;border:1px solid #fff3}.development-scene-resources img{width:45px;height:52px}.development-scene-resources b{font-size:16px}
+.development-scene-card button{pointer-events:auto;background:#fff0d3;color:#3d3428;border:1px solid #e6c47e;border-radius:10px;padding:10px 25px;cursor:pointer;font-weight:700}.development-scene-card small{display:block;font-size:11px;margin-top:10px;color:#cbd4c3}
+.development-scene-rays{position:absolute;width:150vmax;height:150vmax;background:repeating-conic-gradient(from 0deg,transparent 0deg 12deg,#e7c87b19 12deg 20deg);animation:development-rays 24s linear infinite}
+.development-scene-sparks{position:absolute;inset:50% auto auto 50%;z-index:3;pointer-events:none}.development-scene-sparks i{position:absolute;width:8px;height:14px;background:var(--scene-accent);box-shadow:0 0 12px var(--scene-accent);animation:development-spark 2s var(--delay) ease-out 2;transform:rotate(var(--angle));opacity:0}
+@keyframes development-card-arrive{from{opacity:0;transform:scale(.6) translateY(45px) rotate(-6deg)}to{opacity:1;transform:scale(1) translateY(0) rotate(0)}}
+@keyframes development-emblem{to{transform:scale(1.08);filter:drop-shadow(0 0 32px #e7c468b0)}}@keyframes development-rays{to{transform:rotate(360deg)}}@keyframes development-spark{10%{opacity:1}90%,100%{opacity:0;transform:rotate(var(--angle)) translateY(-390px) rotate(130deg)}}
+@media(max-width:600px){.development-scene{padding:12px}.development-scene-card{padding:22px 16px}.development-scene-art{font-size:80px;height:88px}.development-scene-card p{font-size:14px}.development-scene-resources>span{padding:6px 9px}.development-scene-resources b{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.development-scene *{animation:none!important;transition:none!important}.development-scene-sparks{display:none}}
+.development-scene .development-scene-tag{color:#fff1d1}
+.development-scene-card small{color:#f0ead8}
+
+#developmentScene .development-scene-card h2{color:var(--scene-accent)}
+#developmentScene .development-scene-card p{color:#f4ead6}
+#developmentScene .development-scene-card small{color:#f0ead8}
+#developmentScene .development-scene-card button{background:#fff0d3;color:#3d3428;border-color:#e6c47e}

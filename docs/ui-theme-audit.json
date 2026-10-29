@@ -1,0 +1,1015 @@
+{
+  "environment": "Local fixtures using actual game renderers",
+  "method": "Computed text colors over solid backgrounds and gradient stop samples. Disabled controls, SVG artwork and aria-hidden decorations excluded. Normal text 4.5:1, large text 3:1. Not a full accessibility or production end-to-end audit.",
+  "desktop": [
+    {
+      "area": "entry",
+      "page": "index",
+      "theme": "light",
+      "failures": [],
+      "modal": "",
+      "samples": 40
+    },
+    {
+      "area": "entry",
+      "page": "timebomb",
+      "theme": "light",
+      "failures": [],
+      "modal": "",
+      "samples": 19
+    },
+    {
+      "area": "entry",
+      "page": "penguin",
+      "theme": "light",
+      "failures": [],
+      "modal": "",
+      "samples": 21
+    },
+    {
+      "area": "entry",
+      "page": "reddoor",
+      "theme": "light",
+      "failures": [],
+      "modal": "",
+      "samples": 84
+    },
+    {
+      "area": "entry",
+      "page": "daifugo",
+      "theme": "light",
+      "failures": [],
+      "modal": "",
+      "samples": 60
+    },
+    {
+      "area": "lobby",
+      "page": "index",
+      "theme": "light",
+      "failures": [],
+      "modal": "",
+      "samples": 88
+    },
+    {
+      "area": "lobby",
+      "page": "timebomb",
+      "theme": "light",
+      "failures": [],
+      "modal": "",
+      "samples": 37
+    },
+    {
+      "area": "lobby",
+      "page": "penguin",
+      "theme": "light",
+      "failures": [],
+      "modal": "",
+      "samples": 50
+    },
+    {
+      "area": "lobby",
+      "page": "reddoor",
+      "theme": "light",
+      "failures": [],
+      "modal": "",
+      "samples": 110
+    },
+    {
+      "area": "lobby",
+      "page": "daifugo",
+      "theme": "light",
+      "failures": [],
+      "modal": "",
+      "samples": 70
+    },
+    {
+      "area": "contrast",
+      "page": "index",
+      "theme": "light",
+      "failures": [],
+      "modal": "",
+      "samples": 97
+    },
+    {
+      "area": "contrast",
+      "page": "timebomb",
+      "theme": "light",
+      "failures": [],
+      "modal": "",
+      "samples": 50
+    },
+    {
+      "area": "contrast",
+      "page": "penguin",
+      "theme": "light",
+      "failures": [],
+      "modal": "",
+      "samples": 54
+    },
+    {
+      "area": "contrast",
+      "page": "reddoor",
+      "theme": "light",
+      "failures": [],
+      "modal": "",
+      "samples": 116
+    },
+    {
+      "area": "contrast",
+      "page": "daifugo",
+      "theme": "light",
+      "failures": [],
+      "modal": "",
+      "samples": 74
+    },
+    {
+      "area": "modal",
+      "page": "index",
+      "theme": "light",
+      "failures": [],
+      "modal": "discardDialog",
+      "samples": 28
+    },
+    {
+      "area": "modal",
+      "page": "index",
+      "theme": "light",
+      "failures": [],
+      "modal": "robberDialog",
+      "samples": 6
+    },
+    {
+      "area": "modal",
+      "page": "index",
+      "theme": "light",
+      "failures": [],
+      "modal": "tradeDialog",
+      "samples": 9
+    },
+    {
+      "area": "modal",
+      "page": "index",
+      "theme": "light",
+      "failures": [],
+      "modal": "developmentDialog",
+      "samples": 28
+    },
+    {
+      "area": "modal",
+      "page": "index",
+      "theme": "light",
+      "failures": [],
+      "modal": "turnDialog",
+      "samples": 8
+    },
+    {
+      "area": "modal",
+      "page": "index",
+      "theme": "light",
+      "failures": [],
+      "modal": "diceResultDialog",
+      "samples": 11
+    },
+    {
+      "area": "modal",
+      "page": "index",
+      "theme": "light",
+      "failures": [],
+      "modal": "tradeOfferDialog",
+      "samples": 10
+    },
+    {
+      "area": "modal",
+      "page": "index",
+      "theme": "light",
+      "failures": [],
+      "modal": "victoryDialog",
+      "samples": 32
+    },
+    {
+      "area": "modal",
+      "page": "index",
+      "theme": "light",
+      "failures": [],
+      "modal": "logDialog",
+      "samples": 6
+    },
+    {
+      "area": "modal",
+      "page": "timebomb",
+      "theme": "light",
+      "failures": [],
+      "modal": "roundDialog",
+      "samples": 5
+    },
+    {
+      "area": "modal",
+      "page": "timebomb",
+      "theme": "light",
+      "failures": [],
+      "modal": "inspectDialog",
+      "samples": 12
+    },
+    {
+      "area": "modal",
+      "page": "timebomb",
+      "theme": "light",
+      "failures": [],
+      "modal": "cutDialog",
+      "samples": 4
+    },
+    {
+      "area": "modal",
+      "page": "timebomb",
+      "theme": "light",
+      "failures": [],
+      "modal": "resultDialog",
+      "samples": 3
+    },
+    {
+      "area": "modal",
+      "page": "timebomb",
+      "theme": "light",
+      "failures": [],
+      "modal": "winnerDialog",
+      "samples": 14
+    },
+    {
+      "area": "modal",
+      "page": "timebomb",
+      "theme": "light",
+      "failures": [],
+      "modal": "rulesDialog",
+      "samples": 11
+    },
+    {
+      "area": "modal",
+      "page": "timebomb",
+      "theme": "light",
+      "failures": [],
+      "modal": "actionGuideDialog",
+      "samples": 8
+    },
+    {
+      "area": "modal",
+      "page": "penguin",
+      "theme": "light",
+      "failures": [],
+      "modal": "placeDialog",
+      "samples": 5
+    },
+    {
+      "area": "modal",
+      "page": "penguin",
+      "theme": "light",
+      "failures": [],
+      "modal": "roundDialog",
+      "samples": 30
+    },
+    {
+      "area": "modal",
+      "page": "penguin",
+      "theme": "light",
+      "failures": [],
+      "modal": "rulesDialog",
+      "samples": 8
+    },
+    {
+      "area": "modal",
+      "page": "penguin",
+      "theme": "light",
+      "failures": [],
+      "modal": "actionGuideDialog",
+      "samples": 7
+    },
+    {
+      "area": "modal",
+      "page": "reddoor",
+      "theme": "light",
+      "failures": [],
+      "modal": "roomDialog",
+      "samples": 7
+    },
+    {
+      "area": "modal",
+      "page": "reddoor",
+      "theme": "light",
+      "failures": [],
+      "modal": "resultDialog",
+      "samples": 17
+    },
+    {
+      "area": "modal",
+      "page": "reddoor",
+      "theme": "light",
+      "failures": [],
+      "modal": "rulesDialog",
+      "samples": 49
+    },
+    {
+      "area": "modal",
+      "page": "reddoor",
+      "theme": "light",
+      "failures": [],
+      "modal": "logDialog",
+      "samples": 3
+    },
+    {
+      "area": "modal",
+      "page": "reddoor",
+      "theme": "light",
+      "failures": [],
+      "modal": "actionGuideDialog",
+      "samples": 7
+    },
+    {
+      "area": "modal",
+      "page": "daifugo",
+      "theme": "light",
+      "failures": [],
+      "modal": "playDialog",
+      "samples": 11
+    },
+    {
+      "area": "modal",
+      "page": "daifugo",
+      "theme": "light",
+      "failures": [],
+      "modal": "taskDialog",
+      "samples": 20
+    },
+    {
+      "area": "modal",
+      "page": "daifugo",
+      "theme": "light",
+      "failures": [],
+      "modal": "settingsDialog",
+      "samples": 48
+    },
+    {
+      "area": "modal",
+      "page": "daifugo",
+      "theme": "light",
+      "failures": [],
+      "modal": "resultDialog",
+      "samples": 29
+    },
+    {
+      "area": "modal",
+      "page": "daifugo",
+      "theme": "light",
+      "failures": [],
+      "modal": "rulesDialog",
+      "samples": 11
+    },
+    {
+      "area": "modal",
+      "page": "daifugo",
+      "theme": "light",
+      "failures": [],
+      "modal": "logDialog",
+      "samples": 3
+    },
+    {
+      "area": "modal",
+      "page": "daifugo",
+      "theme": "light",
+      "failures": [],
+      "modal": "actionGuideDialog",
+      "samples": 7
+    },
+    {
+      "area": "entry",
+      "page": "index",
+      "theme": "dark",
+      "failures": [],
+      "modal": "",
+      "samples": 40
+    },
+    {
+      "area": "entry",
+      "page": "timebomb",
+      "theme": "dark",
+      "failures": [],
+      "modal": "",
+      "samples": 19
+    },
+    {
+      "area": "entry",
+      "page": "penguin",
+      "theme": "dark",
+      "failures": [],
+      "modal": "",
+      "samples": 21
+    },
+    {
+      "area": "entry",
+      "page": "reddoor",
+      "theme": "dark",
+      "failures": [],
+      "modal": "",
+      "samples": 84
+    },
+    {
+      "area": "entry",
+      "page": "daifugo",
+      "theme": "dark",
+      "failures": [],
+      "modal": "",
+      "samples": 60
+    },
+    {
+      "area": "lobby",
+      "page": "index",
+      "theme": "dark",
+      "failures": [],
+      "modal": "",
+      "samples": 88
+    },
+    {
+      "area": "lobby",
+      "page": "timebomb",
+      "theme": "dark",
+      "failures": [],
+      "modal": "",
+      "samples": 37
+    },
+    {
+      "area": "lobby",
+      "page": "penguin",
+      "theme": "dark",
+      "failures": [],
+      "modal": "",
+      "samples": 50
+    },
+    {
+      "area": "lobby",
+      "page": "reddoor",
+      "theme": "dark",
+      "failures": [],
+      "modal": "",
+      "samples": 110
+    },
+    {
+      "area": "lobby",
+      "page": "daifugo",
+      "theme": "dark",
+      "failures": [],
+      "modal": "",
+      "samples": 70
+    },
+    {
+      "area": "contrast",
+      "page": "index",
+      "theme": "dark",
+      "failures": [],
+      "modal": "",
+      "samples": 97
+    },
+    {
+      "area": "contrast",
+      "page": "timebomb",
+      "theme": "dark",
+      "failures": [],
+      "modal": "",
+      "samples": 50
+    },
+    {
+      "area": "contrast",
+      "page": "penguin",
+      "theme": "dark",
+      "failures": [],
+      "modal": "",
+      "samples": 53
+    },
+    {
+      "area": "contrast",
+      "page": "reddoor",
+      "theme": "dark",
+      "failures": [],
+      "modal": "",
+      "samples": 116
+    },
+    {
+      "area": "contrast",
+      "page": "daifugo",
+      "theme": "dark",
+      "failures": [],
+      "modal": "",
+      "samples": 74
+    },
+    {
+      "area": "modal",
+      "page": "index",
+      "theme": "dark",
+      "failures": [],
+      "modal": "discardDialog",
+      "samples": 28
+    },
+    {
+      "area": "modal",
+      "page": "index",
+      "theme": "dark",
+      "failures": [],
+      "modal": "robberDialog",
+      "samples": 6
+    },
+    {
+      "area": "modal",
+      "page": "index",
+      "theme": "dark",
+      "failures": [],
+      "modal": "tradeDialog",
+      "samples": 9
+    },
+    {
+      "area": "modal",
+      "page": "index",
+      "theme": "dark",
+      "failures": [],
+      "modal": "developmentDialog",
+      "samples": 28
+    },
+    {
+      "area": "modal",
+      "page": "index",
+      "theme": "dark",
+      "failures": [],
+      "modal": "turnDialog",
+      "samples": 8
+    },
+    {
+      "area": "modal",
+      "page": "index",
+      "theme": "dark",
+      "failures": [],
+      "modal": "diceResultDialog",
+      "samples": 11
+    },
+    {
+      "area": "modal",
+      "page": "index",
+      "theme": "dark",
+      "failures": [],
+      "modal": "tradeOfferDialog",
+      "samples": 10
+    },
+    {
+      "area": "modal",
+      "page": "index",
+      "theme": "dark",
+      "failures": [],
+      "modal": "victoryDialog",
+      "samples": 32
+    },
+    {
+      "area": "modal",
+      "page": "index",
+      "theme": "dark",
+      "failures": [],
+      "modal": "logDialog",
+      "samples": 6
+    },
+    {
+      "area": "modal",
+      "page": "timebomb",
+      "theme": "dark",
+      "failures": [],
+      "modal": "roundDialog",
+      "samples": 5
+    },
+    {
+      "area": "modal",
+      "page": "timebomb",
+      "theme": "dark",
+      "failures": [],
+      "modal": "inspectDialog",
+      "samples": 12
+    },
+    {
+      "area": "modal",
+      "page": "timebomb",
+      "theme": "dark",
+      "failures": [],
+      "modal": "cutDialog",
+      "samples": 4
+    },
+    {
+      "area": "modal",
+      "page": "timebomb",
+      "theme": "dark",
+      "failures": [],
+      "modal": "resultDialog",
+      "samples": 3
+    },
+    {
+      "area": "modal",
+      "page": "timebomb",
+      "theme": "dark",
+      "failures": [],
+      "modal": "winnerDialog",
+      "samples": 14
+    },
+    {
+      "area": "modal",
+      "page": "timebomb",
+      "theme": "dark",
+      "failures": [],
+      "modal": "rulesDialog",
+      "samples": 11
+    },
+    {
+      "area": "modal",
+      "page": "timebomb",
+      "theme": "dark",
+      "failures": [],
+      "modal": "actionGuideDialog",
+      "samples": 8
+    },
+    {
+      "area": "modal",
+      "page": "penguin",
+      "theme": "dark",
+      "failures": [],
+      "modal": "placeDialog",
+      "samples": 5
+    },
+    {
+      "area": "modal",
+      "page": "penguin",
+      "theme": "dark",
+      "failures": [],
+      "modal": "roundDialog",
+      "samples": 30
+    },
+    {
+      "area": "modal",
+      "page": "penguin",
+      "theme": "dark",
+      "failures": [],
+      "modal": "rulesDialog",
+      "samples": 8
+    },
+    {
+      "area": "modal",
+      "page": "penguin",
+      "theme": "dark",
+      "failures": [],
+      "modal": "actionGuideDialog",
+      "samples": 7
+    },
+    {
+      "area": "modal",
+      "page": "reddoor",
+      "theme": "dark",
+      "failures": [],
+      "modal": "roomDialog",
+      "samples": 7
+    },
+    {
+      "area": "modal",
+      "page": "reddoor",
+      "theme": "dark",
+      "failures": [],
+      "modal": "resultDialog",
+      "samples": 17
+    },
+    {
+      "area": "modal",
+      "page": "reddoor",
+      "theme": "dark",
+      "failures": [],
+      "modal": "rulesDialog",
+      "samples": 49
+    },
+    {
+      "area": "modal",
+      "page": "reddoor",
+      "theme": "dark",
+      "failures": [],
+      "modal": "logDialog",
+      "samples": 3
+    },
+    {
+      "area": "modal",
+      "page": "reddoor",
+      "theme": "dark",
+      "failures": [],
+      "modal": "actionGuideDialog",
+      "samples": 7
+    },
+    {
+      "area": "modal",
+      "page": "daifugo",
+      "theme": "dark",
+      "failures": [],
+      "modal": "playDialog",
+      "samples": 11
+    },
+    {
+      "area": "modal",
+      "page": "daifugo",
+      "theme": "dark",
+      "failures": [],
+      "modal": "taskDialog",
+      "samples": 20
+    },
+    {
+      "area": "modal",
+      "page": "daifugo",
+      "theme": "dark",
+      "failures": [],
+      "modal": "settingsDialog",
+      "samples": 48
+    },
+    {
+      "area": "modal",
+      "page": "daifugo",
+      "theme": "dark",
+      "failures": [],
+      "modal": "resultDialog",
+      "samples": 29
+    },
+    {
+      "area": "modal",
+      "page": "daifugo",
+      "theme": "dark",
+      "failures": [],
+      "modal": "rulesDialog",
+      "samples": 11
+    },
+    {
+      "area": "modal",
+      "page": "daifugo",
+      "theme": "dark",
+      "failures": [],
+      "modal": "logDialog",
+      "samples": 3
+    },
+    {
+      "area": "modal",
+      "page": "daifugo",
+      "theme": "dark",
+      "failures": [],
+      "modal": "actionGuideDialog",
+      "samples": 7
+    },
+    {
+      "area": "catan-home",
+      "page": "index",
+      "theme": "light",
+      "failures": [],
+      "modal": "",
+      "samples": 83
+    },
+    {
+      "area": "catan-join",
+      "page": "index",
+      "theme": "light",
+      "failures": [],
+      "modal": "",
+      "samples": 83
+    },
+    {
+      "area": "catan-home",
+      "page": "index",
+      "theme": "dark",
+      "failures": [],
+      "modal": "",
+      "samples": 83
+    },
+    {
+      "area": "catan-join",
+      "page": "index",
+      "theme": "dark",
+      "failures": [],
+      "modal": "",
+      "samples": 83
+    }
+  ],
+  "developmentScenes": [
+    {
+      "theme": "light",
+      "card": "monopoly",
+      "failures": [],
+      "modal": "developmentScene",
+      "samples": 8
+    },
+    {
+      "theme": "light",
+      "card": "plenty",
+      "failures": [],
+      "modal": "developmentScene",
+      "samples": 9
+    },
+    {
+      "theme": "light",
+      "card": "knight",
+      "failures": [],
+      "modal": "developmentScene",
+      "samples": 7
+    },
+    {
+      "theme": "light",
+      "card": "road",
+      "failures": [],
+      "modal": "developmentScene",
+      "samples": 7
+    },
+    {
+      "theme": "dark",
+      "card": "monopoly",
+      "failures": [],
+      "modal": "developmentScene",
+      "samples": 8
+    },
+    {
+      "theme": "dark",
+      "card": "plenty",
+      "failures": [],
+      "modal": "developmentScene",
+      "samples": 9
+    },
+    {
+      "theme": "dark",
+      "card": "knight",
+      "failures": [],
+      "modal": "developmentScene",
+      "samples": 7
+    },
+    {
+      "theme": "dark",
+      "card": "road",
+      "failures": [],
+      "modal": "developmentScene",
+      "samples": 7
+    }
+  ],
+  "mobileWidth": [
+    {
+      "area": "entry",
+      "page": "index",
+      "fields": 1,
+      "scrollWidth": 375,
+      "theme": "light",
+      "width": 375
+    },
+    {
+      "area": "entry",
+      "page": "timebomb",
+      "fields": 3,
+      "scrollWidth": 375,
+      "theme": "light",
+      "width": 375
+    },
+    {
+      "area": "entry",
+      "page": "penguin",
+      "fields": 3,
+      "scrollWidth": 375,
+      "theme": "light",
+      "width": 375
+    },
+    {
+      "area": "entry",
+      "page": "daifugo",
+      "fields": 20,
+      "scrollWidth": 375,
+      "theme": "light",
+      "width": 375
+    },
+    {
+      "area": "contrast",
+      "page": "index",
+      "fields": 2,
+      "scrollWidth": 375,
+      "theme": "light",
+      "width": 375
+    },
+    {
+      "area": "contrast",
+      "page": "timebomb",
+      "fields": 2,
+      "scrollWidth": 375,
+      "theme": "light",
+      "width": 375
+    },
+    {
+      "area": "contrast",
+      "page": "penguin",
+      "fields": 2,
+      "scrollWidth": 375,
+      "theme": "light",
+      "width": 375
+    },
+    {
+      "area": "contrast",
+      "page": "reddoor",
+      "fields": 2,
+      "scrollWidth": 375,
+      "theme": "light",
+      "width": 375
+    },
+    {
+      "area": "contrast",
+      "page": "daifugo",
+      "fields": 2,
+      "scrollWidth": 375,
+      "theme": "light",
+      "width": 375
+    },
+    {
+      "area": "entry",
+      "page": "index",
+      "fields": 1,
+      "scrollWidth": 375,
+      "theme": "dark",
+      "width": 375
+    },
+    {
+      "area": "entry",
+      "page": "timebomb",
+      "fields": 3,
+      "scrollWidth": 375,
+      "theme": "dark",
+      "width": 375
+    },
+    {
+      "area": "entry",
+      "page": "penguin",
+      "fields": 3,
+      "scrollWidth": 375,
+      "theme": "dark",
+      "width": 375
+    },
+    {
+      "area": "entry",
+      "page": "daifugo",
+      "fields": 20,
+      "scrollWidth": 375,
+      "theme": "dark",
+      "width": 375
+    },
+    {
+      "area": "contrast",
+      "page": "index",
+      "fields": 2,
+      "scrollWidth": 375,
+      "theme": "dark",
+      "width": 375
+    },
+    {
+      "area": "contrast",
+      "page": "timebomb",
+      "fields": 2,
+      "scrollWidth": 375,
+      "theme": "dark",
+      "width": 375
+    },
+    {
+      "area": "contrast",
+      "page": "penguin",
+      "fields": 2,
+      "scrollWidth": 375,
+      "theme": "dark",
+      "width": 375
+    },
+    {
+      "area": "contrast",
+      "page": "reddoor",
+      "fields": 2,
+      "scrollWidth": 375,
+      "theme": "dark",
+      "width": 375
+    },
+    {
+      "area": "contrast",
+      "page": "daifugo",
+      "fields": 2,
+      "scrollWidth": 375,
+      "theme": "dark",
+      "width": 375
+    },
+    {
+      "area": "entry",
+      "page": "reddoor",
+      "theme": "light",
+      "scrollWidth": 375,
+      "width": 375
+    },
+    {
+      "area": "entry",
+      "page": "reddoor",
+      "theme": "dark",
+      "scrollWidth": 375,
+      "width": 375
+    }
+  ],
+  "overlayFormPreservation": "Verified native popover inside open trade dialog; dismissing the effect leaves the trade dialog open.",
+  "sourceSha256": {
+    "public/theme.css": "4c151c1c1878123e861bfe567eb044555e3114c74ef8cdb5031c243c4b69502b",
+    "public/app.js": "0312b07508c3dd18c9764e5e82e31d4c4e489e67060fa57d03854c9809063bc0",
+    "public/development-scene.css": "06889f08c4d5eaf3e7e3b2ddb340b2746c5a87415652e87e2c258b9ef9daa398",
+    "public/reddoor.css": "1e336c5d238a7121da498f37e58bb5c5f04ae52a8d06979106d5acc6236663a5"
+  }
+}

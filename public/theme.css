@@ -130,3 +130,93 @@ html[data-theme=dark] dialog :is(.discard-progress,.discard-progress strong,.dic
 html[data-theme=dark] dialog .trade-material :is(b,strong){color:#e5efdc}
 html[data-theme=dark] dialog .trade-material:last-child :is(b,strong){color:#ffe1ac}
 html[data-theme=dark] #victoryDialog .victory-score>span{color:#eddfa5}
+/* Both themes: labels on illustrated tables remain distinct from page surfaces. */
+header .theme-picker>span{color:inherit}
+html[data-theme=light]{--muted:#53665d}
+html[data-theme=light] :is(.top-meta,.room-share>span,.auto-skip-control small,.count-pill,.self-player-label,.player-row-meta,.hand-total,.development-hand-heading small,.dev-help,.empty-development,.no-production,.production-seven,.guide-heading small,.leave-button){color:#52665a}
+html[data-theme=light] .host-tag{color:#78540f}
+html[data-theme=light] .owned-dev-timing{color:#665337}
+html[data-theme=light] .phase-notice{color:#4b6255}
+html[data-theme=dark] :is(.top-meta,.room-share>span){color:#c3d9ce}
+html[data-theme=light][data-game=penguin] :is(.eyebrow,#roundLabel,.player-data small,.stage-toolbar p,.ice-legend,.ice-legend small,.log p,.muted,#handHelp){color:#355a6d}
+html[data-theme=light][data-game=reddoor] :is(#roleGoal,#turnNumber,.player .seat,.player-status,#turnHelp,.key-progress>span,.key-progress small,.board-hint,.private-mark,.log p,.messages p){color:#6a4d4d}
+html[data-theme=light][data-game=reddoor] #keyCount{color:#79382e}
+html[data-theme=light][data-game=reddoor] .private-mark{border-color:#896e5680}
+html[data-theme=light][data-game=daifugo] :is(#connection,.eyebrow,#roundLabel,#turnHelp,#scoreCaption,.score-row small,.muted,.log p,#handCount,#handHelp,#selectionHelp){color:#52664c}
+html[data-theme=light][data-game=daifugo] .playing-card.joker :is(.pip,.corner){color:#70458d}
+html[data-theme=dark][data-game=daifugo] :is(#connection,.eyebrow,#roundLabel,#turnHelp,#scoreCaption,.log p){color:#c4d7c3}
+html[data-game=daifugo] .trick-facts span{color:#e3ebcd}
+html[data-game=daifugo] .self-seat small{color:#e3ebcd}
+html[data-game=daifugo] .table-brand{color:#c5d4ac}
+html[data-game=daifugo] .event-banner{background:#254536;color:#fff2c9;border-color:#bda66c}
+html[data-game=timebomb] :is(.round-badge,#instruction){color:#fff0c7}
+html[data-theme=light][data-game=timebomb] :is(.panel small,.panel .hint){color:#53684f}
+html[data-theme=dark][data-game=timebomb] .panel small{color:#c8d8be}
+/* Readable light modal text; celebratory dark panels keep their own palette. */
+html[data-theme=light] dialog{--modal-text:#2a443a;--modal-muted:#52664e}
+html[data-theme=light] :is(#winnerDialog,#victoryDialog,#resultDialog[data-type=bomb]){--modal-text:#fff0ce;--modal-muted:#d8e6cf}
+html[data-theme=light] dialog :where(h1,h2,h3,p,ol,ul,li,label,summary){color:var(--modal-text)}
+html[data-theme=light] dialog :where(small,footer){color:var(--modal-muted)}
+html[data-theme=light] dialog :is(.dialog-body p,.room-rule p,.rule-option small,.rule-select small,.result-name small,.result-points small,.result-player small,.turn-dialog-content>p:not(.turn-dialog-player),.turn-dialog-content>small,.dice-result-body>p:first-child,.dice-result-help,.development-instructions,.development-dialog-body>small,.development-choice small,.discard-choice-name small){color:var(--modal-muted)}
+html[data-theme=light] dialog .room-rule.off{opacity:1;border-style:dashed}
+html[data-theme=light] dialog .result-row .delta{color:#375764}
+html[data-theme=light] dialog .result-row .delta.penalty{color:#71391e}
+html[data-theme=light] :is(#actionGuideDescription,#actionGuideLater,.action-guide-tag){color:#4a6557}
+html[data-theme=light] #actionGuideTitle{color:#244e43}
+html[data-theme=light][data-game=reddoor] :is(#actionGuideTitle,#actionGuideDescription,#actionGuideSteps,#actionGuideLater){color:#342632}
+html[data-theme=light][data-game=reddoor] #actionGuideDialog{background:#fff8ef;color:#342632}
+html[data-theme=light][data-game=reddoor] #actionGuideSteps{background:#f0e4d7}
+html[data-theme=light] :is(input,textarea)::placeholder{color:#596b60;opacity:1}
+html :is(button,input,select,textarea,a):focus-visible{outline:3px solid #c18520;outline-offset:3px}
+html[data-game=daifugo] .table-brand{color:#dde9c8}
+html[data-theme=light] :is(.brand small,.picker-heading .eyebrow,.picker-heading p,.game-choice-copy small){color:#53694f}
+html[data-theme=dark] :is(.brand small,.game-choice-copy small){color:#c2d6b8}
+html[data-theme=dark] .catalog-card small{color:inherit}
+html[data-theme=light][data-game=timebomb] .eyebrow{color:#705c2c}
+html[data-theme=light][data-game=penguin] :is(.hero>p,.hero-pills span,.or,.entry-panel>small){color:#355a6d}
+html[data-theme=light][data-game=penguin] .hero h1 span{color:#206a75}
+html[data-theme=dark][data-game=penguin] .hero-pills span{background:#2c454b;color:#d7eced}
+html[data-theme=light][data-game=reddoor] :is(.hero-meta span,.divider){color:#714e43}
+html[data-theme=light][data-game=daifugo] :is(.entry-hero h1 span,.hero-pills span,.create-intro p,.rule-option small,.rule-select small,.divider){color:#4a6145}
+html[data-theme=dark][data-game=daifugo] .hero-pills span{background:#2e4540;color:#d6e4ca}
+html[data-theme=light] dialog :is(.discard-later,.trade-offer-later){color:#4b6250}
+html[data-theme=light] dialog .trade-material>b{color:#45613c}
+html[data-theme=light] dialog .trade-material:last-child>b{color:#72521e}
+html[data-theme=light] #victoryDialog{background:radial-gradient(ellipse at 50% 10%,#35523f,#17372f 55%,#102b29)}
+html[data-theme=light] #victoryDialog :is(.victory-eyebrow,.victory-score>span,.victory-results-title,.victory-rank,#rematchReadyStatus,#acknowledgeVictory){color:#f0e7bf}
+html[data-theme=light][data-game=timebomb] #winnerDialog .dialog-body{background:radial-gradient(ellipse at 50% 0,#345642,#17372f 75%)}
+html[data-theme=light][data-game=timebomb] #winnerDialog .winner-player-name small{color:#52664e}
+html[data-theme=light][data-game=timebomb] #resultDialog[data-type=defuse] p{color:#3a5540}
+html[data-theme=light] dialog .result-row .rank{color:#665134}
+html[data-theme=light] dialog :is(.result-role,.result-points){color:#435b35}
+html[data-theme=light] dialog .room-rule .switch-status{color:#34522b}
+html[data-theme=light] dialog .room-rule.off .switch-status{color:#4b5344}
+/* Small supporting labels still need to be readable at normal browser zoom. */
+html[data-game=index] .player-row-name{font-size:11px}
+html[data-game=index] .player-row-meta{font-size:10px}
+html[data-game=index] .resource-card small{font-size:9px}
+html[data-game=index] .owned-dev-name{font-size:11px}
+html[data-game=index] .owned-dev-timing{font-size:10px}
+html[data-game=index] .action-btn{font-size:11px;min-height:38px}
+html[data-game=index] .game-log p{font-size:11px;line-height:1.7}
+html[data-game=index] .dev-help{font-size:10px}
+html[data-theme=light] .reddoor-choice .game-choice-copy small{color:#e2c196}
+html[data-theme=dark] :is(.lobby-card,.lobby-tabs,.home-stats,.home-stats-summary>div,.resume-rooms:not(:empty)){background:#203236;color:#eff3ec;border-color:#4c6660}
+html[data-theme=dark] .tab.active{background:#34624f;color:#fff2c9;box-shadow:inset 0 -3px #d6bb72}
+html[data-theme=dark] :is(.field-label,.lobby-note span,.howto b,.howto small,.resume-rooms>p,.home-stats-heading p,.home-stats-heading>span,.home-stats-summary small,.home-history-title,.empty-match-history){color:#c6d8c7}
+html[data-theme=dark] :is(.home-stats h2,.home-stats-summary strong){color:#f0edc9}
+html[data-theme=light] :is(.field-label,.lobby-note span,.howto b,.howto small,.resume-rooms>p,.home-stats-heading p,.home-stats-heading>span,.home-stats-summary small,.home-history-title,.empty-match-history){color:#50634e}
+html[data-game=index] .board-empty{margin:30px auto;max-width:85%;border-radius:16px;background:#faf9ed;color:#244139;border:1px solid #c4d2b8}
+html[data-theme=light][data-game=index] .board-empty p{color:#4c6555}
+html[data-theme=dark][data-game=index] .board-empty{background:#203437;color:#eff3ec;border-color:#617c72}
+html[data-theme=dark][data-game=index] .board-empty :is(h2,p){color:#d9e8df}
+html[data-game=index] .empty-symbol{color:#426452}
+html[data-theme=dark][data-game=penguin] .lobby{background:#20333b;color:#edf3ee}
+html[data-theme=dark][data-game=penguin] .lobby :is(h2,p){color:#d1e4df}
+html[data-theme=light][data-game=penguin] .lobby p{color:#355a6d}
+html[data-game=daifugo] .lobby p{color:#f3edd1}
+html[data-game=daifugo] .rule-chips span{color:#fff1cf}
+html[data-theme=light] :is(.error-message,#homeError){color:#92372c}
+html[data-theme=dark] :is(.error-message,#homeError){color:#ffc0ac}
+html[data-theme=light][data-game=index] :is(.tab,.fine-print){color:#50634e}
+html[data-theme=light][data-game=index] :is(.step-no,.step-arrow){color:#775a2e}
