@@ -18,7 +18,7 @@ let impactCursor=null, impactTimer=null, impactHex=null;
 let currentGame = null, playerId = null, roomCode = null, mode = null, selectedRobberHex = null, selectedVictim = "", pendingRoadCard = [], polling = false, soundOn = localStorage.getItem("island-sound-on")!=="0", toastTimer;
 
 // Count inactivity only while this browser has an outstanding game action.
-const IDLE_REMINDER_MS = 60_000, defaultPageTitle = document.title || "島の開拓者 | オンライン対戦";
+const IDLE_REMINDER_MS = 60_000, defaultPageTitle = document.title || "ボードゲームオンライン";
 let idleTaskKey = null, idleLastActivity = 0, idleReminderVisible = false, idleReminderCount = 0;
 function pendingIdleTask(g) {
   if(spectating || !g || g.status!=="playing" || g.winner || !playerId)return null;
