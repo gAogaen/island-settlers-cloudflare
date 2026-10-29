@@ -15,6 +15,8 @@ export default {
     const url = new URL(request.url);
     if (!url.pathname.startsWith("/api/")) return env.ASSETS.fetch(request);
     try {
+      const df=url.pathname.match(/^\/api\/daifugo(?:\/([A-Z0-9]{6})(?:\/(join|action))?)?$/i);
+      if(df){const code=df[1]?.toUpperCase()||randomCode(),route=df[1]?(df[2]||"state"):"create";if((route==="state"&&request.method!=="GET")||(route!=="state"&&request.method!=="POST"))return json({error:"操作が正しくありません。"},405);const room=env.ROOMS.get(env.ROOMS.idFromName("daifugo:"+code));return room.fetch(`https://room/df/${route}${url.search}`,request.method==="POST"?{method:"POST",body:JSON.stringify({...await request.json(),code})}:undefined);}
       const rd=url.pathname.match(/^\/api\/reddoor(?:\/([A-Z0-9]{6})(?:\/(join|action))?)?$/i);
       if(rd){const code=rd[1]?.toUpperCase()||randomCode(),route=rd[1]?(rd[2]||"state"):"create";if((route==="state"&&request.method!=="GET")||(route!=="state"&&request.method!=="POST"))return json({error:"操作が正しくありません。"},405);const room=env.ROOMS.get(env.ROOMS.idFromName("reddoor:"+code));return room.fetch(`https://room/rd/${route}${url.search}`,request.method==="POST"?{method:"POST",body:JSON.stringify({...await request.json(),code})}:undefined);}
       const pg=url.pathname.match(/^\/api\/penguin(?:\/([A-Z0-9]{6})(?:\/(join|action))?)?$/i);
@@ -60,6 +62,7 @@ export class GameRoom {
   }
 
   async handleRequest(request) {
+    if(new URL(request.url).pathname.startsWith("/df/"))return handleDaifugo(this.storage,request);
     if(new URL(request.url).pathname.startsWith("/rd/"))return handleReddoor(this.storage,request);
     if(new URL(request.url).pathname.startsWith("/pg/"))return handlePenguin(this.storage,request);
     if(new URL(request.url).pathname.startsWith("/tb/"))return handleTimebomb(this.storage,request);
@@ -683,4 +686,104 @@ async function handleReddoor(storage,request){const url=new URL(request.url),rou
  const token=a.token||url.searchParams.get('token'),p=g.players.find(x=>x.token===token);
  if(route==='state'&&request.method==='GET'){if(!p&&url.searchParams.get('spectate')!=='1')return json({error:'参加者情報が確認できません。'},403);return json({game:rdView(g,p)});}
  if(route!=='action'||request.method!=='POST'||!p)return json({error:'操作できません。'},403);const next=structuredClone(g),actor=next.players.find(x=>x.id===p.id);rdAction(next,actor,a);next.revision++;await storage.put('reddoor',next);return json({game:rdView(next,actor)});
+ }catch(e){return json({error:e.message||'処理に失敗しました。'},400);}}
+
+// Daifugo rooms use an independent namespace and server-authoritative card rules.
+const DF_RULES={eightCut:true,revolution:true,suitLock:true,cityFall:true,spadeThree:true,stairs:true,stairRevolution:false,elevenBack:false,fiveSkip:false,sevenGive:false,tenDiscard:false,exchange:true,forbiddenFinish:true};
+const DF_SUITS=['S','H','D','C'];
+function dfSettings(raw={}){const rules={};for(const [k,v] of Object.entries(DF_RULES)){if(raw[k]!==undefined&&typeof raw[k]!=='boolean')throw Error('ルールのON/OFFを選び直してください。');rules[k]=raw[k]??v;}for(const [key,def,min,max] of [['jokerCount',2,0,2],['rounds',3,1,10]]){const n=raw[key]??def;if(!Number.isInteger(n)||n<min||n>max)throw Error('ジョーカー枚数またはゲーム数が正しくありません。');rules[key]=n;}if(!rules.stairs||!rules.revolution)rules.stairRevolution=false;return rules;}
+function dfPlayer(name){return {id:crypto.randomUUID(),token:crypto.randomUUID(),name:cleanName(name),hand:[],status:'playing',score:0,rank:null};}
+function dfLog(g,text,type='notice'){g.log.unshift(text);g.log=g.log.slice(0,80);g.events.push({id:crypto.randomUUID(),type,text});g.events=g.events.slice(-30);}
+function dfReversed(g){return !!g.revolution!==!!g.back;}
+function dfSort(cards,reverse=false){return [...cards].sort((a,b)=>(a.rank===16?99:reverse?18-a.rank:a.rank)-(b.rank===16?99:reverse?18-b.rank:b.rank)||DF_SUITS.indexOf(a.suit)-DF_SUITS.indexOf(b.suit));}
+function dfComb(a,n){const out=[];function visit(at,pick){if(pick.length===n){out.push(pick);return;}for(let i=at;i<=a.length-(n-pick.length);i++)visit(i+1,[...pick,a[i]]);}visit(0,[]);return out;}
+function dfMelds(cards,rules){
+ if(!cards.length)return [];const natural=cards.filter(c=>c.rank!==16),jokers=cards.length-natural.length,out=[],count=cards.length;
+ if(!natural.length){if(count<=2)out.push({kind:'group',rank:16,count,mask:null});return out;}
+ if(natural.every(c=>c.rank===natural[0].rank)&&count<=6){
+  const suits=natural.map(c=>c.suit);if(count<=4){for(const mask of dfComb(DF_SUITS,count).map(s=>s.join('')))if(suits.every(s=>mask.includes(s)))out.push({kind:'group',rank:natural[0].rank,count,mask});}
+  else out.push({kind:'group',rank:natural[0].rank,count,mask:null});
+ }
+ if(rules.stairs&&count>=3&&count<=13&&natural.every(c=>c.suit===natural[0].suit)&&new Set(natural.map(c=>c.rank)).size===natural.length){for(let low=3;low+count-1<=15;low++){const high=low+count-1;if(natural.every(c=>c.rank>=low&&c.rank<=high))out.push({kind:'run',rank:low,low,high,count,mask:natural[0].suit});}}
+ return out;
+}
+function dfMeldKey(m){return [m.kind,m.rank,m.count,m.mask||'-',m.low||0].join(':');}
+function dfOptions(g,p,cards){
+ const reversed=dfReversed(g),table=g.table,out=[];for(const m of dfMelds(cards,g.rules)){
+  const counter=!!(g.rules.spadeThree&&table?.meld.kind==='group'&&table.meld.count===1&&table.meld.rank===16&&cards.length===1&&cards[0].rank===3&&cards[0].suit==='S');
+  if(!counter){if(table){const t=table.meld;if(m.kind!==t.kind||m.count!==t.count)continue;if(m.rank===16){if(t.rank===16)continue;}else if(t.rank===16||(!reversed&&m.rank<=t.rank)||(reversed&&m.rank>=t.rank))continue;}
+   if(g.lock&&m.mask!==g.lock&&m.rank!==16)continue;
+  }
+  out.push({...m,key:dfMeldKey(m),counter,foul:cards.length===p.hand.length?dfFoul(g,cards,m):null});
+ }return out;
+}
+function dfFoul(g,cards,m){if(!g.rules.forbiddenFinish)return null;if(cards.some(c=>c.rank===16))return 'ジョーカー上がり';const strongest=dfReversed(g)?3:15;if(cards.some(c=>c.rank===strongest))return (strongest===3?'3':'2')+'上がり';if(g.rules.eightCut&&m.kind==='group'&&cards.some(c=>c.rank===8))return '8切り上がり';if(g.rules.spadeThree&&cards.length===1&&cards[0].rank===3&&cards[0].suit==='S')return 'スペード3上がり';return null;}
+function dfMoves(g,p){
+ if(!p||g.phase!=='playing'||g.players[g.activeIndex]?.id!==p.id||p.status!=='playing')return [];
+ const moves=[],seen=new Set(),j=p.hand.filter(c=>c.rank===16),push=cards=>{const ids=cards.map(c=>c.id).sort(),identity=ids.join(',');if(seen.has(identity))return;seen.add(identity);for(const m of dfOptions(g,p,cards))moves.push({...m,cardIds:ids});};
+ const table=g.table?.meld;
+ if(!table||table.kind==='group'){
+  for(let rank=3;rank<=15;rank++){const a=p.hand.filter(c=>c.rank===rank);if(!a.length)continue;for(let n=1;n<=a.length;n++)for(const real of dfComb(a,n))for(let k=0;k<=j.length;k++){if(table&&n+k!==table.count)continue;for(const wild of dfComb(j,k))push([...real,...wild]);}}
+  for(let k=1;k<=j.length;k++){if(!table||table.count===k)for(const wild of dfComb(j,k))push(wild);}
+ }
+ if(g.rules.stairs&&(!table||table.kind==='run'))for(const suit of DF_SUITS){const a=p.hand.filter(c=>c.suit===suit),byRank=new Map(a.map(c=>[c.rank,c]));for(let n=3;n<=Math.min(13,a.length+j.length);n++){if(table&&n!==table.count)continue;for(let low=3;low+n-1<=15;low++){const real=[];let missing=0;for(let rank=low;rank<low+n;rank++){if(byRank.has(rank))real.push(byRank.get(rank));else missing++;}if(missing>j.length||!real.length)continue;for(let omit=0;omit<=Math.min(real.length-1,j.length-missing);omit++)for(const omitted of dfComb(real,omit)){const kept=real.filter(c=>!omitted.includes(c));for(const wild of dfComb(j,missing+omit))push([...kept,...wild]);}}}}
+ moves.sort((a,b)=>a.cardIds.length-b.cardIds.length||Number(!!a.foul)-Number(!!b.foul)||((dfReversed(g)?-1:1)*(a.rank-b.rank))||a.key.localeCompare(b.key));return moves;
+}
+function dfActive(g){return g.players.filter(p=>p.status==='playing');}
+function dfNextIndex(g,from,allowPassed=true){for(let n=1;n<=g.players.length;n++){const i=(from+n)%g.players.length,p=g.players[i];if(p.status==='playing'&&(allowPassed||!g.passed.includes(p.id)))return i;}return -1;}
+function dfTitle(n,rank){if(rank===1)return '大富豪';if(rank===n)return '大貧民';if(n>=4&&rank===2)return '富豪';if(n>=4&&rank===n-1)return '貧民';return '平民';}
+function dfRoundEnd(g){
+ const active=dfActive(g);if(active.length>1)return false;const order=[...g.finished,...active.map(p=>p.id),...(g.fallen?[g.fallen]:[]),...g.fouls.map(f=>f.id).reverse()];if(new Set(order).size!==g.players.length)throw Error('順位の集計に失敗しました。');
+ g.results=order.map((id,i)=>{const p=g.players.find(x=>x.id===id),rank=i+1,points=g.players.length-rank;p.rank=rank;p.score+=points;return {id,name:p.name,rank,title:dfTitle(g.players.length,rank),reason:g.fouls.find(f=>f.id===id)?.reason||(g.fallen===id?'都落ち':'上がり順'),points,score:p.score};});g.previousOrder=order;g.history.push({round:g.round,results:structuredClone(g.results)});g.phase=g.round===g.rules.rounds?'finished':'roundEnd';g.pending=null;g.turn++;if(g.phase==='finished'){const high=Math.max(...g.players.map(p=>p.score));g.winnerIds=g.players.filter(p=>p.score===high).map(p=>p.id);}dfLog(g,`第${g.round}ゲーム終了。${g.results[0].name}が大富豪！`,'result');return true;
+}
+function dfClear(g,from,reason){if(g.table){g.discard.push(...g.pile);g.pile=[];}g.table=null;g.passed=[];g.lock=null;g.back=false;g.trick++;const p=g.players[from];g.activeIndex=p?.status==='playing'?from:dfNextIndex(g,from);g.turn++;dfLog(g,reason+' 次は'+g.players[g.activeIndex].name+'から。','clear');}
+function dfAdvance(g,from,skip=0,cut=false,reason='場が流れました。'){
+ if(dfRoundEnd(g))return;
+ const eligible=dfActive(g).filter(p=>p.id!==g.leadId&&!g.passed.includes(p.id));if(cut||!eligible.length){const leader=cut?from:g.players.findIndex(p=>p.id===g.leadId);dfClear(g,leader<0?from:leader,reason);return;}
+ if(skip>=eligible.length){dfClear(g,from,'5スキップで全員を飛ばし、場が流れました。');return;}
+ let i=from;for(let s=0;s<=skip;s++){for(let n=0;n<g.players.length;n++){i=(i+1)%g.players.length;if(eligible.some(p=>p.id===g.players[i].id))break;}}g.activeIndex=i;g.turn++;
+}
+function dfFinishPlayer(g,p,foul){if(p.hand.length)return;if(foul){p.status='foul';g.fouls.push({id:p.id,reason:foul});dfLog(g,p.name+'は'+foul+'で反則上がり。下位へ回ります。','foul');return;}p.status='finished';g.finished.push(p.id);dfLog(g,p.name+'が上がりました！','finish');if(g.rules.cityFall&&g.previousOrder?.length&&g.finished.length===1&&g.previousOrder[0]!==p.id){const old=g.players.find(x=>x.id===g.previousOrder[0]);if(old.status==='playing'){old.status='fallen';g.fallen=old.id;g.discard.push(...old.hand);old.hand=[];dfLog(g,old.name+'が都落ち。残りのカードを伏せて退場します。','fallen');}}}
+function dfDeal(g){
+ const deck=shuffled([...DF_SUITS.flatMap(suit=>Array.from({length:13},(_,i)=>({id:crypto.randomUUID(),suit,rank:i+3}))),...Array.from({length:g.rules.jokerCount},()=>({id:crypto.randomUUID(),suit:'J',rank:16}))]);
+ g.players.forEach(p=>Object.assign(p,{hand:[],status:'playing'}));const offset=(g.firstStart+g.round-1)%g.players.length;deck.forEach((c,i)=>g.players[(i+offset)%g.players.length].hand.push(c));g.players.forEach(p=>p.hand=dfSort(p.hand));g.table=null;g.pile=[];g.discard=[];g.passed=[];g.lock=null;g.revolution=false;g.back=false;g.pending=null;g.finished=[];g.fouls=[];g.fallen=null;g.results=[];g.trick=1;g.turn++;g.exchangeTasks=[];g.activeIndex=g.previousOrder?.length?g.players.findIndex(p=>p.id===g.previousOrder.at(-1)):g.firstStart;g.leadId=null;g.phase='playing';
+ if(g.rules.exchange&&g.previousOrder?.length){const pairs=[[g.previousOrder[0],g.previousOrder.at(-1),2]];if(g.players.length>=4)pairs.push([g.previousOrder[1],g.previousOrder.at(-2),1]);for(const [highId,lowId,count] of pairs){const high=g.players.find(p=>p.id===highId),low=g.players.find(p=>p.id===lowId),strong=dfSort(low.hand).slice(-count);low.hand=low.hand.filter(c=>!strong.includes(c));high.hand.push(...strong);high.hand=dfSort(high.hand);g.exchangeTasks.push({from:highId,to:lowId,count,done:false});}g.phase='exchange';dfLog(g,'第'+g.round+'ゲームの配札完了。下位の人から強いカードを渡しました。上位の人は返すカードを選んでください。','exchange');}
+ else dfLog(g,'第'+g.round+'ゲーム開始。'+g.players[g.activeIndex].name+'から！','deal');
+}
+function dfStart(g){if(g.players.length<3||g.players.length>6)throw Error('3〜6人で開始できます。');g.matchId=crypto.randomUUID();g.round=1;g.turn=0;g.firstStart=crypto.getRandomValues(new Uint32Array(1))[0]%g.players.length;g.previousOrder=[];g.history=[];g.events=[];g.log=[];g.winnerIds=[];g.players.forEach(p=>{p.score=0;p.rank=null;});dfDeal(g);}
+function dfSelected(p,ids){if(!Array.isArray(ids)||!ids.length||new Set(ids).size!==ids.length)throw Error('カードを重複せず選んでください。');const cards=ids.map(id=>p.hand.find(c=>c.id===id));if(cards.some(c=>!c))throw Error('手札にないカードが含まれています。');return cards;}
+function dfAction(g,p,a){
+ if(a.type==='chat'){const text=String(a.message||'').trim().slice(0,180);if(!text)throw Error('メッセージを入力してください。');g.messages.push({id:crypto.randomUUID(),name:p.name,text});g.messages=g.messages.slice(-60);return;}
+ if(a.type==='settings'){if(p.id!==g.hostId||g.phase!=='lobby')throw Error('開始前にホストが設定できます。');g.rules=dfSettings(a.rules);dfLog(g,'ホストがルールを変更しました。');return;}
+ if(a.type==='start'){if(p.id!==g.hostId||!['lobby','finished'].includes(g.phase))throw Error('ホストだけが開始できます。');dfStart(g);return;}
+ if(a.type==='next'){if(p.id!==g.hostId||g.phase!=='roundEnd'||a.matchId!==g.matchId||a.round!==g.round)throw Error('ホストが次のゲームを開始します。');g.round++;dfDeal(g);return;}
+ if(a.matchId!==g.matchId||a.round!==g.round)throw Error('ゲームが更新されました。画面を確認してください。');
+ if(a.type==='exchange'){
+  if(g.phase!=='exchange')throw Error('カード交換は終了しています。');const task=g.exchangeTasks.find(t=>t.from===p.id&&!t.done);if(!task)throw Error('あなたのカード交換は完了しています。');const cards=dfSelected(p,a.cardIds);if(cards.length!==task.count)throw Error(task.count+'枚選んでください。');const low=g.players.find(x=>x.id===task.to);p.hand=p.hand.filter(c=>!cards.includes(c));low.hand=dfSort([...low.hand,...cards]);task.done=true;dfLog(g,p.name+'が返すカードを決めました。','exchange');if(g.exchangeTasks.every(t=>t.done)){g.phase='playing';g.turn++;dfLog(g,'交換が完了。'+g.players[g.activeIndex].name+'から始めます。','deal');}return;
+ }
+ if(g.phase!=='playing'||g.players[g.activeIndex]?.id!==p.id||p.status!=='playing')throw Error('あなたの手番ではありません。');if(a.turn!==g.turn)throw Error('手番が進んでいます。選び直してください。');
+ if(a.type==='effect'){
+  const pending=g.pending;if(!pending||a.pendingId!==pending.id)throw Error('選択内容が更新されました。');let cards=[];if(!Array.isArray(a.cardIds))throw Error('カードを選んでください。');if(a.cardIds.length)cards=dfSelected(p,a.cardIds);if(cards.length>pending.max)throw Error('選べる枚数を超えています。');p.hand=p.hand.filter(c=>!cards.includes(c));if(pending.kind==='give'){const target=g.players.find(x=>x.id===pending.targetId);if(!target||target.status!=='playing')throw Error('渡す相手が見つかりません。');target.hand=dfSort([...target.hand,...cards]);dfLog(g,p.name+'が'+target.name+'へ'+cards.length+'枚渡しました。','give');}else{g.discard.push(...cards);dfLog(g,p.name+'が'+cards.length+'枚を伏せて捨てました。','discard');}g.pending=null;dfFinishPlayer(g,p,null);dfAdvance(g,g.activeIndex);return;
+ }
+ if(g.pending)throw Error('先に7渡し・10捨ての選択を完了してください。');
+ if(a.type==='pass'){if(!g.table)throw Error('場が空のときはパスできません。');g.passed.push(p.id);dfLog(g,p.name+'はパス。','pass');dfAdvance(g,g.activeIndex);return;}
+ if(a.type!=='play')throw Error('操作が正しくありません。');const cards=dfSelected(p,a.cardIds),meld=dfOptions(g,p,cards).find(m=>m.key===a.meldKey);if(!meld)throw Error('同じ枚数・同じ種類で、場より強い組み合わせを選んでください。しばりにも注意してください。');
+ const old=g.table?.meld;let locked=g.lock;if(g.rules.suitLock&&!locked&&old?.mask&&meld.mask===old.mask&&meld.rank!==16)locked=meld.mask;
+ p.hand=p.hand.filter(c=>!cards.includes(c));g.pile.push(...cards);g.table={cards:structuredClone(cards),meld,playerId:p.id,name:p.name};g.leadId=p.id;g.lock=locked;
+ const rankName=meld.rank===16?'ジョーカー':({11:'J',12:'Q',13:'K',14:'A',15:'2'}[meld.rank]||meld.rank);dfLog(g,p.name+'：'+(meld.kind==='run'?cards.length+'枚の階段':rankName+'を'+cards.length+'枚')+'。','play');
+ if(g.rules.revolution&&((meld.kind==='group'&&cards.length>=4)||(g.rules.stairRevolution&&meld.kind==='run'&&cards.length>=5))){g.revolution=!g.revolution;dfLog(g,g.revolution?'革命！ 数字の強さが逆転します。':'革命返し！ 数字の強さが戻ります。','revolution');}
+ if(g.rules.elevenBack&&meld.kind==='group'&&cards.some(c=>c.rank===11)){g.back=!g.back;dfLog(g,'11バック！ 場が流れるまで数字の強弱が切り替わります。','back');}
+ const group=meld.kind==='group',cut=!!(meld.counter||(g.rules.eightCut&&group&&cards.some(c=>c.rank===8))||(meld.rank===16&&cards.length===2)||(group&&cards.length===6));
+ const reason=meld.counter?'スペ3返し！ 場を流します。':g.rules.eightCut&&group&&cards.some(c=>c.rank===8)?'8切り！ 場を流します。':'最強の組み合わせで場を流します。';
+ if(!p.hand.length){dfFinishPlayer(g,p,meld.foul);dfAdvance(g,g.activeIndex,0,cut,reason);return;}
+ if(!cut&&group){let kind=null,max=0;if(g.rules.sevenGive&&cards.some(c=>c.rank===7)){kind='give';max=Math.min(p.hand.length,cards.filter(c=>c.rank===7).length);}else if(g.rules.tenDiscard&&cards.some(c=>c.rank===10)){kind='discard';max=Math.min(p.hand.length,cards.filter(c=>c.rank===10).length);}if(kind&&max){const targetId=g.players[dfNextIndex(g,g.activeIndex)]?.id;g.pending={id:crypto.randomUUID(),kind,max,targetId:kind==='give'?targetId:null};return;}}
+ const skip=g.rules.fiveSkip&&group?cards.filter(c=>c.rank===5).length:0;if(skip)dfLog(g,'5スキップ！ '+skip+'人分の手番を飛ばします。','skip');dfAdvance(g,g.activeIndex,skip,cut,reason);
+}
+function dfView(g,p){const ownTask=p?g.exchangeTasks?.find(t=>t.from===p.id&&!t.done):null;return {code:g.code,revision:g.revision,phase:g.phase,rules:g.rules,hostId:g.hostId,matchId:g.matchId,round:g.round,turn:g.turn,trick:g.trick,activeId:g.players[g.activeIndex]?.id,revolution:!!g.revolution,back:!!g.back,reversed:dfReversed(g),lock:g.lock,table:g.table,discardCount:g.discard?.length||0,passed:g.passed||[],events:g.events,log:g.log,messages:g.messages,results:g.results||[],history:g.history||[],winnerIds:g.winnerIds||[],exchangeTasks:(g.exchangeTasks||[]).map(t=>({...t})),pending:g.pending?{playerId:g.players[g.activeIndex].id,kind:g.pending.kind,max:g.pending.max,targetId:g.pending.targetId}:null,players:g.players.map(x=>({id:x.id,name:x.name,status:x.status,score:x.score,rank:x.rank,handCount:x.hand.length})),me:p?{id:p.id,hand:p.hand,exchange:ownTask?{...ownTask}:null,pending:g.pending&&g.players[g.activeIndex]?.id===p.id?{...g.pending}:null}:null,legalMoves:dfMoves(g,p)};}
+async function handleDaifugo(storage,request){const url=new URL(request.url),route=url.pathname.split('/').pop();try{let g=await storage.get('daifugo');const a=request.method==='POST'?await request.json():{};
+ if(route==='create'){if(g)return json({error:'この部屋は使用中です。'},409);const p=dfPlayer(a.name);g={code:a.code,hostId:p.id,players:[p],phase:'lobby',revision:1,rules:dfSettings(a.rules),messages:[],log:[],events:[]};dfLog(g,'大富豪のテーブルを用意しました。');await storage.put('daifugo',g);return json({game:dfView(g,p),token:p.token});}
+ if(!g)return json({error:'部屋が見つかりません。'},404);
+ if(route==='join'){const matches=g.players.filter(x=>x.name===cleanName(a.name));if(matches.length>1)return json({error:'同じ名前が複数います。保存済みの参加情報を使ってください。'},409);if(matches.length)return json({game:dfView(g,matches[0]),token:matches[0].token,rejoined:true});if(g.phase!=='lobby'||g.players.length>=6)return json({error:'開始済み、または満員です。'},409);const p=dfPlayer(a.name);g.players.push(p);g.revision++;dfLog(g,p.name+'が参加しました。');await storage.put('daifugo',g);return json({game:dfView(g,p),token:p.token});}
+ const token=a.token||url.searchParams.get('token'),p=g.players.find(x=>x.token===token);if(route==='state'&&request.method==='GET'){if(!p&&url.searchParams.get('spectate')!=='1')return json({error:'参加者情報が確認できません。'},403);return json({game:dfView(g,p)});}
+ if(route!=='action'||request.method!=='POST'||!p)return json({error:'操作できません。'},403);const next=structuredClone(g),actor=next.players.find(x=>x.id===p.id);dfAction(next,actor,a);next.revision++;await storage.put('daifugo',next);return json({game:dfView(next,actor)});
  }catch(e){return json({error:e.message||'処理に失敗しました。'},400);}}

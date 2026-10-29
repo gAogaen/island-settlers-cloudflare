@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "test": "node tests/game.test.cjs && node tests/ui.test.cjs && node tests/timebomb.test.cjs && node tests/timebomb-ui.test.cjs && node tests/penguin.test.cjs && node tests/penguin-ui.test.cjs && node tests/action-guide.test.cjs && node tests/reddoor.test.cjs && node tests/reddoor-ui.test.cjs",
+    "test": "node tests/game.test.cjs && node tests/ui.test.cjs && node tests/timebomb.test.cjs && node tests/timebomb-ui.test.cjs && node tests/penguin.test.cjs && node tests/penguin-ui.test.cjs && node tests/action-guide.test.cjs && node tests/reddoor.test.cjs && node tests/reddoor-ui.test.cjs && node tests/daifugo.test.cjs && node tests/daifugo-ui.test.cjs",
     "deploy:boardgame": "wrangler deploy --config wrangler.boardgame.jsonc"
   },
   "devDependencies": {
