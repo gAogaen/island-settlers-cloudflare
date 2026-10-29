@@ -15,6 +15,15 @@ export default {
     const url = new URL(request.url);
     if (!url.pathname.startsWith("/api/")) return env.ASSETS.fetch(request);
     try {
+      const tb=url.pathname.match(/^\/api\/timebomb(?:\/([A-Z0-9]{6})(?:\/(join|action))?)?$/i);
+      if(tb){
+        const code=tb[1]?.toUpperCase()||randomCode();
+        const room=env.ROOMS.get(env.ROOMS.idFromName("timebomb:"+code));
+        const route=tb[1]?(tb[2]||"state"):"create";
+        if((route==="state"&&request.method!=="GET")||(route!=="state"&&request.method!=="POST"))return json({error:"操作が正しくありません。"},405);
+        const body=request.method==="POST"?{...await request.json(),code}:null;
+        return room.fetch(`https://room/tb/${route}${url.search}`,body?{method:"POST",body:JSON.stringify(body)}:undefined);
+      }
       if (request.method === "POST" && url.pathname === "/api/rooms") {
         const body = await request.json();
         const code = randomCode();
@@ -47,6 +56,7 @@ export class GameRoom {
   }
 
   async handleRequest(request) {
+    if(new URL(request.url).pathname.startsWith("/tb/"))return handleTimebomb(this.storage,request);
     const url = new URL(request.url);
     if (request.method === "POST" && url.pathname === "/create") {
       if (await this.storage.get("game")) return json({ error: "この部屋コードは使用中です。" }, 409);
@@ -520,4 +530,40 @@ function spectatorGame(game) {
     return value;
   }
   return anonymize(output);
+}
+
+// Time Bomb is isolated in its own Durable Object namespace and storage key.
+function tbShuffle(a){return shuffled(a);}
+function tbPlayer(name){return {id:crypto.randomUUID(),token:crypto.randomUUID(),name:cleanName(name),role:null,cards:[],memory:[],ready:false};}
+function tbLog(g,text){g.log.unshift(text);g.log=g.log.slice(0,80);}
+function tbDeal(g,pool){pool=tbShuffle(pool);const size=pool.length/g.players.length;if(!Number.isInteger(size))throw Error("配布枚数が不正です。");for(const p of g.players){p.cards=pool.splice(0,size).map(type=>({id:crypto.randomUUID(),type,open:false}));p.memory=p.cards.map(c=>c.type);p.ready=false;}g.phase="inspect";g.targetId=null;}
+function tbStart(g){const n=g.players.length;if(n<3||n>8)throw Error("3〜8人で開始できます。");const counts={3:[2,2],4:[3,2],5:[3,2],6:[4,2],7:[5,3],8:[5,3]}[n];const roles=tbShuffle([...Array(counts[0]).fill('police'),...Array(counts[1]).fill('bomber')]);g.players.forEach(p=>p.role=roles.pop());g.matchId=crypto.randomUUID();g.round=1;g.cuts=0;g.defused=0;g.winner=null;g.reason=null;g.lastCut=null;g.discard=[];g.readyIds=[];g.holderId=g.players[crypto.getRandomValues(new Uint32Array(1))[0]%n].id;tbDeal(g,[...Array(n).fill('defuse'),'bomb',...Array(4*n-1).fill('safe')]);tbLog(g,'配布しました。自分のカードと陣営を確認してください。');}
+function tbAction(g,p,a){
+ if(a.type==='start'){if(p.id!==g.hostId||!['lobby','finished'].includes(g.phase))throw Error('ホストだけが開始できます。');tbStart(g);return;}
+ if(a.type==='chat'){const message=String(a.message||'').trim().slice(0,180);if(!message)throw Error('メッセージを入力してください。');g.messages.push({id:crypto.randomUUID(),name:p.name,text:message});g.messages=g.messages.slice(-60);return;}
+ if(a.type==='ready'){if(g.phase!=='inspect')throw Error('確認は終了しています。');p.ready=true;if(g.players.every(x=>x.ready)){g.phase='cut';tbLog(g,'全員の確認が終わりました。ニッパー係は他の人のカードを選んでください。');}return;}
+ if(a.type==='peek'){if(!['inspect','cut'].includes(g.phase))throw Error('現在は確認できません。');p.memory=p.cards.filter(c=>!c.open).map(c=>c.type);const hidden=tbShuffle(p.cards.filter(c=>!c.open));for(const c of hidden)c.id=crypto.randomUUID();p.cards=[...p.cards.filter(c=>c.open),...hidden];return;}
+ if(a.type==='next'){if(g.phase!=='between'||p.id!==g.holderId)throw Error('次のニッパー係が配布を進めます。');g.round++;g.cuts=0;tbDeal(g,g.players.flatMap(x=>x.cards.filter(c=>!c.open).map(c=>c.type)));tbLog(g,`ラウンド${g.round}：残ったカードを混ぜて配り直しました。`);return;}
+ if(a.type==='target'||a.type==='clearTarget'){if(g.phase!=='cut'||g.holderId!==p.id)throw Error('ニッパー係だけが指名できます。');if(a.type==='clearTarget'){g.targetId=null;return;}const target=g.players.find(x=>x.id===a.ownerId&&x.id!==p.id&&x.cards.some(c=>!c.open));if(!target)throw Error('他の人の残っているカードを選んでください。');g.targetId=target.id;tbLog(g,`${p.name}が${target.name}を指名しました。`);return;}
+ if(a.type!=='cut'||g.phase!=='cut'||g.holderId!==p.id)throw Error('ニッパー係の操作を待っています。');
+ const owner=g.players.find(x=>x.id===a.ownerId);if(!owner||owner.id===p.id||owner.id!==g.targetId)throw Error('自分以外のカードを選んでください。');const card=owner.cards.find(c=>c.id===a.cardId&&!c.open);if(!card)throw Error('そのカードは選べません。');card.open=true;g.targetId=null;g.cuts++;g.holderId=owner.id;g.discard.push({type:card.type,round:g.round,ownerName:owner.name,actorName:p.name});if(card.type==='defuse')g.defused++;
+ g.lastCut={id:crypto.randomUUID(),actor:p.name,owner:owner.name,ownerId:owner.id,cardId:card.id,type:card.type,round:g.round};tbLog(g,`${p.name} → ${owner.name}：${{safe:'しーん…',defuse:'解除成功！',bomb:'BOOM！'}[card.type]}`);
+ if(card.type==='bomb'){g.winner='bomber';g.reason='爆弾の導線が切られました。';}
+ else if(g.defused===g.players.length){g.winner='police';g.reason='すべての解除カードを公開しました！';}
+ else if(g.cuts===g.players.length&&g.round===4){g.winner='bomber';g.reason='4ラウンドが終了し、時間切れです。';}
+ if(g.winner){g.phase='finished';tbLog(g,`${g.winner==='police'?'タイムポリス':'ボマー団'}の勝利！`);}else if(g.cuts===g.players.length)g.phase='between';
+}
+function tbView(g,p){return {code:g.code,phase:g.phase,revision:g.revision,matchId:g.matchId,hostId:g.hostId,holderId:g.holderId,targetId:g.targetId,round:g.round,cuts:g.cuts,defused:g.defused,winner:g.winner,reason:g.reason,lastCut:g.lastCut,discard:g.discard,log:g.log,messages:g.messages,me:p?{id:p.id,role:p.role,memory:p.cards.filter(c=>!c.open).map(c=>c.type).sort(),ready:p.ready}:null,players:g.players.map(x=>({id:x.id,name:x.name,ready:x.ready,role:g.winner?x.role:undefined,cards:x.cards.map(c=>({id:c.id,open:c.open,type:c.open||g.winner?c.type:undefined}))}))};}
+async function handleTimebomb(storage,request){
+ const url=new URL(request.url),route=url.pathname.split('/').pop();
+ try{
+ let g=await storage.get('timebomb');const a=request.method==='POST'?await request.json():{};
+ if(route==='create'){if(g)return json({error:'この部屋は使用中です。'},409);const p=tbPlayer(a.name);g={code:a.code,hostId:p.id,players:[p],phase:'lobby',revision:1,log:['部屋を作りました。'],messages:[],discard:[]};await storage.put('timebomb',g);return json({game:tbView(g,p),token:p.token});}
+ if(!g)return json({error:'部屋が見つかりません。'},404);
+ if(route==='join'){if(g.phase!=='lobby'||g.players.length>=8)return json({error:'開始済み、または満員です。'},409);const p=tbPlayer(a.name);g.players.push(p);g.revision++;tbLog(g,`${p.name}が参加しました。`);await storage.put('timebomb',g);return json({game:tbView(g,p),token:p.token});}
+ const token=url.searchParams.get('token')||a.token,p=g.players.find(x=>x.token===token);
+ if(route==='state'&&request.method==='GET'){if(!p&&url.searchParams.get('spectate')!=='1')return json({error:'参加者情報が確認できません。'},403);return json({game:tbView(g,p)});}
+ if(route!=='action'||request.method!=='POST'||!p)return json({error:'操作できません。'},403);
+ tbAction(g,p,a);g.revision++;await storage.put('timebomb',g);return json({game:tbView(g,p)});
+ }catch(e){return json({error:e.message||'処理に失敗しました。'},400);}
 }

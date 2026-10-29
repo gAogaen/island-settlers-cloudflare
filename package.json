@@ -5,9 +5,10 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "test": "node tests/game.test.cjs && node tests/ui.test.cjs"
+    "test": "node tests/game.test.cjs && node tests/ui.test.cjs && node tests/timebomb.test.cjs && node tests/timebomb-ui.test.cjs"
   },
   "devDependencies": {
-    "wrangler": "^4.0.0"
+    "wrangler": "^4.0.0",
+    "linkedom": "^0.18.12"
   }
 }
