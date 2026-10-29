@@ -15,6 +15,8 @@ export default {
     const url = new URL(request.url);
     if (!url.pathname.startsWith("/api/")) return env.ASSETS.fetch(request);
     try {
+      const rd=url.pathname.match(/^\/api\/reddoor(?:\/([A-Z0-9]{6})(?:\/(join|action))?)?$/i);
+      if(rd){const code=rd[1]?.toUpperCase()||randomCode(),route=rd[1]?(rd[2]||"state"):"create";if((route==="state"&&request.method!=="GET")||(route!=="state"&&request.method!=="POST"))return json({error:"操作が正しくありません。"},405);const room=env.ROOMS.get(env.ROOMS.idFromName("reddoor:"+code));return room.fetch(`https://room/rd/${route}${url.search}`,request.method==="POST"?{method:"POST",body:JSON.stringify({...await request.json(),code})}:undefined);}
       const pg=url.pathname.match(/^\/api\/penguin(?:\/([A-Z0-9]{6})(?:\/(join|action))?)?$/i);
       if(pg){const code=pg[1]?.toUpperCase()||randomCode(),route=pg[1]?(pg[2]||"state"):"create";if((route==="state"&&request.method!=="GET")||(route!=="state"&&request.method!=="POST"))return json({error:"操作が正しくありません。"},405);const room=env.ROOMS.get(env.ROOMS.idFromName("penguin:"+code));return room.fetch(`https://room/pg/${route}${url.search}`,request.method==="POST"?{method:"POST",body:JSON.stringify({...await request.json(),code})}:undefined);}
       const tb=url.pathname.match(/^\/api\/timebomb(?:\/([A-Z0-9]{6})(?:\/(join|action))?)?$/i);
@@ -58,6 +60,7 @@ export class GameRoom {
   }
 
   async handleRequest(request) {
+    if(new URL(request.url).pathname.startsWith("/rd/"))return handleReddoor(this.storage,request);
     if(new URL(request.url).pathname.startsWith("/pg/"))return handlePenguin(this.storage,request);
     if(new URL(request.url).pathname.startsWith("/tb/"))return handleTimebomb(this.storage,request);
     const url = new URL(request.url);
@@ -609,4 +612,75 @@ async function handlePenguin(storage,request){const url=new URL(request.url),rou
  if(route==='state'&&request.method==='GET'){if(!p&&url.searchParams.get('spectate')!=='1')return json({error:'参加者情報が確認できません。'},403);return json({game:pgView(g,p)});}
  if(route!=='action'||request.method!=='POST'||!p)return json({error:'操作できません。'},403);
  const next=structuredClone(g),actor=next.players.find(x=>x.id===p.id);pgAction(next,actor,a);next.revision++;await storage.put('penguin',next);return json({game:pgView(next,actor)});
+ }catch(e){return json({error:e.message||'処理に失敗しました。'},400);}}
+
+// Red Door: basic 16-card game. Hidden rooms and roles never enter public views.
+const RD_DECK={killer:1,silver:3,trap:1,gas:2,empty:2,exit:1,gun:1,vest:1,clue:2,insight:1,ammo:1};
+const RD_NAMES={killer:'殺人鬼の鍵',silver:'銀の鍵',trap:'殺人鬼の罠',gas:'催眠ガス',empty:'何も無い部屋',exit:'脱出口',gun:'拳銃',vest:'防弾チョッキ',clue:'小さな手がかり',insight:'違和感の看破',ammo:'弾丸のある部屋'};
+const rdKey=c=>['silver','killer'].includes(c.type);
+function rdPlayer(name){return {id:crypto.randomUUID(),token:crypto.randomUUID(),name:cleanName(name),alive:true,killer:false,items:[],notes:[]};}
+function rdLog(g,text){g.log.unshift(text);g.log=g.log.slice(0,80);}
+function rdEvent(g,type,text,extra={}){g.lastEvent={id:crypto.randomUUID(),type,text,...extra};rdLog(g,text);}
+function rdShuffle(g){g.layout=(g.layout||0)+1;g.board=shuffled(g.board).map((c,slot)=>({id:crypto.randomUUID(),type:c.type,open:false,slot}));g.layoutSize=g.board.length;g.players.forEach(p=>p.notes=[]);}
+function rdStart(g,firstId){if(g.players.length<4||g.players.length>6)throw Error('基本ルールは4〜6人で遊びます。');if(firstId&&!g.players.some(p=>p.id===firstId))throw Error('最初のプレイヤーを選び直してください。');g.matchId=crypto.randomUUID();g.phase='explore';g.turn=1;g.activeIndex=firstId?g.players.findIndex(p=>p.id===firstId):crypto.getRandomValues(new Uint32Array(1))[0]%g.players.length;g.pending=null;g.removed=[];g.winnerIds=[];g.ending=null;g.reason=null;g.escapeKeys=null;g.log=[];g.players.forEach(p=>Object.assign(p,{alive:true,killer:false,items:[],notes:[]}));g.board=Object.entries(RD_DECK).flatMap(([type,n])=>Array.from({length:n},()=>({type})));rdShuffle(g);rdEvent(g,'start','屋敷の扉が閉ざされました。'+g.players[g.activeIndex].name+'から探索を始めます。');}
+function rdFinish(g,ending,winners,text){g.phase='finished';g.ending=ending;g.winnerIds=winners.map(p=>p.id);g.reason=text;g.pending=null;rdEvent(g,'ending',text);}
+function rdCheck(g){const alive=g.players.filter(p=>p.alive);if(!alive.length){rdFinish(g,'lost',[],'屋敷に生き残った者はいませんでした。');return true;}if(alive.length===1&&alive[0].killer){rdFinish(g,'last',alive,'最後に生き残ったのは、殺人鬼でした。');return true;}return false;}
+function rdNext(g){g.pending=null;if(rdCheck(g))return;g.phase='explore';do{g.activeIndex=(g.activeIndex+1)%g.players.length;}while(!g.players[g.activeIndex].alive);g.turn++;}
+function rdScatter(g,p){g.board.push(...p.items.map(c=>({type:c.type})));p.items=[];rdShuffle(g);}
+function rdDamage(g,p,scatter=false){const vest=p.items.find(c=>c.type==='vest');if(vest){p.items=p.items.filter(c=>c.id!==vest.id);g.removed.push({type:'vest'});}else p.alive=false;if(scatter||!p.alive)rdScatter(g,p);return !!vest;}
+function rdKeys(g){return g.players.flatMap(p=>p.items.filter(rdKey));}
+function rdFourthKey(g){if(rdKeys(g).length!==4)return false;const keys=[];for(const p of g.players){keys.push(...p.items.filter(rdKey));p.items=p.items.filter(c=>!rdKey(c));}g.removed.push(...keys.filter(c=>c.type==='killer').map(c=>({type:c.type})));g.board.push(...keys.filter(c=>c.type==='silver').map(c=>({type:c.type})));rdShuffle(g);rdEvent(g,'shuffle','4つ目の鍵が見つかり、すべての鍵が回収されました。殺人鬼の鍵を除外し、扉を並べ直します。');return true;}
+function rdRemember(p,g,c){p.notes=p.notes.filter(n=>n.slot!==c.slot);p.notes.push({slot:c.slot,type:c.type,layout:g.layout});}
+function rdAction(g,p,a){
+ if(a.type==='start'){if(p.id!==g.hostId||!['lobby','finished'].includes(g.phase))throw Error('ホストだけが開始できます。');rdStart(g,a.firstPlayerId);return;}
+ if(a.type==='chat'){const text=String(a.message||'').trim().slice(0,180);if(!text)throw Error('メッセージを入力してください。');g.messages.push({id:crypto.randomUUID(),name:p.name,text});g.messages=g.messages.slice(-60);return;}
+ if(g.phase==='lobby'||g.phase==='finished'||!p.alive||g.players[g.activeIndex]?.id!==p.id)throw Error('あなたの探索の番ではありません。');
+ if(a.matchId!==g.matchId||a.turn!==g.turn)throw Error('手番が更新されました。画面を確認してください。');
+ if(a.type==='open'){if(g.phase!=='explore')throw Error('先に確認中のカードを処理してください。');const card=g.board.find(c=>c.id===a.cardId&&!c.open);if(!card)throw Error('閉じている扉を選んでください。');g.phase='resolve';g.pending={id:crypto.randomUUID(),kind:'room',cardId:card.id};rdRemember(p,g,card);rdEvent(g,'open',p.name+'が扉 '+String(card.slot+1).padStart(2,'0')+' を調べています。');return;}
+ const pending=g.pending;if(!pending||a.pendingId!==pending.id)throw Error('確認内容が更新されました。');const c=g.board.find(c=>c.id===pending.cardId);if(!c)throw Error('扉が並べ直されました。');
+ if(pending.kind==='peek'){
+  if(a.type!=='peek')throw Error('確認する扉を選んでください。');const target=g.board.find(x=>x.id===a.cardId&&!x.open&&x.id!==c.id);if(!target)throw Error('別の閉じた扉を選んでください。');rdRemember(p,g,target);pending.kind='peekResult';pending.peek={slot:target.slot,type:target.type};return;
+ }
+ if(pending.kind==='peekResult'){if(a.type!=='continue')throw Error('内容を確認して進んでください。');rdNext(g);return;}
+ if(pending.kind==='insight'){
+  if(a.type!=='inspect')throw Error('公開する鍵を選んでください。');const owner=g.players.find(x=>x.id!==p.id&&x.alive&&x.items.some(k=>k.id===a.itemId&&rdKey(k)&&!k.open));if(!owner)throw Error('他の生存者の伏せた鍵を選んでください。');const key=owner.items.find(k=>k.id===a.itemId);if(key.type==='killer'){owner.items=owner.items.filter(k=>k.id!==key.id);g.removed.push({type:'killer'});}else key.open=true;rdEvent(g,'inspect',owner.name+'の鍵は「'+RD_NAMES[key.type]+'」でした。'+(key.type==='killer'?'鍵を除外します。正体は変わりません。':''));rdNext(g);return;
+ }
+ if(pending.kind==='shoot'){
+  if(a.type!=='shoot')throw Error('撃つ相手を選んでください。');const target=g.players.find(x=>x.id===a.targetId&&x.id!==p.id&&x.alive);if(!target)throw Error('他の生存者を選んでください。');const saved=rdDamage(g,target);rdEvent(g,saved?'saved':'death',p.name+'が'+target.name+'を撃ちました。'+(saved?'防弾チョッキが命を守りました。':'死亡し、持ち物が場へ戻りました。扉が並べ直されます。'));rdNext(g);return;
+ }
+ if(pending.kind!=='room'||a.type!=='resolve')throw Error('カードの案内に従ってください。');const choice=a.choice;
+ if(choice==='return'){
+  const allowed=c.type==='empty'||c.type==='exit'||c.type==='ammo'||(p.killer&&['trap','gas'].includes(c.type));if(!allowed)throw Error('このカードは伏せて戻せません。');rdEvent(g,'return',p.name+'は「何も無い部屋だった」と告げ、扉を閉じました。');rdNext(g);return;
+ }
+ if(['silver','killer','gun','vest'].includes(c.type)){
+  if(choice!=='take')throw Error('アイテムを受け取ってください。');g.board=g.board.filter(x=>x.id!==c.id);p.items.push({id:crypto.randomUUID(),type:c.type,open:!rdKey(c)});if(c.type==='killer')p.killer=true;rdEvent(g,'item',p.name+'が'+(rdKey(c)?'伏せた鍵':RD_NAMES[c.type])+'を手に入れました。');rdFourthKey(g);rdNext(g);return;
+ }
+ if(c.type==='exit'){
+  if(choice!=='escape'||rdKeys(g).length!==3)throw Error('脱出には手元の鍵が合計3枚必要です。');c.open=true;const failed=rdKeys(g).some(rdKeyCard=>rdKeyCard.type==='killer');g.escapeKeys=rdKeys(g).map(k=>k.type);rdFinish(g,failed?'betrayed':'escaped',g.players.filter(x=>failed?x.killer:!x.killer),failed?'3本の鍵の中に、殺人鬼の鍵が紛れていました。脱出失敗。':'3本すべてが銀の鍵でした。屋敷からの脱出に成功しました！');return;
+ }
+ if(c.type==='ammo'){
+  if(choice!=='aim'||!p.items.some(i=>i.type==='gun')||!g.players.some(x=>x.alive&&x.id!==p.id))throw Error('拳銃と撃つ相手が必要です。');c.open=true;pending.kind='shoot';rdEvent(g,'ammo',p.name+'が弾丸を見つけ、拳銃を構えました。');return;
+ }
+ if(c.type==='clue'){
+  if(choice!=='use')throw Error('手がかりを使ってください。');c.open=true;rdEvent(g,'clue',p.name+'が小さな手がかりを発見しました。別の扉をそっと確認します。');if(g.board.some(x=>!x.open&&x.id!==c.id))pending.kind='peek';else rdNext(g);return;
+ }
+ if(c.type==='insight'){
+  if(choice!=='use')throw Error('鍵を調べてください。');c.open=true;rdEvent(g,'insight',p.name+'が違和感の看破を発見しました。');if(g.players.some(x=>x.id!==p.id&&x.alive&&x.items.some(k=>rdKey(k)&&!k.open)))pending.kind='insight';else{rdLog(g,'他の生存者に伏せた鍵がないため、効果はありません。');rdNext(g);}return;
+ }
+ if(c.type==='gas'){
+  if(choice!=='use')throw Error('ガスの処理を進めてください。');g.board=g.board.filter(x=>x.id!==c.id);g.removed.push({type:'gas'});rdScatter(g,p);rdEvent(g,'shuffle',p.name+'が催眠ガスを浴びました。持ち物を場へ戻し、扉が並べ直されます。');rdNext(g);return;
+ }
+ if(c.type==='trap'){
+  if(choice!=='use')throw Error('罠の処理を進めてください。');const saved=rdDamage(g,p,true);rdEvent(g,saved?'saved':'death',p.name+'が殺人鬼の罠にかかりました。'+(saved?'防弾チョッキで生還しました。':'死亡しました。')+'持ち物を場へ戻し、扉が並べ直されます。');rdNext(g);return;
+ }
+ throw Error('カードの処理を選んでください。');
+}
+function rdView(g,p){const finished=g.phase==='finished',active=g.players[g.activeIndex],pending=g.pending,card=pending&&g.board.find(c=>c.id===pending.cardId);return {code:g.code,phase:g.phase,revision:g.revision,matchId:g.matchId,hostId:g.hostId,activeId:active?.id,turn:g.turn,layout:g.layout,boardSlots:g.layoutSize||0,ending:g.ending,reason:g.reason,winnerIds:g.winnerIds||[],escapeKeys:finished?g.escapeKeys:undefined,log:g.log,messages:g.messages,lastEvent:g.lastEvent,keyCount:rdKeys(g).length,removed:g.removed||[],pending:pending?{actorId:active.id,cardId:pending.cardId}:null,board:(g.board||[]).map(c=>({id:c.id,slot:c.slot,open:c.open,type:c.open||finished?c.type:undefined})),players:g.players.map(x=>({id:x.id,name:x.name,alive:x.alive,killer:finished?x.killer:undefined,items:x.items.map(c=>({id:c.id,key:rdKey(c),open:c.open,type:c.open||finished?c.type:undefined}))})),me:p?{id:p.id,killer:p.killer,alive:p.alive,items:p.items,notes:p.notes,pending:pending&&active?.id===p.id?{...pending,type:card?.type,slot:card?.slot,canHide:p.killer&&['trap','gas'].includes(card?.type)}:null}:null};}
+async function handleReddoor(storage,request){const url=new URL(request.url),route=url.pathname.split('/').pop();try{let g=await storage.get('reddoor');const a=request.method==='POST'?await request.json():{};
+ if(route==='create'){if(g)return json({error:'この部屋は使用中です。'},409);const p=rdPlayer(a.name);g={code:a.code,hostId:p.id,players:[p],phase:'lobby',revision:1,log:['赤い屋敷の入口です。'],messages:[],board:[],removed:[]};await storage.put('reddoor',g);return json({game:rdView(g,p),token:p.token});}
+ if(!g)return json({error:'部屋が見つかりません。'},404);
+ if(route==='join'){const matches=g.players.filter(x=>x.name===cleanName(a.name));if(matches.length>1)return json({error:'同じ名前が複数います。保存済みの参加情報を使ってください。'},409);if(matches.length)return json({game:rdView(g,matches[0]),token:matches[0].token,rejoined:true});if(g.phase!=='lobby'||g.players.length>=6)return json({error:'開始済み、または満員です。'},409);const p=rdPlayer(a.name);g.players.push(p);g.revision++;rdLog(g,p.name+'が屋敷に集まりました。');await storage.put('reddoor',g);return json({game:rdView(g,p),token:p.token});}
+ const token=a.token||url.searchParams.get('token'),p=g.players.find(x=>x.token===token);
+ if(route==='state'&&request.method==='GET'){if(!p&&url.searchParams.get('spectate')!=='1')return json({error:'参加者情報が確認できません。'},403);return json({game:rdView(g,p)});}
+ if(route!=='action'||request.method!=='POST'||!p)return json({error:'操作できません。'},403);const next=structuredClone(g),actor=next.players.find(x=>x.id===p.id);rdAction(next,actor,a);next.revision++;await storage.put('reddoor',next);return json({game:rdView(next,actor)});
  }catch(e){return json({error:e.message||'処理に失敗しました。'},400);}}
