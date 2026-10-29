@@ -80,3 +80,53 @@ html[data-theme=dark] :is(.development-resource.selected,.robber-victim.selected
 html[data-theme=dark] .guided-status{color:#f2d899}
 html[data-theme=dark] .guided-info{background:#2b4039;color:#dcebdd;border-color:#617b68}
 html[data-theme=dark] :is(.expanded-game-log p,.log-dialog-header p,.guided-dialog-header p){color:#cadbd4}
+/* Modal palettes: text surfaces are themed separately from card/dice artwork. */
+html[data-theme=dark] dialog{--modal-text:#edf3ee;--modal-muted:#c1d2ca;--modal-surface:#1b2a2d;--modal-inset:#283b3c;background:var(--modal-surface);color:var(--modal-text);border-color:#648078}
+html[data-theme=dark] dialog::backdrop{background:#060f15c7}
+html[data-theme=dark] dialog :where(h1,h2,h3,p,ol,ul,li,label,summary){color:var(--modal-text)}
+html[data-theme=dark] dialog :where(small,footer){color:var(--modal-muted)}
+html[data-theme=dark] dialog :where(a){color:#b1e3d6;text-decoration:underline}
+html[data-theme=dark] dialog :is(.eyebrow,.action-guide-tag){color:#e4ce94}
+html[data-theme=dark] dialog :is(.log-dialog-header,.guided-dialog-header){background:#223638;color:#edf3ee;border-color:#4c6764}
+html[data-theme=dark] dialog :is(.turn-dialog-rules,.guided-info,.development-effect,.room-steps,.effect-list>span,.discard-choice,.room-rule,.result-row,.result-player){background:var(--modal-inset);color:var(--modal-text);border-color:#53716a}
+html[data-theme=dark] dialog :is(.turn-dialog-content>p:not(.turn-dialog-player),.turn-dialog-content>small,.dice-result-body>p:first-child,.dice-result-help,.dice-auto-dismiss,.development-instructions,.development-dialog-body>small,.development-choice small,.discard-choice-name small,.result-name small,.result-points small,.result-player small,.result-role,.result-points,.room-rule p,.log-dialog footer){color:var(--modal-muted)}
+html[data-theme=dark] dialog :is(.effect-list>span.warning,.warning,.selection-info.warning>small){background:#50343a;color:#ffe0c1;border-color:#cb9379}
+html[data-theme=dark] dialog :is(.result-row .rank,.result-row strong,.result-player.winner strong,.result-role){color:#f4d994}
+html[data-theme=dark] dialog :is(.result-row.winner,.result-row.top-rank,.result-player.winner){background:#35483a;border-color:#d4ba79}
+html[data-theme=dark] dialog .room-rule.off{opacity:1;background:#223034;color:#c1d2ca;border-style:dashed}
+html[data-theme=dark] dialog .room-rule .switch-status{background:#3c6147;color:#e1f3d1}
+html[data-theme=dark] dialog .room-rule.off .switch-status{background:#435156;color:#e5e9e5}
+html[data-theme=dark] dialog :is(.result-row .delta,.result-player span){background:#d9e9ea;color:#264951}
+html[data-theme=dark] dialog .result-row .delta.penalty{background:#f9d5c2;color:#71391e}
+html[data-theme=dark] dialog .result-player.killer span{background:#853a48;color:#fff1e5}
+html[data-theme=dark] dialog .task-counter{color:#e4ebd5}
+html[data-theme=dark] dialog :is(.target.selected,.target-doors button:hover,.development-resource.selected,.robber-victim.selected){background:#36594b;color:#fff5d5;border-color:#e6c77c}
+html[data-theme=dark] dialog :is(.target small,.target-doors button small){color:#d7decf}
+html[data-theme=dark] dialog :is(input,select,textarea){background:#23393b;color:#f1f5ec;border-color:#6c867e}
+html[data-theme=dark] dialog :is(button,input,select,textarea):focus-visible{outline:3px solid #e7c465;outline-offset:3px}
+/* Illustrated and tinted modal bodies must not retain light gradients. */
+html[data-theme=dark][data-game=timebomb] #roundDialog .dialog-body{background:linear-gradient(#34433c,#1b2a2d);color:#edf3ee}
+html[data-theme=dark][data-game=timebomb] #resultDialog[data-type=defuse]{background:#1b3935;color:#e7f5e7}
+html[data-theme=dark][data-game=timebomb] #resultDialog[data-type=defuse] .dialog-body{background:radial-gradient(ellipse at 50% 0,#385c4b,#1b3935 75%);color:#e7f5e7}
+html[data-theme=dark][data-game=timebomb] #resultDialog[data-type=defuse] h2{color:#d9f2c0}
+html[data-theme=dark][data-game=timebomb] #resultDialog[data-type=bomb] .dialog-body{background:radial-gradient(circle at 50% 45%,#743e2e,#321f27 80%);color:#fff0cb}
+html[data-theme=dark][data-game=timebomb] #resultDialog[data-type=bomb] :is(h2,p){color:#ffe1a3}
+html[data-theme=dark][data-game=timebomb] #winnerDialog .dialog-body{background:radial-gradient(ellipse at 50% 0,#345642,#17372f 75%);color:#edf3ee}
+html[data-theme=dark][data-game=penguin] .round-dialog .dialog-body{background:radial-gradient(ellipse at 50% 0,#354b52,#1b2a2d 75%);color:#edf3ee}
+html[data-theme=dark][data-game=penguin] .dialog-body p{color:#c1d9df}
+html[data-theme=dark][data-game=daifugo] .result-dialog h2{color:#f1d79b}
+html[data-theme=dark][data-game=reddoor] .result-dialog h2{color:#f3d4a4}
+html[data-theme=dark][data-game=index] #victoryDialog{background:radial-gradient(ellipse at 50% 10%,#35523f,#17372f 55%,#102b29);color:#fff5d9;border-color:#c8b074}
+html[data-theme=dark][data-game=index] #victoryDialog h2{color:#ffe4a0}
+html[data-theme=dark][data-game=index] #victoryDialog .victory-result-row{background:#233c35;color:#f4f2df}
+html[data-theme=dark][data-game=index] #victoryDialog .victory-result-row.champion{background:#3d4e35}
+html[data-theme=dark][data-game=index] #victoryDialog .victory-result-row small{color:#c2d6bc}
+html[data-theme=dark][data-game=index] dialog .dialog-idle-reminder{background:#f7dda0;color:#50360f}
+/* Shared guidance uses ID selectors in its own stylesheet. */
+html[data-theme=dark] #actionGuideDialog{background:#1b2a2d;color:#edf3ee}
+html[data-theme=dark] #actionGuideSteps{background:#283e38;color:#edf3ee}
+html[data-theme=dark] :is(#actionGuideTitle,#actionGuideDescription,#actionGuideLater){color:#edf3ee}
+html[data-theme=dark] dialog :is(.discard-progress,.discard-progress strong,.dice-total-label,.dice-total-label strong){color:#f2d899}
+html[data-theme=dark] dialog .trade-material :is(b,strong){color:#e5efdc}
+html[data-theme=dark] dialog .trade-material:last-child :is(b,strong){color:#ffe1ac}
+html[data-theme=dark] #victoryDialog .victory-score>span{color:#eddfa5}

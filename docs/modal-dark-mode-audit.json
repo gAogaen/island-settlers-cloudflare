@@ -1,0 +1,214 @@
+{
+  "environment": "Local QA with actual game renderers and deterministic fixture states",
+  "scope": "32 dialog templates plus bomb result and editable settings variants",
+  "method": "Computed text colors against solid surfaces and sampled CSS gradient stop colors; disabled controls excluded. Normal text threshold 4.5, large text threshold 3. Not a complete accessibility or production end-to-end audit.",
+  "checks": [
+    {
+      "page": "index",
+      "failures": [],
+      "modal": "discardDialog",
+      "samples": 28
+    },
+    {
+      "page": "index",
+      "failures": [],
+      "modal": "robberDialog",
+      "samples": 6
+    },
+    {
+      "page": "index",
+      "failures": [],
+      "modal": "tradeDialog",
+      "samples": 9
+    },
+    {
+      "page": "index",
+      "failures": [],
+      "modal": "developmentDialog",
+      "samples": 28
+    },
+    {
+      "page": "index",
+      "failures": [],
+      "modal": "turnDialog",
+      "samples": 8
+    },
+    {
+      "page": "index",
+      "failures": [],
+      "modal": "diceResultDialog",
+      "samples": 11
+    },
+    {
+      "page": "index",
+      "failures": [],
+      "modal": "tradeOfferDialog",
+      "samples": 10
+    },
+    {
+      "page": "index",
+      "failures": [],
+      "modal": "victoryDialog",
+      "samples": 32
+    },
+    {
+      "page": "index",
+      "failures": [],
+      "modal": "logDialog",
+      "samples": 6
+    },
+    {
+      "page": "timebomb",
+      "failures": [],
+      "modal": "roundDialog",
+      "samples": 5
+    },
+    {
+      "page": "timebomb",
+      "failures": [],
+      "modal": "inspectDialog",
+      "samples": 12
+    },
+    {
+      "page": "timebomb",
+      "failures": [],
+      "modal": "cutDialog",
+      "samples": 4
+    },
+    {
+      "page": "timebomb",
+      "failures": [],
+      "modal": "resultDialog",
+      "samples": 3
+    },
+    {
+      "page": "timebomb",
+      "failures": [],
+      "modal": "winnerDialog",
+      "samples": 14
+    },
+    {
+      "page": "timebomb",
+      "failures": [],
+      "modal": "rulesDialog",
+      "samples": 11
+    },
+    {
+      "page": "timebomb",
+      "failures": [],
+      "modal": "actionGuideDialog",
+      "samples": 8
+    },
+    {
+      "page": "penguin",
+      "failures": [],
+      "modal": "placeDialog",
+      "samples": 5
+    },
+    {
+      "page": "penguin",
+      "failures": [],
+      "modal": "roundDialog",
+      "samples": 30
+    },
+    {
+      "page": "penguin",
+      "failures": [],
+      "modal": "rulesDialog",
+      "samples": 8
+    },
+    {
+      "page": "penguin",
+      "failures": [],
+      "modal": "actionGuideDialog",
+      "samples": 7
+    },
+    {
+      "page": "reddoor",
+      "failures": [],
+      "modal": "roomDialog",
+      "samples": 7
+    },
+    {
+      "page": "reddoor",
+      "failures": [],
+      "modal": "resultDialog",
+      "samples": 17
+    },
+    {
+      "page": "reddoor",
+      "failures": [],
+      "modal": "rulesDialog",
+      "samples": 49
+    },
+    {
+      "page": "reddoor",
+      "failures": [],
+      "modal": "logDialog",
+      "samples": 3
+    },
+    {
+      "page": "reddoor",
+      "failures": [],
+      "modal": "actionGuideDialog",
+      "samples": 7
+    },
+    {
+      "page": "daifugo",
+      "failures": [],
+      "modal": "playDialog",
+      "samples": 11
+    },
+    {
+      "page": "daifugo",
+      "failures": [],
+      "modal": "taskDialog",
+      "samples": 20
+    },
+    {
+      "page": "daifugo",
+      "failures": [],
+      "modal": "settingsDialog",
+      "samples": 48
+    },
+    {
+      "page": "daifugo",
+      "failures": [],
+      "modal": "resultDialog",
+      "samples": 29
+    },
+    {
+      "page": "daifugo",
+      "failures": [],
+      "modal": "rulesDialog",
+      "samples": 11
+    },
+    {
+      "page": "daifugo",
+      "failures": [],
+      "modal": "logDialog",
+      "samples": 3
+    },
+    {
+      "page": "daifugo",
+      "failures": [],
+      "modal": "actionGuideDialog",
+      "samples": 7
+    },
+    {
+      "page": "timebomb",
+      "variant": "bomb",
+      "failures": [],
+      "modal": "resultDialog",
+      "samples": 3
+    },
+    {
+      "page": "daifugo",
+      "variant": "edit",
+      "failures": [],
+      "modal": "settingsDialog",
+      "samples": 42
+    }
+  ],
+  "stylesheetSha256": "1bada1e657663d4f71774078d1ee7f382b49d0e436c4612c82cd38d887a6c638"
+}
