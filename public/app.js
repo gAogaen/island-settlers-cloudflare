@@ -110,6 +110,7 @@ function showImpactEffect(effect) {
 }
 function enterRoom(code, id, asSpectator = false) {
   resetActionNotifications();
+  $("gamePicker").hidden=true;
   spectating=asSpectator;
   document.body.classList.add("in-room"); boardZoom=1;boardPan={x:0,y:0};
   currentGame=null;renderedMatchId=null;
@@ -942,3 +943,9 @@ if (requestedCode) {
   if (remembered) enterRoom(requestedCode, remembered);
   else { document.querySelector('[data-tab="join"]').click(); $("roomCode").value = requestedCode; }
 }
+
+function showCatanLobby() {$("gamePicker").hidden=true;$("homeView").hidden=false;history.replaceState({},"","/?game=catan");}
+$("chooseCatan").onclick=showCatanLobby;
+$("backToGames").onclick=()=>{$("homeView").hidden=true;$("gamePicker").hidden=false;history.replaceState({},"","/");};
+if(!requestedCode&&params.get("game")==="catan")showCatanLobby();
+if(requestedCode){$("gamePicker").hidden=true;if(!roomCode)$("homeView").hidden=false;}
