@@ -1,0 +1,413 @@
+{
+  "status": "reference-only; not loaded by the public game; terrain, adjacency and optional-token handling still require verification",
+  "boards": [
+    {
+      "board": "NE",
+      "lands": [
+        {
+          "number": 1,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 1,
+            "dahan": 0,
+            "blight": 0
+          }
+        },
+        {
+          "number": 2,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          }
+        },
+        {
+          "number": 3,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 1,
+            "blight": 0
+          }
+        },
+        {
+          "number": 4,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 1,
+            "blight": 0
+          }
+        },
+        {
+          "number": 5,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 1,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          }
+        },
+        {
+          "number": 6,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 2,
+            "blight": 0
+          }
+        },
+        {
+          "number": 7,
+          "basePieces": {
+            "explorers": 3,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 3,
+            "blight": 0
+          }
+        },
+        {
+          "number": 8,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          }
+        },
+        {
+          "number": 9,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          }
+        }
+      ],
+      "source": "https://github.com/spirit-island/spirit-island-mod/tree/main/objects/ThematicMapBag",
+      "verifiedForRelease": false
+    },
+    {
+      "board": "NW",
+      "lands": [
+        {
+          "number": 1,
+          "basePieces": {
+            "explorers": 2,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 1,
+            "blight": 0
+          }
+        },
+        {
+          "number": 2,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 1,
+            "dahan": 0,
+            "blight": 0
+          }
+        },
+        {
+          "number": 3,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 1,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          }
+        },
+        {
+          "number": 4,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          }
+        },
+        {
+          "number": 5,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          }
+        },
+        {
+          "number": 6,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 2,
+            "blight": 0
+          }
+        },
+        {
+          "number": 7,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 1,
+            "blight": 0
+          }
+        },
+        {
+          "number": 8,
+          "basePieces": {
+            "explorers": 1,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 1,
+            "blight": 0
+          }
+        },
+        {
+          "number": 9,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 1,
+            "blight": 0
+          }
+        }
+      ],
+      "source": "https://github.com/spirit-island/spirit-island-mod/tree/main/objects/ThematicMapBag",
+      "verifiedForRelease": false
+    },
+    {
+      "board": "E",
+      "lands": [
+        {
+          "number": 1,
+          "basePieces": {
+            "explorers": 1,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          }
+        },
+        {
+          "number": 2,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 1,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          }
+        },
+        {
+          "number": 3,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 1,
+            "cities": 1,
+            "dahan": 2,
+            "blight": 1
+          }
+        },
+        {
+          "number": 4,
+          "basePieces": {
+            "explorers": 1,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 3,
+            "blight": 0
+          }
+        },
+        {
+          "number": 5,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          }
+        },
+        {
+          "number": 6,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          }
+        },
+        {
+          "number": 7,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          }
+        },
+        {
+          "number": 8,
+          "basePieces": {
+            "explorers": 1,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          }
+        },
+        {
+          "number": 9,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 2,
+            "blight": 0
+          }
+        },
+        {
+          "number": 10,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 2,
+            "blight": 0
+          }
+        }
+      ],
+      "source": "https://github.com/spirit-island/spirit-island-mod/tree/main/objects/ThematicMapBag",
+      "verifiedForRelease": false
+    },
+    {
+      "board": "W",
+      "lands": [
+        {
+          "number": 1,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 2,
+            "cities": 0,
+            "dahan": 2,
+            "blight": 0
+          }
+        },
+        {
+          "number": 2,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 1,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          }
+        },
+        {
+          "number": 3,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          }
+        },
+        {
+          "number": 4,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          }
+        },
+        {
+          "number": 5,
+          "basePieces": {
+            "explorers": 1,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          }
+        },
+        {
+          "number": 6,
+          "basePieces": {
+            "explorers": 1,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 1,
+            "blight": 0
+          }
+        },
+        {
+          "number": 7,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 2,
+            "blight": 0
+          }
+        },
+        {
+          "number": 8,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 2,
+            "blight": 0
+          }
+        },
+        {
+          "number": 9,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          }
+        },
+        {
+          "number": 10,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          }
+        }
+      ],
+      "source": "https://github.com/spirit-island/spirit-island-mod/tree/main/objects/ThematicMapBag",
+      "verifiedForRelease": false
+    }
+  ]
+}
