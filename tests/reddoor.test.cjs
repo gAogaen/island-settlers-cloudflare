@@ -40,3 +40,11 @@ for(const vest of [false,true]){const g=make(),p=current(g),target=g.players[1];
  for(const bad of [false,true]){const h=structuredClone(g);h.activeIndex=0;const actor=current(h);for(let i=0;i<3;i++)inventory(h,h.players[i],'silver');open(h,'exit');act(h,actor,'resolve',{choice:'escape'});assert.equal(h.pending.kind,'escapeChoice');assert.equal(R.rdView(h,actor).me.pending.shadowAt,undefined);assert.equal(R.rdView(h).pending.shadowAt,undefined);act(h,actor,'escapeDoor',{door:bad?h.pending.shadowAt:1-h.pending.shadowAt});assert.equal(h.ending,bad?'lost':'escaped');if(bad)assert(h.players.every(p=>!p.alive));}
  console.log('PASS optional clown role reversal and shadow final-choice success/failure without leaking random answer');
 }
+{
+ const g=make();g.rules={extras:['fbi']};R.rdStart(g,g.players[0].id);assert.equal(g.board.length,17);assert.equal(g.board.filter(c=>c.type==='fbi').length,1);
+ const p=current(g),other=g.players[1],{c}=open(g,'fbi');act(g,p,'resolve',{choice:'use'});assert(c.open);assert(g.removed.some(x=>x.type==='fbi'));assert(p.fbi);assert.equal(g.pending.kind,'fbiSelect');
+ const own=R.rdView(g,p),opponent=R.rdView(g,other),spectator=R.rdView(g);assert(own.board.every(x=>x.type));assert(own.me.fbi);assert.equal(opponent.board.filter(x=>x.type).length,1);assert(!opponent.players.some(x=>x.fbi));assert.equal(spectator.board.filter(x=>x.type).length,1);
+ const target=g.board.find(x=>!x.open&&x.type==='empty');const layout=g.layout,cardCount=g.board.length;act(g,p,'fbiSelect',{targetId:target.id});assert.equal(g.pending.type,undefined);assert.equal(R.rdView(g,p).me.pending.type,'empty');act(g,p,'resolve',{choice:'return'});assert(g.fbiShufflePending===false);assert.equal(g.layout,layout+1);assert.equal(g.board.length,cardCount);assert(!g.board.some(x=>x.id===target.id));assert(g.board.every(x=>!x.open));assert(p.fbi);assert(!R.rdView(g,other).players.some(x=>x.fbi));
+ assert.throws(()=>{const h=make();h.rules={extras:['fbi','fbi']};R.rdStart(h,h.players[0].id);});
+}
+console.log('PASS FBI notebook expansion: private inspection, chosen room effect, discard notebook and reshuffle');
