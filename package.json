@@ -7,7 +7,7 @@
     "deploy": "wrangler deploy",
     "test": "node tests/game.test.cjs && node tests/ui.test.cjs && node tests/timebomb.test.cjs && node tests/timebomb-ui.test.cjs && node tests/penguin.test.cjs && node tests/penguin-ui.test.cjs && node tests/action-guide.test.cjs && node tests/reddoor.test.cjs && node tests/reddoor-ui.test.cjs && node tests/daifugo.test.cjs && node tests/daifugo-ui.test.cjs && node tests/theme.test.cjs && node tests/development-effects.test.cjs && node tests/development-scenes-ui.test.cjs && npm run test:spirit",
     "deploy:boardgame": "wrangler deploy --config wrangler.boardgame.jsonc",
-    "test:spirit": "node tests/spirit.test.cjs && node tests/spirit-fear.test.cjs && node tests/spirit-ui.test.cjs && node tests/spirit-invaders.test.cjs && node tests/spirit-powers.test.cjs && node tests/spirit-unique.test.cjs"
+    "test:spirit": "node tests/spirit.test.cjs && node tests/spirit-fear.test.cjs && node tests/spirit-ui.test.cjs && node tests/spirit-invaders.test.cjs && node tests/spirit-powers.test.cjs && node tests/spirit-unique.test.cjs && node tests/spirit-ocean.test.cjs && node tests/spirit-bringer.test.cjs"
   },
   "devDependencies": {
     "wrangler": "^4.0.0",
