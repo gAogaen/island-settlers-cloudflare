@@ -25,7 +25,7 @@ apply();
 media.addEventListener('change',apply);
 window.addEventListener('storage',e=>{if(e.key===key){preference=modes.includes(e.newValue)?e.newValue:'system';apply();}});
 document.addEventListener('DOMContentLoaded',()=>{
- const host=document.querySelector('header nav,header .top-meta,header>div:last-child,header');
+ const host=document.querySelector('header nav,header .top-meta')||document.querySelector('header');
  if(!host||document.querySelector('[data-theme-toggle]'))return;
  const button=document.createElement('button');button.type='button';button.className='theme-toggle';button.setAttribute('data-theme-toggle','');
  host.append(button);
