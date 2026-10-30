@@ -1,0 +1,29 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');const ctx={crypto:require('node:crypto').webcrypto,Request,Response,URL,structuredClone};vm.createContext(ctx);vm.runInContext(fs.readFileSync('src/worker.mjs','utf8').replace('export default {','const worker={').replace('export class GameRoom','class GameRoom')+';globalThis.S={siPlayer,siStart,siAction,siLegalTarget,siPowerLands,siOceanOnBoard,siExecutePowerMoves,siCheckEnd,siInvader,siTrackValue,siTrackRemaining,siAddPresence,siElementCounts};',ctx);const S=ctx.S;
+function make(){const players=[S.siPlayer('Ocean'),S.siPlayer('River')];players[0].spirit='ocean';players[1].spirit='river';const g={players,hostId:players[0].id,phase:'lobby',revision:1,code:'ABCDEF',messages:[],log:[]};S.siStart(g);for(const l of g.lands){l.explorers=0;l.towns=0;l.cities=0;l.dahan=0;l.invaderDamage={explorers:[],towns:[],cities:[]};}g.lands.find(l=>l.board===players[1].id).cities=1;const p=players[0],sea=g.oceans.find(l=>l.board===p.id),coast=g.lands.find(l=>l.presenceOwners.includes(p.id));return{g,p,sea,coast};}
+function resolve(g,p,key,args={}){const c=p.hand.find(c=>c.program===key);assert(c,key);g.phase=c.speed;p.ready=false;c.ready=true;S.siAction(g,p,{type:'resolve',matchId:g.matchId,cardId:c.id,...args});assert(c.used);}
+{
+ const {g,p,sea,coast}=make();assert.equal(g.lands.length,16);assert.equal(g.oceans.length,2);assert.equal(sea.presence,1);assert.equal(coast.presence,1);assert.equal(p.presence,11);const legal=S.siLegalTarget(g,p,p.hand.find(c=>c.program==='deeps'));assert(legal.some(l=>l.id===sea.id));assert(legal.some(l=>l.id===coast.id));assert(!legal.some(l=>l.board!==p.id));assert.equal(S.siPowerLands(g).filter(l=>l.isOcean).length,1);console.log('PASS Ocean has a real Presence node, coastal adjacency and board-local activation');
+}
+{
+ const {g,p,sea}=make(),coasts=g.lands.filter(l=>l.board===p.id&&l.coastal);coasts[0].explorers=1;coasts[1].explorers=1;resolve(g,p,'deeps',{landId:sea.id,moves:coasts.slice(0,2).map(from=>({from:from.id,to:sea.id,type:'explorers',count:1}))});assert.equal(sea.explorers,0);assert.equal(p.energy,1);assert(coasts.slice(0,2).every(l=>l.explorers===0));console.log('PASS Call of the Deeps gathers two Explorers into the Ocean and drowns them');
+}
+{
+ const {g,p,coast}=make();coast.explorers=1;coast.towns=1;coast.dahan=1;resolve(g,p,'swallow',{landId:coast.id});assert.equal(coast.explorers+coast.towns+coast.dahan,0);assert.equal(p.energy,1);assert.equal(p.drownedHealth,1);assert.equal(g.fear,1);console.log('PASS Swallow drowns one Explorer, Town and Dahan; only Invaders fuel Energy');
+}
+{
+ const {g,p,coast}=make();resolve(g,p,'grasping',{landId:coast.id});assert.equal(coast.defend,4);assert.equal(g.fear,2);console.log('PASS Grasping Tide grants both Fear and defense');
+}
+{
+ const {g,p,sea}=make(),target=g.players[1],from=g.lands.find(l=>l.presenceOwners.includes(target.id)),targetSea=g.oceans.find(l=>l.board===target.id),to=g.lands.find(l=>l.board===p.id&&l.coastal);from.coastal=true;from.neighbors.push(targetSea.id);targetSea.neighbors.push(from.id);targetSea.presenceOwners=[p.id];targetSea.presence=1;from.towns=1;from.dahan=2;const energy=target.energy;resolve(g,p,'tidal',{spiritId:target.id,landId:from.id,moves:[{from:from.id,to:targetSea.id,type:'towns',count:1},{from:from.id,to:to.id,type:'dahan',count:2,viaOcean:true}]});assert.equal(target.energy,energy+2);assert.equal(from.towns+from.dahan,0);assert.equal(to.dahan,2);assert.equal(p.energy,1);console.log('PASS Tidal Boon grants ally Energy, drowns a Town and rescues Dahan to a distant coast');
+}
+{
+ const {g,p,sea}=make(),inactive=g.oceans.find(l=>l.board!==p.id),from=g.lands.find(l=>l.board===inactive.board&&l.coastal);from.explorers=1;assert.throws(()=>S.siExecutePowerMoves(g,p,from,{direction:'push',types:['explorers'],limit:1},[{from:from.id,to:inactive.id,type:'explorers',count:1}]));for(const l of [...g.lands,...g.oceans]){l.presenceOwners=l.presenceOwners.filter(id=>id!==p.id);l.presence=l.presenceOwners.length;}assert(S.siCheckEnd(g));assert.equal(g.winner,false);console.log('PASS inactive Oceans reject pieces; losing all real Ocean Presence causes defeat');
+}
+
+{
+ const {g,p,sea,coast}=make();assert.equal(S.siTrackValue(p,'energy'),0);assert.equal(S.siTrackValue(p,'plays'),1);p.energyTrack=5;const elements=S.siElementCounts(p);assert.equal(elements['月'],1);assert.equal(elements['水'],2);assert.equal(elements['大地'],1);assert.equal(S.siTrackValue(p,'energy'),1);p.hand[0].ready=true;assert.equal(S.siElementCounts(p)['水'],3);p.energyTrack=6;const before=coast.presence;assert.equal(S.siAddPresence(coast,p,'energy'),false);assert.equal(coast.presence,before);assert(S.siAddPresence(coast,p,'plays'));assert.equal(p.playTrack,1);p.presence=0;const track=p.energyTrack;g.phase='growth';g.players.forEach(x=>x.ready=false);S.siAction(g,p,{type:'growth',matchId:g.matchId,growthIndex:1,placements:[{landId:sea.id,fromId:coast.id,track:'energy'},{landId:sea.id,fromId:sea.id,track:'energy'}]});assert.equal(p.energyTrack,track);assert.equal(p.presence,0);assert.equal(sea.presence,2);assert.equal(coast.presenceOwners.filter(id=>id===p.id).length,1);console.log('PASS Ocean track income/elements, exhausted track validation, and growth by repositioning existing Presence');
+}
+
+{
+ const {g,p,sea}=make();for(const l of g.lands){l.presenceOwners=l.presenceOwners.filter(id=>id!==p.id);l.presence=l.presenceOwners.length;}g.phase='blight';g.blightFlipped=true;g.blightCard='downwardSpiral';g.players.forEach(x=>x.ready=false);S.siAction(g,p,{type:'blightChoice',matchId:g.matchId,choice:'presence',landId:sea.id});assert.equal(sea.presence,0);assert.equal(p.destroyedPresence,1);assert.equal(g.phase,'finished');assert.equal(g.winner,false);console.log('PASS Blight card can destroy Ocean Presence and immediately detects the resulting defeat');
+}
