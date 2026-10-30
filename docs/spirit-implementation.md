@@ -1,6 +1,6 @@
 # Spirit Island implementation coverage
 
-This remains a draft. Executable card programs and passing regression tests do not establish complete base-set rules.
+Implementation audit is in progress. The implemented scope now includes all base spirits, cards, adversaries and scenarios on the balanced maps. Optional thematic maps and the remaining interaction checks below are being completed.
 
 | Component | Current implementation | Remaining work |
 |---|---|---|
@@ -10,17 +10,17 @@ This remains a draft. Executable card programs and passing regression tests do n
 | Shared powers | All 36 Minor and 22 Major cards have metadata, target/element conditions, executable programs and dialogs; finite shared decks, four-card drafts, reshuffling and Major forgetting | finish combinations below; this is not a claim of complete rule coverage |
 | Support/continued effects | Energy/elements/range, moving Ward defense, Constancy, Entwined drafts/gifts, paid Powerstorm repeats, immediate repeats, Vengeance action aggregation and non-recursive trigger ancestry | complete branch UI and timing audit, especially multiple destruction/damage instructions and Bringer |
 | Spirit panels | Eight spirits, all 12 printed innate programs with tiers, permanent/Any track elements, River/Thunderspeaker track reclaim, Presence repositioning; Shadows paid range bypass; Green Growth regeneration; Thunderspeaker's Ravage Presence-loss choices | setup choices and remaining special-rule interactions; all 25 Growth choices now have a stepwise, order-selectable implementation |
-| Island | A–D printed terrain assignments, starting pieces, three coastal lands and exact within-board adjacency; land-details modal; physical Ocean nodes and board-local activation | standard multi-board joins/layouts (current joins are still approximate); Ocean setup coast selection |
+| Island | A–D printed terrain assignments, starting pieces, standard 1–4-board joins including point-only contacts; whole-island overview and land-details modal; physical Ocean nodes and board-local activation | optional thematic maps; remaining visual/interaction checks |
 | Invaders | Physical unique 3/4/5-stage deck with Coastal card; Explore/Build/Ravage, damage/counterattack, continuation after triggered choices | other timing/special-rule exceptions; counterattack damage is now player-allocated |
 | Blight | Two cards/pools, flip, card choices; add Blight to the origin even when already blighted, then player-selected adjacent cascades | remaining timing and Ocean cleanup exceptions |
-| Adversaries/scenarios | All three base adversaries at levels 0–6, host setup and action-by-action choices | four scenarios; remaining card/adversary interactions |
+| Adversaries/scenarios | All three base adversaries at levels 0–6, all four scenarios, host setup and action-by-action choices | four base scenarios, including setup and cooperative Ritual consent; remaining interaction audit |
 
 ## Known card interaction gaps
 
 - Bringer now uses stable physical Invader IDs, mandatory Push, and a per-Power once-only destruction replacement. Push preferences are optional inputs; unspecified destinations default to the first legal adjacent land. Follow-up UI prediction still needs further coverage when a multi-land Power pushes pieces into a land that will be damaged later in that Power.
-- The source and destination of individual wounded Invaders need full player control for every removal, replacement and move.
+- Physical Invader/Dahan IDs, individual push selection and wound-priority selectors now cover movement, removal, destruction and replacement. Further compound-action checks continue below.
 - Timing when a cascade changes Ocean activation during a multi-step Power needs verification.
-- Infinite Vitality's Ocean cleanup and interactions with moving injured Dahan require further coverage.
+- Surviving humans in Oceans are cleaned up to the nearest legal coast after the action tree, without treating the correction as movement, removal or destruction. The cleanup has a dedicated modal.
 - Several in-card follow-up target choices have DOM coverage for their default resolution, but not every combination of choices.
 - All 25 Growth choices and all 12 innate programs now use the printed panel effects. The UI resolves Growth effects one at a time in the player’s chosen order, including separate drafts and Ocean moves. Further rule-interaction coverage is required.
 
@@ -35,7 +35,7 @@ This remains a draft. Executable card programs and passing regression tests do n
 
 `npm test` runs the existing-game suites and `test:spirit`. Spirit tests cover 1–4 player rounds, privacy/rejoin, all 45 Fear stages, all 32 Unique dialogs, all 58 shared-power dialogs and all 12 innate dialogs at highest thresholds, tier-specific innate cases, all 25 stepwise Growth dialogs, A–D terrain/adjacency, counterattack allocation, mandatory Bringer Push, physical piece identity and once-per-Power replacement, finite-card conservation over repeated drafts/reshuffles, Major forgetting, Midnight, support effects, repeats, cascades and Vengeance/Ravage continuation. These are regression checks, not a completeness certification.
 
-Real browser layout testing remains incomplete: Chromium download failed earlier in this environment. UI checks currently use DOM simulation.
+Real Chromium tests now cover desktop (1440 px) and mobile (390 px), four-board topology, Growth dialogs, all scenario setup dialogs and Ocean coastal setup. No script errors or page-width overflow were observed. The npm Playwright browser download failed; a separately obtained Chromium executable was used via SI_CHROMIUM_PATH. Japanese text rendering was checked with Noto Sans CJK JP.
 
 Board facts were checked visually against the reference images at `https://spiritislandweb.s3.eu-central-1.amazonaws.com/boards/Board{A,B,C,D}_big.png`; the images are not bundled in the application.
 
@@ -50,3 +50,9 @@ England levels 0–6 include capital loss tracking (including transient seventh-
 Prussia Escalation timing was corrected to occur before Explore. Explore supply and Ravage eligibility are snapshotted before resolving the card, so effects from one land do not add eligible lands later in that card. Shared/innate DOM regression tests now run with both normal and England-increased building Health.
 
 Additional rules references: https://querki.net/raw/darker/spirit-island-faq/Kingdom%2Bof%2BEngland ; https://querki.net/raw/darker/spirit-island-faq/.7w4g8oe ; the `b765cf` England adversary reference module in spirit-island-mod.
+
+The four scenarios include Blitz speed/cost/refund/setup changes, Guard the Isle’s Heart setup/inner-land loss, Rituals of Terror shared contribution consent and Fear/Push sequence, and Dahan Insurrection physical-movement raids, nearest-Dahan military responses and alternate victory/final uprising. The integration suite covers all 440 combinations of scenario, adversary level and 1–4 players through setup and a complete idle round. This does not replace specific tests of Power interactions.
+
+Balanced layout transforms were cross-checked against spirit-island-mod `boardLayouts`. Border intervals were transcribed from printed A–D land boundaries and compared with reference SVG geometry across 240 board-pair placements. Dedicated tests check all board permutations, central point contacts, the A/B standard join and the A/C Opposite Shores join. The original artwork/SVGs are reference-only and not bundled.
+
+Official scenario FAQ checks: https://querki.net/raw/darker/spirit-island-faq/Blitz ; https://querki.net/raw/darker/spirit-island-faq/Dahan%2BInsurrection ; https://querki.net/raw/darker/spirit-island-faq/Rituals%2Bof%2BTerror ; https://querki.net/raw/darker/spirit-island-faq/Ocean%27s%2BHungry%2BGrasp .

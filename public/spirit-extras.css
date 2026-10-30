@@ -11,3 +11,7 @@ html[data-theme=dark] .si-land{color:#21392d}html[data-theme=dark] .si-mini-boar
 .si-land[data-terrain="山"]{border-top:4px solid #8c929e}.si-land[data-terrain="湿地"]{border-top:4px solid #69b4c5}.si-land[data-terrain="ジャングル"]{border-top:4px solid #5c9c69}.si-land[data-terrain="砂漠"]{border-top:4px solid #d8ad59}.si-neighbor-list{display:flex;flex-wrap:wrap;gap:8px}.si-neighbor-list button{min-height:44px}
 
 .si-growth-steps{display:grid;gap:10px}.si-growth-steps button{display:flex;justify-content:space-between;align-items:center;text-align:left;min-height:54px;padding:12px 16px}
+
+.si-map-overview{margin:14px 0;border:1px solid var(--line,#d5dfd4);border-radius:14px;background:var(--surface,#fff);padding:12px}.si-map-overview svg{display:block;width:100%;max-height:380px}.si-map-edge{stroke:#68816f;stroke-width:.16;stroke-dasharray:.5 .4;opacity:.6}.si-map-overview [data-map-land]{cursor:pointer}.si-map-overview [data-map-land]:focus circle,.si-map-overview [data-map-land]:hover circle{stroke:#b44a32;stroke-width:.45}
+
+.si-order-row{display:flex;align-items:center;gap:8px;margin:6px 0}.si-order-row span{flex:1}.si-order-row button{min-width:44px;min-height:44px}.si-piece-preferences{margin:12px 0}.si-piece-preferences summary{cursor:pointer;padding:10px}
