@@ -30,6 +30,8 @@ export default {
         const body=request.method==="POST"?{...await request.json(),code}:null;
         return room.fetch(`https://room/tb/${route}${url.search}`,body?{method:"POST",body:JSON.stringify(body)}:undefined);
       }
+      const si=url.pathname.match(/^\/api\/spirit(?:\/([A-Z0-9]{6})(?:\/(join|action))?)?$/i);
+      if(si){const code=si[1]?.toUpperCase()||randomCode(),route=si[1]?(si[2]||"state"):"create";if((route==="state"&&request.method!=="GET")||(route!=="state"&&request.method!=="POST"))return json({error:"操作が正しくありません。"},405);const room=env.ROOMS.get(env.ROOMS.idFromName("spirit:"+code));return room.fetch(`https://room/si/${route}${url.search}`,request.method==="POST"?{method:"POST",body:JSON.stringify({...await request.json(),code})}:undefined);}
       if (request.method === "POST" && url.pathname === "/api/rooms") {
         const body = await request.json();
         const code = randomCode();
@@ -66,6 +68,7 @@ export class GameRoom {
     if(new URL(request.url).pathname.startsWith("/rd/"))return handleReddoor(this.storage,request);
     if(new URL(request.url).pathname.startsWith("/pg/"))return handlePenguin(this.storage,request);
     if(new URL(request.url).pathname.startsWith("/tb/"))return handleTimebomb(this.storage,request);
+    if(new URL(request.url).pathname.startsWith("/si/"))return handleSpiritIsland(this.storage,request);
     const url = new URL(request.url);
     if (request.method === "POST" && url.pathname === "/create") {
       if (await this.storage.get("game")) return json({ error: "この部屋コードは使用中です。" }, 409);
@@ -810,4 +813,83 @@ async function handleDaifugo(storage,request){const url=new URL(request.url),rou
  if(route==='join'){const matches=g.players.filter(x=>x.name===cleanName(a.name));if(matches.length>1)return json({error:'同じ名前が複数います。保存済みの参加情報を使ってください。'},409);if(matches.length)return json({game:dfView(g,matches[0]),token:matches[0].token,rejoined:true});if(g.phase!=='lobby'||g.players.length>=6)return json({error:'開始済み、または満員です。'},409);const p=dfPlayer(a.name);g.players.push(p);g.revision++;dfLog(g,p.name+'が参加しました。');await storage.put('daifugo',g);return json({game:dfView(g,p),token:p.token});}
  const token=a.token||url.searchParams.get('token'),p=g.players.find(x=>x.token===token);if(route==='state'&&request.method==='GET'){if(!p&&url.searchParams.get('spectate')!=='1')return json({error:'参加者情報が確認できません。'},403);return json({game:dfView(g,p)});}
  if(route!=='action'||request.method!=='POST'||!p)return json({error:'操作できません。'},403);const next=structuredClone(g),actor=next.players.find(x=>x.id===p.id);dfAction(next,actor,a);next.revision++;await storage.put('daifugo',next);return json({game:dfView(next,actor)});
+ }catch(e){return json({error:e.message||'処理に失敗しました。'},400);}}
+
+// Spirit Island cooperative room. Effects are resolved from structured choices;
+// secret hands are only included in the authenticated player's view.
+const SI_SPIRITS=[
+ {id:'lightning',name:'雷の申し子',element:'炎・風',tone:'#e9a943',style:'速攻',setup:[1,5]},
+ {id:'river',name:'日の光の中で高まる川',element:'水・月',tone:'#52a7c8',style:'移動・成長',setup:[0,7]},
+ {id:'earth',name:'大地の活力',element:'大地・植物',tone:'#77a66a',style:'防御',setup:[2,4]},
+ {id:'shadows',name:'影が炎のように揺らぐ',element:'月・炎',tone:'#9774b8',style:'恐怖',setup:[4,6]},
+ {id:'green',name:'緑が猛威を振るう',element:'植物・大地',tone:'#4c9b71',style:'存在・防御',setup:[5,7]},
+ {id:'thunderspeaker',name:'雷鳴を響かせる者',element:'風・太陽',tone:'#d49b4d',style:'ダハン',setup:[0,3]},
+ {id:'bringer',name:'夢と悪夢をもたらすもの',element:'月・獣',tone:'#756ba7',style:'恐怖',setup:[2,5]},
+ {id:'ocean',name:'飢えた海の貪り手',element:'水・月',tone:'#397e9d',style:'沿岸',setup:[1,6]}
+];
+const SI_TERRAINS=['山','ジャングル','砂漠','湿地'];
+const SI_POWER_NAMES=['風の押し波','大地の盾','火花を散らす','水の誘い','恐怖のささやき','存在の芽吹き','ダハンを導く','炎の一撃'];
+const SI_POWER_EFFECTS=[
+ {kind:'push',label:'侵略者を1つ押し出す',cost:0,element:'風'},
+ {kind:'defend',label:'対象地域を防御2',cost:1,element:'大地'},
+ {kind:'damage',label:'侵略者に1ダメージ',cost:1,element:'炎'},
+ {kind:'gather',label:'隣接するダハンを1つ集める',cost:0,element:'水'},
+ {kind:'fear',label:'恐怖を1与える',cost:1,element:'月'},
+ {kind:'presence',label:'精霊の存在を1つ置く',cost:2,element:'植物'},
+ {kind:'pushDahan',label:'ダハンを1つ押し出す',cost:0,element:'風'},
+ {kind:'damage',label:'侵略者に2ダメージ',cost:2,element:'炎'}
+];
+function siPlayer(name){const n=cleanName(name);if(!n)throw Error('名前を入力してください。');return{id:crypto.randomUUID(),token:crypto.randomUUID(),name:n,spirit:null,energy:1,presence:12,hand:[],discard:[],played:[],ready:false,score:0,powerOffers:[]};}
+function siLand(id,terrain,board,index){return{id,board,terrain,index,coastal:[0,3,4,7].includes(index),neighbors:[],explorers:0,towns:0,cities:0,dahan:0,presence:0,blight:0,defend:0};}
+function siMakeBoard(players){const lands=[];const layouts=[['山','ジャングル','湿地','砂漠','山','湿地','ジャングル','砂漠'],['ジャングル','湿地','山','砂漠','湿地','ジャングル','砂漠','山'],['湿地','砂漠','ジャングル','山','砂漠','山','湿地','ジャングル'],['砂漠','山','湿地','ジャングル','山','砂漠','ジャングル','湿地']];players.forEach((p,b)=>{layouts[b%4].forEach((t,i)=>lands.push(siLand(`${p.id}:L${i+1}`,t,p.id,i)));});
+ players.forEach((p,b)=>{const own=lands.filter(l=>l.board===p.id),spirit=SI_SPIRITS.find(s=>s.id===p.spirit),setup=spirit?.setup||[0,1];own[setup[0]].cities=1;own[(setup[0]+1)%8].towns=1;own[2].dahan=2;own[4].dahan=1;own[(b+3)%8].explorers=1;own[(b+5)%8].explorers=1;own[(b+6)%8].blight=1;own[setup[1]].presence=1;p.presence--;});
+ const connect=(a,b)=>{a.neighbors??=[];b.neighbors??=[];if(!a.neighbors.includes(b.id))a.neighbors.push(b.id);if(!b.neighbors.includes(a.id))b.neighbors.push(a.id);};players.forEach(p=>{const own=lands.filter(l=>l.board===p.id);for(let i=0;i<8;i++){if(i%4<3)connect(own[i],own[i+1]);if(i<4)connect(own[i],own[i+4]);}});for(let i=0;i<players.length-1;i++){const left=lands.filter(l=>l.board===players[i].id),right=lands.filter(l=>l.board===players[i+1].id);connect(left[3],right[0]);connect(left[7],right[4]);}return lands;}
+function siAdjacent(a,b){return !!a?.neighbors?.includes(b?.id);}
+function siDistance(g,from,to){if(from.id===to.id)return 0;const seen=new Set([from.id]);let frontier=[from.id];for(let d=1;d<=8;d++){const next=[];for(const id of frontier){const l=g.lands.find(x=>x.id===id);for(const nid of l?.neighbors||[]){if(nid===to.id)return d;if(!seen.has(nid)){seen.add(nid);next.push(nid);}}}frontier=next;}return Infinity;}
+function siCanReach(g,p,target,range=1){return g.lands.some(l=>l.board===p.id&&l.presence>0&&siDistance(g,l,target)<=range);}
+function siLog(g,text,type='info'){g.log.unshift({id:crypto.randomUUID(),round:g.round||0,text,type});g.log=g.log.slice(0,80);}
+function siDraw(g,spirit){const idx=SI_SPIRITS.findIndex(s=>s.id===spirit),offset=(Math.max(0,idx)+Math.max(0,g.round-1))%SI_POWER_NAMES.length;return Array.from({length:4},(_,n)=>{const j=(offset+n)%SI_POWER_NAMES.length,e=SI_POWER_EFFECTS[j];return{id:crypto.randomUUID(),name:SI_POWER_NAMES[j],effect:e.kind,label:e.label,cost:e.cost,element:e.element,range:1+(j%2),speed:j%2?'slow':'fast',used:false,ready:false};});}
+function siNewPower(){const i=Math.floor(Math.random()*SI_POWER_NAMES.length),e=SI_POWER_EFFECTS[i];return{id:crypto.randomUUID(),name:SI_POWER_NAMES[i],effect:e.kind,label:e.label,cost:e.cost,element:e.element,range:1+(i%2),speed:i%2?'slow':'fast',used:false,ready:false};}
+function siStart(g){if(g.players.length<1||g.players.length>4)throw Error('1〜4人で開始できます。');if(g.players.some(p=>!p.spirit))throw Error('全員が精霊を選んでください。');g.matchId=crypto.randomUUID();g.round=1;g.phase='growth';g.terror=1;g.fear=0;g.fearCards=0;g.fearPool=4*g.players.length;g.blightPool=5*g.players.length;g.winner=false;g.finalInvaderTurn=false;g.lands=siMakeBoard(g.players);g.invaderDeck=[];for(let stage=1;stage<=3;stage++){const count=[0,3,4,5][stage],cards=Array.from({length:count},(_,i)=>({stage,terrain:SI_TERRAINS[(i+Math.floor(Math.random()*4))%4]}));g.invaderDeck.push(...cards);}g.invaderIndex=1;g.invaderSlots={ravage:null,build:null,explore:g.invaderDeck[0]||null};g.players.forEach(p=>{p.energy=1;p.presence=11;p.hand=siDraw(g,p.spirit);p.discard=[];p.played=[];p.pendingCards=[];p.powerOffers=Array.from({length:3},()=>siNewPower());p.ready=false;});siInvader(g,'explore');siLog(g,'島に侵略者が上陸した。各精霊は成長を選んでください。','start');}
+function siCheckEnd(g){const cities=g.lands.reduce((n,l)=>n+l.cities,0),towns=g.lands.reduce((n,l)=>n+l.towns,0),invaders=cities+towns+g.lands.reduce((n,l)=>n+l.explorers,0);if((g.terror>=4)||(g.terror===3&&cities+towns===0)||(g.terror===2&&cities===0)||(g.terror===1&&invaders===0)){g.phase='finished';g.winner=true;siLog(g,'島から侵略者が退いた。全員の勝利！','victory');return true;}if(g.blightPool<=0){g.phase='finished';g.winner=false;siLog(g,'島は荒廃し、侵略者の波を止められなかった。','defeat');return true;}return false;}
+function siSetReady(g,p){p.ready=true;if(g.players.every(x=>x.ready))return true;return false;}
+function siNext(g,phase){g.phase=phase;g.players.forEach(p=>p.ready=false);}
+function siProgress(g){
+ if(g.phase==='growth'){siNext(g,'play');siLog(g,'成長完了。精霊力を得て、能力カードを選んでください。','phase');return;}
+ if(g.phase==='play'){siNext(g,'fast');siLog(g,'カードの準備が完了。早い能力を解決します。','phase');return;}
+ if(g.phase==='fast'){siFear(g);if(siCheckEnd(g))return;siInvader(g,'ravage');if(siCheckEnd(g))return;siInvader(g,'build');siInvader(g,'explore');siNext(g,'slow');siLog(g,'侵略者の行動が終わりました。遅い能力を解決してください。','phase');return;}
+ if(g.phase==='slow'){siNext(g,'cleanup');siLog(g,'遅い能力が完了。ラウンドを終えます。','phase');return;}
+ if(g.phase==='cleanup'){if(g.finalInvaderTurn){g.phase='finished';g.winner=false;siLog(g,'最後の侵略者カードまで解決した。島を守り切れなかった。','defeat');return;}g.round++;g.players.forEach(p=>{p.played=[];p.energy+=1;p.discard.push(...p.hand.filter(c=>c.used));p.hand=p.hand.filter(c=>!c.used);});siNext(g,'growth');siLog(g,`ラウンド${g.round}。精霊の成長を選んでください。`,'phase');siCheckEnd(g);}
+}
+function siFear(g){const need=g.players.length;while(g.fear>=need&&g.terror<4){g.fear-=need;g.fearCards++;siLog(g,'恐怖カードを1枚獲得。','fear');if(g.fearCards%3===0){g.terror++;siLog(g,`恐怖レベル${g.terror}に到達。`,'fear');}if(g.terror===4){g.phase='finished';g.winner=true;siLog(g,'恐怖カードをすべて獲得。全員の勝利！','victory');return;}}}
+function siPlaceBlight(g,land){const queue=[land];let placed=0;while(queue.length&&g.blightPool>0){const target=queue.shift();if(target.blight){const cascade=g.lands.find(x=>siAdjacent(x,target)&&x.blight===0);if(cascade)queue.push(cascade);continue;}target.blight++;g.blightPool--;placed++;}return placed;}
+function siInvader(g,kind){const card=g.invaderSlots?.[kind];if(!card)return;const targetTerrain=card.terrain,lands=g.lands.filter(l=>l.terrain===targetTerrain);if(kind==='ravage'){let hits=0;for(const l of lands){const inv=l.explorers+l.towns*2+l.cities*3;if(!inv)continue;const damage=Math.max(0,inv-l.defend);l.defend=0;if(damage>=2){hits+=siPlaceBlight(g,l);}if(damage>0&&l.dahan){const losses=Math.min(l.dahan,Math.ceil(damage/2));l.dahan-=losses;let counter=l.dahan*2;while(counter>0){if(l.explorers){l.explorers--;counter--;}else if(l.towns&&counter>=2){l.towns--;counter-=2;g.fear++;g.fearPool=Math.max(0,g.fearPool-1);}else if(l.cities&&counter>=3){l.cities--;counter-=3;g.fear+=2;g.fearPool=Math.max(0,g.fearPool-2);}else break;}}}siLog(g,`侵略者が${targetTerrain}で荒廃を広げた（${hits}個）。`,'invader');}
+ if(kind==='build'){let count=0;for(const l of lands){if(l.explorers+l.towns+l.cities===0)continue;if(l.towns>=2){l.towns-=2;l.cities++;}else if(l.towns||l.cities)l.towns++;else l.towns=1;count++;}siLog(g,`侵略者が${targetTerrain}に建設（${count}地域）。`,'invader');}
+ if(kind==='explore'){for(const l of lands){if(l.explorers+l.towns+l.cities>0)continue;const supplied=l.coastal||g.lands.some(x=>siAdjacent(x,l)&&(x.towns+x.cities)>0);if(supplied)l.explorers=1;}siLog(g,`侵略者が${targetTerrain}を探索した。`,'invader');g.invaderSlots.ravage=g.invaderSlots.build;g.invaderSlots.build=g.invaderSlots.explore;g.invaderSlots.explore=g.invaderDeck[g.invaderIndex++]||null;if(!g.invaderSlots.explore)g.finalInvaderTurn=true;}}
+function siLegalTarget(g,p,card){return g.lands.filter(l=>siCanReach(g,p,l,card.range||1)&&(()=>{if(card.effect==='damage'||card.effect==='push')return l.explorers+l.towns+l.cities>0;if(card.effect==='defend')return true;if(card.effect==='presence')return p.presence>0;if(card.effect==='gather')return g.lands.some(x=>siAdjacent(x,l)&&x.dahan>0);if(card.effect==='pushDahan')return l.dahan>0;return true;})());}
+function siApply(g,p,card,targetId,choice){const l=g.lands.find(x=>x.id===targetId);if(card.effect!=='fear'&&(!l||!siLegalTarget(g,p,card).some(x=>x.id===l.id)))throw Error('対象の土地を選び直してください。');if(card.effect==='damage'){let dmg=card.label.includes('2ダメージ')?2:1;while(dmg>0){if(l.cities){l.cities--;g.fear+=2;g.fearPool=Math.max(0,g.fearPool-2);}else if(l.towns){l.towns--;g.fear++;g.fearPool=Math.max(0,g.fearPool-1);}else if(l.explorers)l.explorers--;else break;dmg--;}}
+ if(card.effect==='push'){if(l.cities)l.cities--;else if(l.towns)l.towns--;else if(l.explorers)l.explorers--;const dest=g.lands.find(x=>siAdjacent(x,l)&&x.explorers+x.towns+x.cities===0);if(dest)dest.explorers=1;}
+ if(card.effect==='defend')l.defend+=2;
+ if(card.effect==='fear'){g.fear++;g.fearPool=Math.max(0,g.fearPool-1);}
+ if(card.effect==='presence'&&p.presence>0){l.presence++;p.presence--;}
+ if(card.effect==='gather'){const source=g.lands.find(x=>siAdjacent(x,l)&&x.dahan>0);if(source&&l.dahan<4){source.dahan--;l.dahan++;}}
+ if(card.effect==='pushDahan'&&l.dahan){l.dahan--;const dest=g.lands.find(x=>x.board===l.board&&siAdjacent(x,l)&&x.dahan<4);if(dest)dest.dahan++;}
+ card.used=true;p.played.push(card.id);siLog(g,`${p.name}使用：${card.name}${l?`（${l.terrain}）`:''}。`,'power');siFear(g);siCheckEnd(g);}
+function siAction(g,p,a){if(a.type==='chat'){const text=String(a.message||'').trim().slice(0,180);if(!text)throw Error('メッセージを入力してください。');g.messages.push({id:crypto.randomUUID(),name:p.name,text});g.messages=g.messages.slice(-50);return;}
+ if(a.type==='spirit'){if(p.id!==g.hostId||g.phase!=='lobby')throw Error('ロビーで自分の精霊を選んでください。');if(!SI_SPIRITS.some(s=>s.id===a.spirit))throw Error('精霊を選び直してください。');p.spirit=a.spirit;return;}
+ if(a.type==='start'){if(p.id!==g.hostId||!['lobby','finished'].includes(g.phase))throw Error('ホストだけが開始できます。');siStart(g);return;}
+ if(a.matchId!==g.matchId)throw Error('ゲームの状態が更新されました。画面を読み直してください。');
+ if(a.type==='growth'){if(g.phase!=='growth'||p.ready)throw Error('今は成長を選べません。');const land=g.lands.find(l=>l.id===a.landId);if(a.growth==='presence'){if(!land||!p.presence||!siCanReach(g,p,land,1))throw Error('存在を置く土地を選んでください。');land.presence++;p.presence--;}else if(a.growth==='energy'){p.energy+=2;}else if(a.growth==='reclaim'){p.hand.push(...p.discard);p.discard=[];}else if(a.growth==='gain'){const i=p.powerOffers.findIndex(c=>c.id===a.powerId);if(i<0)throw Error('獲得する能力を選び直してください。');const [card]=p.powerOffers.splice(i,1);p.hand.push(card);p.powerOffers.push(siNewPower());siLog(g,`${p.name}が新たな能力「${card.name}」を得た。`,'power');}else throw Error('成長方法を選んでください。');if(siSetReady(g,p))siProgress(g);return;}
+ if(a.type==='play'){if(g.phase!=='play'||p.ready)throw Error('今は能力カードを選べません。');const ids=Array.isArray(a.cardIds)?a.cardIds:[];if(ids.length>4)throw Error('能力カードは最大4枚まで選べます。');const cards=ids.map(id=>p.hand.find(c=>c.id===id&&!c.used));if(cards.some(x=>!x))throw Error('手札からカードを選び直してください。');const cost=cards.reduce((n,c)=>n+c.cost,0);if(cost>p.energy)throw Error('精霊力が足りません。');p.energy-=cost;p.pendingCards=ids;if(siSetReady(g,p)){g.players.forEach(x=>{for(const id of x.pendingCards||[]){const c=x.hand.find(y=>y.id===id);if(c)c.ready=true;}});siProgress(g);}return;}
+ if(a.type==='resolve'){if(!['fast','slow'].includes(g.phase)||p.ready)throw Error('能力を使えるフェーズではありません。');const c=p.hand.find(x=>x.id===a.cardId&&x.ready&&!x.used&&x.speed===g.phase);if(!c)throw Error('解決する能力カードを選び直してください。');siApply(g,p,c,a.landId,a.choice);return;}
+ if(a.type==='done'){if(!['fast','slow','cleanup'].includes(g.phase))throw Error('このフェーズは完了できません。');if(p.ready)throw Error('すでに完了しています。');p.ready=true;if(g.players.every(x=>x.ready))siProgress(g);return;}
+ if(a.type==='next'){if(p.id!==g.hostId||g.phase!=='finished')throw Error('ホストだけが再戦を開始できます。');g.phase='lobby';g.players.forEach(x=>{x.spirit=null;x.ready=false;x.hand=[];});g.lands=[];g.log=[];return;}
+ throw Error('操作が正しくありません。');}
+function siView(g,p){const legalTargets=p?Object.fromEntries(p.hand.filter(c=>c.ready&&!c.used).map(c=>[c.id,siLegalTarget(g,p,c).map(l=>l.id)])):{};const growthTargets=p?g.lands.filter(l=>siCanReach(g,p,l,1)).map(l=>l.id):[];return{code:g.code,revision:g.revision,phase:g.phase,hostId:g.hostId,matchId:g.matchId,round:g.round||0,terror:g.terror||1,fear:g.fear||0,fearPool:g.fearPool||0,fearCards:g.fearCards||0,blightPool:g.blightPool||0,invaderCard:g.invaderSlots?.explore||null,legalTargets,growthTargets,players:g.players.map(x=>({id:x.id,name:x.name,spirit:x.spirit,energy:x.energy,presence:x.presence,ready:x.ready,handCount:x.hand?.filter(c=>!c.used).length||0,boardId:x.id})),lands:g.lands||[],log:g.log||[],messages:g.messages||[],me:p?{id:p.id,hand:p.hand||[],powerOffers:p.powerOffers||[],discardCount:p.discard?.length||0,ready:p.ready}:null,spectator:!p,finished:g.phase==='finished',winner:g.winner};}
+async function handleSpiritIsland(storage,request){const url=new URL(request.url),route=url.pathname.split('/').pop();try{let g=await storage.get('spirit');const a=request.method==='POST'?await request.json():{};
+ if(route==='create'){if(g)return json({error:'この部屋コードは使用中です。'},409);const p=siPlayer(a.name);g={code:a.code,hostId:p.id,players:[p],phase:'lobby',revision:1,log:[{id:crypto.randomUUID(),text:'島の精霊たちを待っています。',type:'info'}],messages:[]};await storage.put('spirit',g);return json({game:siView(g,p),token:p.token});}
+ if(!g)return json({error:'部屋が見つかりません。'},404);
+ if(route==='join'){const name=cleanName(a.name),old=g.players.find(x=>x.name===name);if(old)return json({game:siView(g,old),token:old.token,rejoined:true});if(g.phase!=='lobby'||g.players.length>=4)return json({error:'開始済み、または満員です。'},409);const p=siPlayer(a.name);g.players.push(p);g.revision++;siLog(g,`${p.name}が参加しました。`);await storage.put('spirit',g);return json({game:siView(g,p),token:p.token});}
+ const token=a.token||url.searchParams.get('token'),p=g.players.find(x=>x.token===token);if(route==='state'&&request.method==='GET'){if(!p&&url.searchParams.get('spectate')!=='1')return json({error:'参加者情報が確認できません。'},403);return json({game:siView(g,p)});}
+ if(route!=='action'||request.method!=='POST'||!p)return json({error:'操作できません。'},403);const next=structuredClone(g),actor=next.players.find(x=>x.id===p.id);siAction(next,actor,a);next.revision++;await storage.put('spirit',next);return json({game:siView(next,actor)});
  }catch(e){return json({error:e.message||'処理に失敗しました。'},400);}}
