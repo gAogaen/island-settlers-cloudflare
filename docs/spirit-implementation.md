@@ -6,7 +6,7 @@ The game is still a draft. Passing round-trip tests does not establish base-set 
 |---|---|---|
 | Rooms | 1–4 players, host, tokens, rejoin, spectators, chat | disconnect policies |
 | Fear | All 15 base cards, all 45 Terror-level effects; sequential player choices, mandatory and optional actions, different-land restrictions, removal versus destruction, damage allocation, turn-scoped effects, earned-order resolution | visual browser execution beyond DOM simulation |
-| Starting Unique cards | 12 actual Lightning/River/Earth cards; 20 provisional cards | replace the other 20 provisional cards; finish their special interactions |
+| Starting Unique cards | 24 actual Unique cards for six spirits; 8 provisional Ocean/Bringer cards | replace the remaining 8 Ocean/Bringer cards; finish their special interactions |
 | Minor/Major powers | 8 generic templates | 36 Minor and 22 Major cards, shared finite decks, draft/forget, thresholds, repeats, support effects |
 | Spirit panels | 8 choices; simplified growth/tracks/innates | exact growth, track elements/reclaim, all innate tiers and special-rule interactions |
 | Island boards | A–D initial pieces and three coastal lands; grid topology | A–D exact terrain/coast/adjacency/setup and cross-board joins; ocean zones |
@@ -22,4 +22,4 @@ The game is still a draft. Passing round-trip tests does not establish base-set 
 
 ## Checks
 
-`npm run test:spirit` covers 1–4 player round transitions, room creation/rejoin, private projections, zero range, accelerated powers, per-spirit Sacred Sites, all 45 Fear stages, rule-specific cases and DOM interaction with 32 choice dialogs. DOM simulation does not verify rendered layout or browser compatibility. Existing games are covered by `npm test`.
+`npm run test:spirit` covers 1–4 player round transitions, room creation/rejoin, private projections, zero range, accelerated powers, per-spirit Sacred Sites, all 45 Fear stages, rule-specific cases and DOM interaction with 32 Fear choice dialogs and all 24 implemented Unique power dialogs. DOM simulation does not verify rendered layout or browser compatibility. Existing games are covered by `npm test`.
