@@ -914,7 +914,7 @@ const SI_INNATES={
  bringer:{name:'夢はなお続く',needs:{月:2,動物:1},effect:'fear',label:'恐怖を2与える',range:1,speed:'fast'},
  ocean:{name:'海のうねり',needs:{水:2,月:1},effect:'damage',label:'侵略者に2ダメージ',range:1,speed:'slow'}
 };
-function siInnateCard(p){const spec=SI_INNATES[p.spirit];if(!spec||p.innateUsed)return null;const elements=p.turnElements||{},met=Object.entries(spec.needs).every(([e,n])=>(elements[e]||0)>=n);return met?{id:'innate',...spec,cost:0,element:'固有能力',cardType:'innate',ready:true,used:false}:null;}
+function siInnateCard(p){const spec=SI_INNATES[p.spirit];if(!spec||p.innateUsed)return null;const elements=p.turnElements||{},met=Object.entries(spec.needs).every(([e,n])=>(elements[e]||0)>=n);return met?{id:'innate',...spec,cost:0,element:Object.entries(spec.needs).map(([e,n])=>`${e}${n}`).join('・'),cardType:'innate',ready:true,used:false}:null;}
 // Presence tracks use the values visible on the spirit board: only the latest
 // uncovered energy/card-play value applies. The first four spirits are the
 // low-complexity base-game spirits; remaining tracks are playable approximations.
@@ -1005,7 +1005,7 @@ function siLegalTarget(g,p,card){return g.lands.filter(l=>siCanReach(g,p,l,card.
 function siApply(g,p,card,targetId,choice,destinationId,sourceId,track){const l=g.lands.find(x=>x.id===targetId),legal=card.effect==='fear'?[]:siLegalTarget(g,p,card);if(card.effect!=='fear'&&((targetId&&!legal.some(x=>x.id===targetId))||(!targetId&&legal.length)))throw Error('対象の土地を選び直してください。');if(card.effect==='damage'&&l){const dmg=card.label.includes('2ダメージ')?2:1;siDamageInvaders(g,l,dmg,choice,p.spirit);}
  if(card.effect==='push'&&l){const type=['explorers','towns','cities'].includes(choice)&&l[choice]>0?choice:null,dest=g.lands.find(x=>x.id===destinationId&&siAdjacent(x,l));if(!type)throw Error('押し出す侵略者を選び直してください。');if(dest)siMoveInvader(l,dest,type);else{const ocean=g.players.find(x=>destinationId===`ocean:${x.id}`&&x.spirit==='ocean');if(!ocean||!l.coastal)throw Error('隣接先か海を選び直してください。');const index=l.invaderDamage?.[choice]?.length?0:0;siRemoveInvader(g,l,choice,index,true);ocean.energy+=({explorers:1,towns:2,cities:3})[choice];siLog(g,`海の貪り手が${choice==='explorers'?'遠征隊':choice==='towns'?'町':'都市'}を呑み込み、精霊力を得た。`,'power');}}
  if(card.effect==='defend'&&l)l.defend+=2;
- if(card.effect==='fear')siFear(g,1);
+ if(card.effect==='fear')siFear(g,Number(card.label.match(/恐怖を(\d+)/)?.[1]||1));
  if(card.effect==='presence'&&l&&p.presence>0)siAddPresence(l,p,track==='plays'?'plays':'energy');
  if(card.effect==='gather'&&l){const source=g.lands.find(x=>x.id===sourceId&&siAdjacent(x,l)&&x.dahan>0);if(source){if(choice==='movePresence'&&!source.presenceOwners.includes(p.id))throw Error('この土地にあなたの存在がありません。');siMoveDahan(g,source,l,p.id,!!(p.spirit==='thunderspeaker'&&choice==='movePresence'));}}
  if(card.effect==='pushDahan'&&l&&l.dahan){const dest=g.lands.find(x=>x.id===destinationId&&siAdjacent(x,l)&&x.dahan<8);if(!dest)throw Error('ダハンの移動先を選び直してください。');if(choice==='movePresence'&&!l.presenceOwners.includes(p.id))throw Error('この土地にあなたの存在がありません。');siMoveDahan(g,l,dest,p.id,!!(p.spirit==='thunderspeaker'&&choice==='movePresence'));}
