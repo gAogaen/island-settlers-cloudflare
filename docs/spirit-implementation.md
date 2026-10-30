@@ -6,7 +6,7 @@ The game is still a draft. Passing round-trip tests does not establish base-set 
 |---|---|---|
 | Rooms | 1–4 players, host, tokens, rejoin, spectators, chat | disconnect policies |
 | Fear | All 15 base cards, all 45 Terror-level effects; sequential player choices, mandatory and optional actions, different-land restrictions, removal versus destruction, damage allocation, turn-scoped effects, earned-order resolution | visual browser execution beyond DOM simulation |
-| Starting Unique cards | 32 provisional cards, per-spirit hands | replace provisional metadata/effects with the actual 32 cards |
+| Starting Unique cards | 12 actual Lightning/River/Earth cards; 20 provisional cards | replace the other 20 provisional cards; finish their special interactions |
 | Minor/Major powers | 8 generic templates | 36 Minor and 22 Major cards, shared finite decks, draft/forget, thresholds, repeats, support effects |
 | Spirit panels | 8 choices; simplified growth/tracks/innates | exact growth, track elements/reclaim, all innate tiers and special-rule interactions |
 | Island boards | A–D initial pieces and three coastal lands; grid topology | A–D exact terrain/coast/adjacency/setup and cross-board joins; ocean zones |
@@ -17,7 +17,7 @@ The game is still a draft. Passing round-trip tests does not establish base-set 
 ## Rule data references
 
 - Core rules and Living FAQ: https://querki.net/u/darker/spirit-island-faq/
-- Card mechanics cross-checked against SICK's publisher-supplied reference: https://github.com/oberien/spirit-island-card-katalog/blob/master/src/db.ts (reference blob `310d75c1af1655be1037d262d73296350937f6d1`). Card art and full card text are not bundled.
+- Card names, numerical metadata and mechanics cross-checked against SICK's publisher-supplied reference: https://github.com/oberien/spirit-island-card-katalog/blob/master/src/db.ts (reference blob `310d75c1af1655be1037d262d73296350937f6d1`). Card art and full card text are not bundled.
 - Initial board pieces cross-check: https://github.com/spirit-island/spirit-island-mod/tree/main/objects/BalancedMapBag (reference only; not yet used for formal board topology).
 
 ## Checks
