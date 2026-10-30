@@ -1,5 +1,5 @@
 /* Shared controls and surfaces; game boards and illustrated cards retain their colors. */
-.theme-picker{display:inline-flex;align-items:center;gap:5px;font:11px system-ui;flex-shrink:0}.theme-picker select{width:auto!important;max-width:145px;padding:6px!important;border-radius:8px;background:var(--theme-panel)!important;color:var(--theme-text)!important;border:1px solid var(--theme-line)!important;font:11px system-ui!important}.theme-picker>span{color:var(--theme-text)}
+header button.theme-toggle{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;box-sizing:border-box;width:44px;min-width:44px;height:44px;padding:9px;border-radius:50%;background:var(--theme-panel);color:var(--theme-text);border:1px solid var(--theme-line);cursor:pointer;touch-action:manipulation}header button.theme-toggle svg{display:block;width:22px;height:22px;pointer-events:none}header button.theme-toggle:hover{box-shadow:0 0 0 2px var(--theme-line)}header button.theme-toggle:focus-visible{outline:3px solid var(--theme-text);outline-offset:3px}
 html[data-theme=dark]{color-scheme:dark;--theme-bg:#101b1d;--theme-panel:#1b2a2d;--theme-text:#eff3ec;--theme-muted:#bacac5;--theme-line:#455a58;--ink:#eff3ec;--muted:#bacac5;--paper:#172629;--card:#1b2a2d;--line:#455a58;--navy:#d4ebfa;--ice:#1b3038;--sage:#bbcec3;--ivory:#eff3ec}
 html[data-theme=light]{color-scheme:light;--theme-bg:#f4f3eb;--theme-panel:#fffdf6;--theme-text:#233c36;--theme-muted:#5d716a;--theme-line:#c9d1c4}
 html[data-theme=dark] body{background:var(--theme-bg);color:var(--theme-text)}
@@ -10,7 +10,7 @@ html[data-theme=dark] :is(.game-card,.game-tile,.catalog-card) :is(h2,h3,p,small
 html[data-theme=dark] :is(.log,.messages,.full-log,.room-steps,.effect-list,.warning,.round-results,.result-players,.scoreboard){color:var(--theme-text)}
 html[data-theme=dark] .playing-card{color:#192e29}html[data-theme=dark] .playing-card :is(.corner,.pip){color:inherit}html[data-theme=dark] .playing-card.red{color:#b83942}html[data-theme=dark] .playing-card.joker{color:#6b43a0}
 html[data-theme=light][data-game=reddoor]{--bg:#f1e9df;--paper:#342632;--muted:#715f68;--line:#bb9f9355}html[data-theme=light][data-game=reddoor] body{color:#342632;background:#f1e9df}html[data-theme=light][data-game=reddoor] body:before{opacity:.12}html[data-theme=light][data-game=reddoor] :is(.panel,.top,.identity,.player,dialog,.room-steps,.note,.door-memory span){background:#fff8ef;color:#342632}html[data-theme=light][data-game=reddoor] :is(button:not(.primary):not(.danger):not(.door),input,select){background:#eee2dc;color:#342632}html[data-theme=light][data-game=reddoor] :is(.hero>p,.hero h1 span,.top>a,.top #connection,.eyebrow,.quiet,a,.door-memory b){color:#814234}html[data-theme=light][data-game=reddoor] .hero h1{text-shadow:none}html[data-theme=light][data-game=reddoor] .door-memory b{background:#f7ddba}
-@media(max-width:650px){header,.top,.topbar{height:auto!important;flex-wrap:wrap}.theme-picker select{max-width:130px}.theme-picker{margin-left:auto}}
+@media(max-width:650px){header,.top,.topbar{height:auto!important;flex-wrap:wrap}header button.theme-toggle{margin-left:auto}}
 html[data-theme=dark] :is(.game-choice,.game-choice-copy,.players-panel,.production-panel,.resource-hand,.recipe,.build-guide,.build-costs,.trade-panel,.entry-card,.create-room-card,.join-room-card,.room-card,.settings-panel,.history-panel,.rules-panel,.round-notice,.turn-dialog-content,.trade-offer-body,.victory-result-row,.discard-dialog-content,.dev-card-dialog,.modal-card,.card-effect,.help-box,.result-player,#actionGuideDialog,#actionGuideSteps){background:var(--theme-panel)!important;color:var(--theme-text);border-color:var(--theme-line)}
 html[data-theme=dark] :is(.game-choice-copy,.entry-panel,.entry-form,.rules-copy,.rule-form,.game-picker) :is(h1,h2,h3,p,label,summary){color:var(--theme-text)}
 html[data-theme=dark] :is(#actionGuideTitle,#actionGuideDescription,#actionGuideSteps,#actionGuideLater,.game-choice-copy strong){color:var(--theme-text)}
@@ -131,7 +131,7 @@ html[data-theme=dark] dialog .trade-material :is(b,strong){color:#e5efdc}
 html[data-theme=dark] dialog .trade-material:last-child :is(b,strong){color:#ffe1ac}
 html[data-theme=dark] #victoryDialog .victory-score>span{color:#eddfa5}
 /* Both themes: labels on illustrated tables remain distinct from page surfaces. */
-header .theme-picker>span{color:inherit}
+
 html[data-theme=light]{--muted:#53665d}
 html[data-theme=light] :is(.top-meta,.room-share>span,.auto-skip-control small,.count-pill,.self-player-label,.player-row-meta,.hand-total,.development-hand-heading small,.dev-help,.empty-development,.no-production,.production-seven,.guide-heading small,.leave-button){color:#52665a}
 html[data-theme=light] .host-tag{color:#78540f}
