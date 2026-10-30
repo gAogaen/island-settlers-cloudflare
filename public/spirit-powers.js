@@ -1,5 +1,6 @@
 function programModal(card){
- const me=current(),targets=game.lands.filter(l=>(game.legalTargets?.[card.id]||[]).includes(l.id)),name=l=>`${game.players.find(p=>p.id===l.board)?.name||'島'} · ${l.isOcean?'海域':l.terrain+' '+(l.index+1)}`,unitName={explorers:'遠征隊',towns:'町',cities:'都市',dahan:'ダハン'},support=card.targetSpirit;
+ if(card.program==='shared')return sharedPowerModal(card);
+ const me=current(),targets=game.lands.filter(l=>(game.legalTargets?.[card.id]||[]).includes(l.id)),name=l=>`${game.players.find(p=>p.id===l.board)?.name||'島'} · ${l.isOcean?'海域':l.terrain+' '+(l.index+1)}${(me.shadowRangeCosts?.[card.id]||[]).includes(l.id)?' · 射程無視：追加1精霊力':''}`,unitName={explorers:'遠征隊',towns:'町',cities:'都市',dahan:'ダハン'},support=card.targetSpirit;
  const spirits=game.players.filter(p=>!card.targetAnother||game.players.length===1||p.id!==me.id);
  modal(card.name,card.label,(support?selection('対象の精霊',spirits.map(p=>[p.id,`${p.name} · ${spirit(p.spirit)?.[1]||''}`]),'programSpirit'):selection('対象の土地',targets.map(l=>[l.id,name(l)]),'programLand'))+(card.supportLand?'<div id="programSupportLandWrap"></div>':'')+(card.modes?selection('使う効果',card.modes.map(m=>[m.id,m.name]),'programMode'):'')+'<div id="programFields"></div>',`<button data-close="actionDialog">戻る</button><button class="primary" id="confirmProgram">能力を解決</button>`,'POWER RESOLUTION');
  const targetSpirit=()=>support?game.players.find(p=>p.id===$('programSpirit')?.value):me;

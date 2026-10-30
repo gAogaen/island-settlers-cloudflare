@@ -14,5 +14,5 @@ function resolve(g,p,key,args={}){const c=p.hand.find(c=>c.program===key);assert
  const {g,p,l,neighbor}=make();l.towns=1;l.dahan=4;resolve(g,p,'dreams',{landId:l.id,mode:'fear'});assert.equal(g.fear,3);const x=make();x.neighbor.dahan=2;resolve(x.g,x.p,'dreams',{landId:x.l.id,mode:'gather',moves:[{from:x.neighbor.id,to:x.l.id,type:'dahan',count:2}]});assert.equal(x.l.dahan,2);assert.equal(x.g.fear,0);console.log('PASS Dreams of the Dahan supports gathering and capped building-dependent Fear');
 }
 {
- const {g,p,l}=make();l.explorers=1;resolve(g,p,'midnight',{landId:l.id});assert.equal(g.fear,2);assert.equal(p.hand.find(c=>c.program==='midnight').rulesIncomplete,true);console.log('PASS Midnight Fear branch is correct; Major-gain branch remains explicitly flagged incomplete');
+ const {g,p,l}=make();l.explorers=1;resolve(g,p,'midnight',{landId:l.id});assert.equal(g.fear,2);assert.equal(p.hand.find(c=>c.program==='midnight').rulesIncomplete,undefined);console.log('PASS Midnight Fear branch is correct; Major gain is covered by shared-power tests');
 }
