@@ -26,3 +26,16 @@ const robberGame=game=>{const x=structuredClone(game);x.winner=null;x.phase='rob
 run('currentGame=bankFixture;bankFixture.phase="main";bankFixture.players[0].hand.wood=4;openTradeDialog("player")');assert(elements.get('tradeDialogTitle').textContent.includes('交渉'));assert(elements.get('tradeActions').innerHTML.includes('渡す'));assert(elements.get('tradeActions').innerHTML.includes('受け取る'));assert(elements.get('tradeActions').innerHTML.includes('交換を提示'));console.log('PASS player trade modal shows recipient and both sides of trade');
 ctx.discardGame=structuredClone(ctx.fixture);run('spectating=false;currentGame=discardGame;playerId=discardGame.players[0].id;discardGame.phase="discard";discardGame.status="playing";discardGame.winner=null;discardGame.discardPending={[playerId]:4};discardGame.players[0].hand={wood:2,brick:1,sheep:2,wheat:0,ore:0};discardDraft=null;openDiscardDialog()');assert(elements.get('discardDialog').open);assert.equal(elements.get('discardProgress').textContent,'0 / 4枚');assert.equal(elements.get('confirmDiscard').disabled,true);assert(elements.get('discardChoices').innerHTML.includes('手札 2枚'));run('adjustDiscard("wood",1);adjustDiscard("wood",1);adjustDiscard("wood",1);adjustDiscard("brick",1)');assert.equal(run('discardDraft.cards.wood'),2);assert.equal(elements.get('discardProgress').textContent,'3 / 4枚');assert(elements.get('discardStatus').textContent.includes('あと1枚'));run('adjustDiscard("sheep",1);adjustDiscard("sheep",1)');assert.equal(run('discardDraft.cards.sheep'),1);assert.equal(elements.get('confirmDiscard').disabled,false);assert.equal(elements.get('discardProgress').textContent,'4 / 4枚');run('syncGuidedDialogs(discardGame)');assert.equal(run('discardDraft.cards.wood'),2);run('adjustDiscard("wood",-1)');assert.equal(elements.get('confirmDiscard').disabled,true);elements.get('resetDiscard').click();assert.equal(elements.get('discardProgress').textContent,'0 / 4枚');run('discardGame.phase="robber";syncGuidedDialogs(discardGame)');assert.equal(elements.get('discardDialog').open,false);assert.equal(run('discardDraft'),null);console.log('PASS discard modal checks required count and inventory, supports reset and retains choices through refresh');
 ctx.discardGame.phase='discard';ctx.discardGame.discardPending={[ctx.discardGame.players[0].id]:4};run('currentGame=discardGame;spectating=true;discardGuideKey=null;syncGuidedDialogs(discardGame)');assert.equal(elements.get('discardDialog').open,false);console.log('PASS spectator never receives discard selection dialog');
+
+(async()=>{
+  ctx.URL=URL;ctx.location.origin='https://boardgame.un0wn.workers.dev';
+  let copied='';ctx.navigator={clipboard:{writeText:async value=>{copied=value;}}};
+  run('roomCode="ABCDEF"');
+  await elements.get('copyInvite').listeners.click();
+  assert.equal(copied,'https://boardgame.un0wn.workers.dev/index.html?room=ABCDEF');
+  assert(!copied.includes('playerId'));
+  let fallback=null;ctx.navigator.clipboard.writeText=async()=>{throw Error('blocked')};
+  ctx.window.prompt=(label,value)=>{fallback=value;};
+  await elements.get('copyInvite').listeners.click();assert.equal(fallback,copied);
+  console.log('PASS Catan invite URL contains only the room and remains copyable when clipboard is blocked');
+})().catch(error=>{console.error(error);process.exitCode=1;});

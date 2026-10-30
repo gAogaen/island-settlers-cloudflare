@@ -237,6 +237,13 @@ $("spectateRoom").addEventListener("click", async () => {
 $("roomCode").addEventListener("input", e => e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));
 $("startGame").addEventListener("click", () => act("start"));
 $("copyCode").addEventListener("click", async () => { try { await navigator.clipboard.writeText(roomCode); showToast("部屋コードをコピーしました。"); } catch (_) { showToast(`部屋コード：${roomCode}`); } });
+$("copyInvite").addEventListener("click", async () => {
+  if (!roomCode) return;
+  const inviteUrl = new URL("/index.html", location.origin);
+  inviteUrl.searchParams.set("room", roomCode);
+  try { await navigator.clipboard.writeText(inviteUrl.href); showToast("招待URLをコピーしました。"); }
+  catch (_) { window.prompt("この招待URLをコピーして共有してください。", inviteUrl.href); }
+});
 $("leaveRoom").addEventListener("click", () => { document.body.classList.remove("in-room"); $("turnDialog").close();$("discardDialog").close();discardDraft=null;discardGuideKey=null;$("robberDialog").close();$("tradeDialog").close();robberGuideKey=null;$("developmentDialog").close();$("logDialog").close();$("diceResultDialog").close();$("tradeOfferDialog").close();$("victoryDialog").close();activeTradeOfferId=null;seenTradeOfferIds.clear();lastTurnNotice=null;pendingTurnNotice=null; if (window.pollTimer) clearInterval(window.pollTimer); roomCode = null; playerId = null; currentGame = null; spectating=false; resetActionNotifications(); updateIdleReminder(); renderResumeRooms();renderHomeStats(); history.replaceState({}, "", "/"); $("gameView").hidden = true; $("homeView").hidden = false; });
 $("soundToggle").addEventListener("click", () => { soundOn=!soundOn;localStorage.setItem("island-sound-on",soundOn?"1":"0");if(!soundOn){pendingTurnSoundKey=null;pendingVictorySoundKey=null;}else unlockAudio();syncSoundButton();showToast(soundOn?"通知音をオンにしました。":"通知音をオフにしました。"); });
 syncSoundButton();
