@@ -13,7 +13,7 @@ This remains a draft. Executable card programs and passing regression tests do n
 | Island | A–D printed terrain assignments, starting pieces, three coastal lands and exact within-board adjacency; land-details modal; physical Ocean nodes and board-local activation | standard multi-board joins/layouts (current joins are still approximate); Ocean setup coast selection |
 | Invaders | Physical unique 3/4/5-stage deck with Coastal card; Explore/Build/Ravage, damage/counterattack, continuation after triggered choices | other timing/special-rule exceptions; counterattack damage is now player-allocated |
 | Blight | Two cards/pools, flip, card choices; add Blight to the origin even when already blighted, then player-selected adjacent cascades | remaining timing and Ocean cleanup exceptions |
-| Adversaries/scenarios | Prussia levels 0–6, host setup and Escalation choices | England, Sweden and four scenarios |
+| Adversaries/scenarios | Prussia and Sweden levels 0–6, host setup and additional-placement choices | England and four scenarios |
 
 ## Known card interaction gaps
 
@@ -40,3 +40,7 @@ Real browser layout testing remains incomplete: Chromium download failed earlier
 Board facts were checked visually against the reference images at `https://spiritislandweb.s3.eu-central-1.amazonaws.com/boards/Board{A,B,C,D}_big.png`; the images are not bundled in the application.
 
 Prussia includes cumulative level setup, deck acceleration/shortening, variable Terror boundaries, physical Fear deck sizes, and per-board Stage-II Town placement chosen in a modal. The Coastal Stage-II card does not trigger Escalation. Tests cover all seven levels at 1–4 players, ownership, illegal settings and continuation without a duplicate Explore.
+
+Sweden includes Explore assimilation (replacement rather than destruction), Heavy Mining secondary Blight without cascading/Presence loss, City/box-Blight setup, steel damage, Royal Backing deck acceleration and fewest-Invader land selection, and Mining Rush adjacency choices. Mining Rush resumes the interrupted Ravage after pending counterattack/cascade effects, recalculates legal empty-of-buildings destinations, and can skip if no destinations remain. All seven levels have 1–4-player setup coverage plus dedicated rule and modal tests.
+
+Adversary facts cross-checked against the base adversary modules in https://github.com/spirit-island/spirit-island-mod/tree/main/objects (`dd3d47` Prussia and `f114f8` Sweden). No reference artwork is bundled.
