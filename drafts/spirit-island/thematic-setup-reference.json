@@ -1,5 +1,5 @@
 {
-  "status": "reference-only; not loaded by the public game; terrain, adjacency and optional-token handling still require verification",
+  "status": "draft mechanical reference; counts checked against the pinned mod pieceMap and terrain/coast against original and recolored board images; adjacency, joins and gameplay integration still pending; not loaded by the game",
   "boards": [
     {
       "board": "NE",
@@ -12,7 +12,9 @@
             "cities": 1,
             "dahan": 0,
             "blight": 0
-          }
+          },
+          "terrain": "砂漠",
+          "coastal": true
         },
         {
           "number": 2,
@@ -22,7 +24,9 @@
             "cities": 0,
             "dahan": 0,
             "blight": 0
-          }
+          },
+          "terrain": "ジャングル",
+          "coastal": true
         },
         {
           "number": 3,
@@ -32,7 +36,9 @@
             "cities": 0,
             "dahan": 1,
             "blight": 0
-          }
+          },
+          "terrain": "ジャングル",
+          "coastal": true
         },
         {
           "number": 4,
@@ -42,7 +48,9 @@
             "cities": 0,
             "dahan": 1,
             "blight": 0
-          }
+          },
+          "terrain": "湿地",
+          "coastal": true
         },
         {
           "number": 5,
@@ -52,7 +60,9 @@
             "cities": 0,
             "dahan": 0,
             "blight": 0
-          }
+          },
+          "terrain": "ジャングル",
+          "coastal": false
         },
         {
           "number": 6,
@@ -62,7 +72,9 @@
             "cities": 0,
             "dahan": 2,
             "blight": 0
-          }
+          },
+          "terrain": "山",
+          "coastal": false
         },
         {
           "number": 7,
@@ -72,7 +84,9 @@
             "cities": 0,
             "dahan": 3,
             "blight": 0
-          }
+          },
+          "terrain": "山",
+          "coastal": false
         },
         {
           "number": 8,
@@ -82,7 +96,9 @@
             "cities": 0,
             "dahan": 0,
             "blight": 0
-          }
+          },
+          "terrain": "砂漠",
+          "coastal": false
         },
         {
           "number": 9,
@@ -92,10 +108,18 @@
             "cities": 0,
             "dahan": 0,
             "blight": 0
-          }
+          },
+          "terrain": "湿地",
+          "coastal": false
         }
       ],
-      "source": "https://github.com/spirit-island/spirit-island-mod/tree/main/objects/ThematicMapBag",
+      "source": {
+        "object": "https://github.com/spirit-island/spirit-island-mod/blob/2655f6104cf1d267f4dbf4b182912fbeba1a565e/objects/ThematicMapBag/contained/bd6555/object.json",
+        "originalBoardImage": "https://steamusercontent-a.akamaihd.net/ugc/15037723417491722401/479445306C868008A27AC22BC48B0535E95993ED/",
+        "countsCheckedAgainstPieceMap": true,
+        "terrainAndCoastVisuallyChecked": true,
+        "adjacencyChecked": false
+      },
       "verifiedForRelease": false
     },
     {
@@ -109,7 +133,9 @@
             "cities": 0,
             "dahan": 1,
             "blight": 0
-          }
+          },
+          "terrain": "砂漠",
+          "coastal": true
         },
         {
           "number": 2,
@@ -119,7 +145,9 @@
             "cities": 1,
             "dahan": 0,
             "blight": 0
-          }
+          },
+          "terrain": "砂漠",
+          "coastal": true
         },
         {
           "number": 3,
@@ -129,7 +157,9 @@
             "cities": 0,
             "dahan": 0,
             "blight": 0
-          }
+          },
+          "terrain": "湿地",
+          "coastal": true
         },
         {
           "number": 4,
@@ -139,7 +169,9 @@
             "cities": 0,
             "dahan": 0,
             "blight": 0
-          }
+          },
+          "terrain": "ジャングル",
+          "coastal": false
         },
         {
           "number": 5,
@@ -149,7 +181,9 @@
             "cities": 0,
             "dahan": 0,
             "blight": 0
-          }
+          },
+          "terrain": "山",
+          "coastal": false
         },
         {
           "number": 6,
@@ -159,7 +193,9 @@
             "cities": 0,
             "dahan": 2,
             "blight": 0
-          }
+          },
+          "terrain": "砂漠",
+          "coastal": false
         },
         {
           "number": 7,
@@ -169,7 +205,9 @@
             "cities": 0,
             "dahan": 1,
             "blight": 0
-          }
+          },
+          "terrain": "湿地",
+          "coastal": false
         },
         {
           "number": 8,
@@ -179,7 +217,9 @@
             "cities": 0,
             "dahan": 1,
             "blight": 0
-          }
+          },
+          "terrain": "山",
+          "coastal": false
         },
         {
           "number": 9,
@@ -189,10 +229,18 @@
             "cities": 0,
             "dahan": 1,
             "blight": 0
-          }
+          },
+          "terrain": "山",
+          "coastal": false
         }
       ],
-      "source": "https://github.com/spirit-island/spirit-island-mod/tree/main/objects/ThematicMapBag",
+      "source": {
+        "object": "https://github.com/spirit-island/spirit-island-mod/blob/2655f6104cf1d267f4dbf4b182912fbeba1a565e/objects/ThematicMapBag/contained/e0c325/object.json",
+        "originalBoardImage": "https://steamusercontent-a.akamaihd.net/ugc/13334447005323699558/F1ACFBF42BA1F2CC96952DD705EC46FDA5D9FD4C/",
+        "countsCheckedAgainstPieceMap": true,
+        "terrainAndCoastVisuallyChecked": true,
+        "adjacencyChecked": false
+      },
       "verifiedForRelease": false
     },
     {
@@ -206,7 +254,9 @@
             "cities": 0,
             "dahan": 0,
             "blight": 0
-          }
+          },
+          "terrain": "ジャングル",
+          "coastal": true
         },
         {
           "number": 2,
@@ -216,7 +266,9 @@
             "cities": 0,
             "dahan": 0,
             "blight": 0
-          }
+          },
+          "terrain": "湿地",
+          "coastal": true
         },
         {
           "number": 3,
@@ -226,7 +278,9 @@
             "cities": 1,
             "dahan": 2,
             "blight": 1
-          }
+          },
+          "terrain": "湿地",
+          "coastal": true
         },
         {
           "number": 4,
@@ -236,7 +290,9 @@
             "cities": 0,
             "dahan": 3,
             "blight": 0
-          }
+          },
+          "terrain": "湿地",
+          "coastal": false
         },
         {
           "number": 5,
@@ -246,7 +302,9 @@
             "cities": 0,
             "dahan": 0,
             "blight": 0
-          }
+          },
+          "terrain": "砂漠",
+          "coastal": false
         },
         {
           "number": 6,
@@ -256,7 +314,9 @@
             "cities": 0,
             "dahan": 0,
             "blight": 0
-          }
+          },
+          "terrain": "山",
+          "coastal": false
         },
         {
           "number": 7,
@@ -266,7 +326,9 @@
             "cities": 0,
             "dahan": 0,
             "blight": 0
-          }
+          },
+          "terrain": "山",
+          "coastal": false
         },
         {
           "number": 8,
@@ -276,7 +338,9 @@
             "cities": 0,
             "dahan": 0,
             "blight": 0
-          }
+          },
+          "terrain": "山",
+          "coastal": false
         },
         {
           "number": 9,
@@ -286,7 +350,9 @@
             "cities": 0,
             "dahan": 2,
             "blight": 0
-          }
+          },
+          "terrain": "湿地",
+          "coastal": false
         },
         {
           "number": 10,
@@ -296,10 +362,18 @@
             "cities": 0,
             "dahan": 2,
             "blight": 0
-          }
+          },
+          "terrain": "湿地",
+          "coastal": false
         }
       ],
-      "source": "https://github.com/spirit-island/spirit-island-mod/tree/main/objects/ThematicMapBag",
+      "source": {
+        "object": "https://github.com/spirit-island/spirit-island-mod/blob/2655f6104cf1d267f4dbf4b182912fbeba1a565e/objects/ThematicMapBag/contained/051c66/object.json",
+        "originalBoardImage": "https://steamusercontent-a.akamaihd.net/ugc/15840865627556463834/BB97E08D514AD14AD73E08885F5CAAABC64E5F61/",
+        "countsCheckedAgainstPieceMap": true,
+        "terrainAndCoastVisuallyChecked": true,
+        "adjacencyChecked": false
+      },
       "verifiedForRelease": false
     },
     {
@@ -313,7 +387,9 @@
             "cities": 0,
             "dahan": 2,
             "blight": 0
-          }
+          },
+          "terrain": "ジャングル",
+          "coastal": true
         },
         {
           "number": 2,
@@ -323,7 +399,9 @@
             "cities": 0,
             "dahan": 0,
             "blight": 0
-          }
+          },
+          "terrain": "砂漠",
+          "coastal": true
         },
         {
           "number": 3,
@@ -333,7 +411,9 @@
             "cities": 0,
             "dahan": 0,
             "blight": 0
-          }
+          },
+          "terrain": "砂漠",
+          "coastal": true
         },
         {
           "number": 4,
@@ -343,7 +423,9 @@
             "cities": 0,
             "dahan": 0,
             "blight": 0
-          }
+          },
+          "terrain": "砂漠",
+          "coastal": false
         },
         {
           "number": 5,
@@ -353,7 +435,9 @@
             "cities": 0,
             "dahan": 0,
             "blight": 0
-          }
+          },
+          "terrain": "ジャングル",
+          "coastal": false
         },
         {
           "number": 6,
@@ -363,7 +447,9 @@
             "cities": 0,
             "dahan": 1,
             "blight": 0
-          }
+          },
+          "terrain": "山",
+          "coastal": false
         },
         {
           "number": 7,
@@ -373,7 +459,9 @@
             "cities": 0,
             "dahan": 2,
             "blight": 0
-          }
+          },
+          "terrain": "湿地",
+          "coastal": false
         },
         {
           "number": 8,
@@ -383,7 +471,9 @@
             "cities": 0,
             "dahan": 2,
             "blight": 0
-          }
+          },
+          "terrain": "ジャングル",
+          "coastal": false
         },
         {
           "number": 9,
@@ -393,7 +483,9 @@
             "cities": 0,
             "dahan": 0,
             "blight": 0
-          }
+          },
+          "terrain": "砂漠",
+          "coastal": false
         },
         {
           "number": 10,
@@ -403,11 +495,47 @@
             "cities": 0,
             "dahan": 0,
             "blight": 0
-          }
+          },
+          "terrain": "山",
+          "coastal": false
         }
       ],
-      "source": "https://github.com/spirit-island/spirit-island-mod/tree/main/objects/ThematicMapBag",
+      "source": {
+        "object": "https://github.com/spirit-island/spirit-island-mod/blob/2655f6104cf1d267f4dbf4b182912fbeba1a565e/objects/ThematicMapBag/contained/9d9b8f/object.json",
+        "originalBoardImage": "https://steamusercontent-a.akamaihd.net/ugc/10446595517739930954/106C736ED3D0B7F032CFF06DA989DE16343CE8EC/",
+        "countsCheckedAgainstPieceMap": true,
+        "terrainAndCoastVisuallyChecked": true,
+        "adjacencyChecked": false
+      },
       "verifiedForRelease": false
     }
+  ],
+  "sourceCommit": "2655f6104cf1d267f4dbf4b182912fbeba1a565e",
+  "recommendedBoardSets": {
+    "1": [
+      "NE"
+    ],
+    "2": [
+      "E",
+      "W"
+    ],
+    "3": [
+      "E",
+      "W",
+      "NE"
+    ],
+    "4": [
+      "E",
+      "W",
+      "NE",
+      "NW"
+    ]
+  },
+  "remainingVerification": [
+    "within-board adjacency including corner contacts",
+    "cross-board joins at the recommended layouts",
+    "spirit starting Presence choices",
+    "adversary setup land selection",
+    "scenario compatibility and setup"
   ]
 }
