@@ -1,5 +1,5 @@
 {
-  "status": "draft mechanical reference; counts checked against the pinned mod pieceMap and terrain/coast against original and recolored board images; adjacency, joins and gameplay integration still pending; not loaded by the game",
+  "status": "integrated in draft runtime; topology visually transcribed; independent boundary audit remains pending",
   "boards": [
     {
       "board": "NE",
@@ -14,7 +14,11 @@
             "blight": 0
           },
           "terrain": "砂漠",
-          "coastal": true
+          "coastal": true,
+          "neighbors": [
+            2,
+            5
+          ]
         },
         {
           "number": 2,
@@ -26,7 +30,13 @@
             "blight": 0
           },
           "terrain": "ジャングル",
-          "coastal": true
+          "coastal": true,
+          "neighbors": [
+            1,
+            3,
+            5,
+            7
+          ]
         },
         {
           "number": 3,
@@ -38,7 +48,12 @@
             "blight": 0
           },
           "terrain": "ジャングル",
-          "coastal": true
+          "coastal": true,
+          "neighbors": [
+            2,
+            4,
+            7
+          ]
         },
         {
           "number": 4,
@@ -50,7 +65,11 @@
             "blight": 0
           },
           "terrain": "湿地",
-          "coastal": true
+          "coastal": true,
+          "neighbors": [
+            3,
+            7
+          ]
         },
         {
           "number": 5,
@@ -62,7 +81,14 @@
             "blight": 0
           },
           "terrain": "ジャングル",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            1,
+            2,
+            7,
+            8,
+            9
+          ]
         },
         {
           "number": 6,
@@ -74,7 +100,10 @@
             "blight": 0
           },
           "terrain": "山",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            7
+          ]
         },
         {
           "number": 7,
@@ -86,7 +115,15 @@
             "blight": 0
           },
           "terrain": "山",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            8
+          ]
         },
         {
           "number": 8,
@@ -98,7 +135,12 @@
             "blight": 0
           },
           "terrain": "砂漠",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            5,
+            7,
+            9
+          ]
         },
         {
           "number": 9,
@@ -110,7 +152,11 @@
             "blight": 0
           },
           "terrain": "湿地",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            5,
+            8
+          ]
         }
       ],
       "source": {
@@ -135,7 +181,11 @@
             "blight": 0
           },
           "terrain": "砂漠",
-          "coastal": true
+          "coastal": true,
+          "neighbors": [
+            2,
+            6
+          ]
         },
         {
           "number": 2,
@@ -147,7 +197,14 @@
             "blight": 0
           },
           "terrain": "砂漠",
-          "coastal": true
+          "coastal": true,
+          "neighbors": [
+            1,
+            3,
+            4,
+            5,
+            6
+          ]
         },
         {
           "number": 3,
@@ -159,7 +216,11 @@
             "blight": 0
           },
           "terrain": "湿地",
-          "coastal": true
+          "coastal": true,
+          "neighbors": [
+            2,
+            4
+          ]
         },
         {
           "number": 4,
@@ -171,7 +232,13 @@
             "blight": 0
           },
           "terrain": "ジャングル",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            2,
+            3,
+            5,
+            7
+          ]
         },
         {
           "number": 5,
@@ -183,7 +250,14 @@
             "blight": 0
           },
           "terrain": "山",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            2,
+            4,
+            6,
+            7,
+            8
+          ]
         },
         {
           "number": 6,
@@ -195,7 +269,14 @@
             "blight": 0
           },
           "terrain": "砂漠",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            1,
+            2,
+            5,
+            8,
+            9
+          ]
         },
         {
           "number": 7,
@@ -207,7 +288,12 @@
             "blight": 0
           },
           "terrain": "湿地",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            4,
+            5,
+            8
+          ]
         },
         {
           "number": 8,
@@ -219,7 +305,13 @@
             "blight": 0
           },
           "terrain": "山",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            5,
+            6,
+            7,
+            9
+          ]
         },
         {
           "number": 9,
@@ -231,7 +323,11 @@
             "blight": 0
           },
           "terrain": "山",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            6,
+            8
+          ]
         }
       ],
       "source": {
@@ -256,7 +352,12 @@
             "blight": 0
           },
           "terrain": "ジャングル",
-          "coastal": true
+          "coastal": true,
+          "neighbors": [
+            2,
+            5,
+            6
+          ]
         },
         {
           "number": 2,
@@ -268,7 +369,13 @@
             "blight": 0
           },
           "terrain": "湿地",
-          "coastal": true
+          "coastal": true,
+          "neighbors": [
+            1,
+            3,
+            4,
+            5
+          ]
         },
         {
           "number": 3,
@@ -280,7 +387,12 @@
             "blight": 1
           },
           "terrain": "湿地",
-          "coastal": true
+          "coastal": true,
+          "neighbors": [
+            2,
+            4,
+            7
+          ]
         },
         {
           "number": 4,
@@ -292,7 +404,15 @@
             "blight": 0
           },
           "terrain": "湿地",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            2,
+            3,
+            5,
+            7,
+            8,
+            9
+          ]
         },
         {
           "number": 5,
@@ -304,7 +424,14 @@
             "blight": 0
           },
           "terrain": "砂漠",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            1,
+            2,
+            4,
+            6,
+            9
+          ]
         },
         {
           "number": 6,
@@ -316,7 +443,13 @@
             "blight": 0
           },
           "terrain": "山",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            1,
+            5,
+            9,
+            10
+          ]
         },
         {
           "number": 7,
@@ -328,7 +461,12 @@
             "blight": 0
           },
           "terrain": "山",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            3,
+            4,
+            8
+          ]
         },
         {
           "number": 8,
@@ -340,7 +478,12 @@
             "blight": 0
           },
           "terrain": "山",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            4,
+            7,
+            9
+          ]
         },
         {
           "number": 9,
@@ -352,7 +495,14 @@
             "blight": 0
           },
           "terrain": "湿地",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            4,
+            5,
+            6,
+            8,
+            10
+          ]
         },
         {
           "number": 10,
@@ -364,7 +514,11 @@
             "blight": 0
           },
           "terrain": "湿地",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            6,
+            9
+          ]
         }
       ],
       "source": {
@@ -389,7 +543,14 @@
             "blight": 0
           },
           "terrain": "ジャングル",
-          "coastal": true
+          "coastal": true,
+          "neighbors": [
+            2,
+            5,
+            7,
+            8,
+            9
+          ]
         },
         {
           "number": 2,
@@ -401,7 +562,13 @@
             "blight": 0
           },
           "terrain": "砂漠",
-          "coastal": true
+          "coastal": true,
+          "neighbors": [
+            1,
+            3,
+            4,
+            5
+          ]
         },
         {
           "number": 3,
@@ -413,7 +580,11 @@
             "blight": 0
           },
           "terrain": "砂漠",
-          "coastal": true
+          "coastal": true,
+          "neighbors": [
+            2,
+            4
+          ]
         },
         {
           "number": 4,
@@ -425,7 +596,13 @@
             "blight": 0
           },
           "terrain": "砂漠",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            2,
+            3,
+            5,
+            6
+          ]
         },
         {
           "number": 5,
@@ -437,7 +614,14 @@
             "blight": 0
           },
           "terrain": "ジャングル",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            1,
+            2,
+            4,
+            6,
+            7
+          ]
         },
         {
           "number": 6,
@@ -449,7 +633,12 @@
             "blight": 0
           },
           "terrain": "山",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            4,
+            5,
+            7
+          ]
         },
         {
           "number": 7,
@@ -461,7 +650,13 @@
             "blight": 0
           },
           "terrain": "湿地",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            1,
+            5,
+            6,
+            8
+          ]
         },
         {
           "number": 8,
@@ -473,7 +668,13 @@
             "blight": 0
           },
           "terrain": "ジャングル",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            1,
+            7,
+            9,
+            10
+          ]
         },
         {
           "number": 9,
@@ -485,7 +686,12 @@
             "blight": 0
           },
           "terrain": "砂漠",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            1,
+            8,
+            10
+          ]
         },
         {
           "number": 10,
@@ -497,7 +703,11 @@
             "blight": 0
           },
           "terrain": "山",
-          "coastal": false
+          "coastal": false,
+          "neighbors": [
+            8,
+            9
+          ]
         }
       ],
       "source": {
@@ -532,10 +742,167 @@
     ]
   },
   "remainingVerification": [
-    "within-board adjacency including corner contacts",
-    "cross-board joins at the recommended layouts",
-    "spirit starting Presence choices",
-    "adversary setup land selection",
-    "scenario compatibility and setup"
-  ]
+    "independent geometric audit of transcribed adjacencies and joins",
+    "real-browser visual QA and complete-game interaction audit"
+  ],
+  "crossBoardJoins": [
+    [
+      "W",
+      "E",
+      [
+        [
+          6,
+          10
+        ],
+        [
+          7,
+          10
+        ],
+        [
+          7,
+          9
+        ],
+        [
+          8,
+          9
+        ],
+        [
+          8,
+          8
+        ],
+        [
+          10,
+          8
+        ],
+        [
+          10,
+          7
+        ]
+      ]
+    ],
+    [
+      "NW",
+      "W",
+      [
+        [
+          1,
+          3
+        ],
+        [
+          6,
+          3
+        ],
+        [
+          6,
+          4
+        ],
+        [
+          9,
+          4
+        ],
+        [
+          9,
+          6
+        ]
+      ]
+    ],
+    [
+      "NE",
+      "E",
+      [
+        [
+          6,
+          10
+        ],
+        [
+          6,
+          6
+        ],
+        [
+          7,
+          6
+        ],
+        [
+          4,
+          6
+        ],
+        [
+          4,
+          1
+        ]
+      ]
+    ],
+    [
+      "NW",
+      "NE",
+      [
+        [
+          7,
+          9
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          7,
+          7
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          9,
+          7
+        ],
+        [
+          9,
+          6
+        ]
+      ]
+    ],
+    [
+      "W",
+      "NE",
+      [
+        [
+          6,
+          6
+        ]
+      ]
+    ],
+    [
+      "NW",
+      "E",
+      [
+        [
+          9,
+          10
+        ]
+      ]
+    ]
+  ],
+  "officialTerrainReference": "https://querki.net/raw/darker/spirit-island-faq/Thematic%2Bmap",
+  "officialOceanReference": "https://querki.net/raw/darker/spirit-island-faq/.7w4ghyo",
+  "thematicHeartInnerNumbers": {
+    "1": {
+      "NE": 7
+    },
+    "2": {
+      "E": 7,
+      "W": 7
+    },
+    "3": {
+      "E": 10,
+      "W": 6,
+      "NE": 6
+    },
+    "4": {
+      "E": 10,
+      "W": 6,
+      "NE": 6,
+      "NW": 9
+    }
+  }
 }

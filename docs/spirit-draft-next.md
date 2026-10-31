@@ -1,27 +1,36 @@
-# Spirit Island development draft
+# Spirit Island follow-up draft
 
-The playable balanced-map basic-set beta was merged into `main` in PR #2. Follow-up work stays in draft PR #1; it is not deployed by this branch.
+The balanced-map beta was released in PR #2. This branch adds executable thematic-map play and compound-Power fixes, and remains draft PR #1. It is not deployed to the public game.
 
-The reported approximately 90% is an engineering estimate of implemented feature scope, not measured test coverage. Eight spirits, 32 Unique cards, 58 shared cards, 12 innates, all three adversaries and four scenarios have executable programs and focused tests. This draft does not claim a fully audited base set.
+The earlier approximately 90% figure was an engineering estimate of feature scope, not measured test coverage. This draft does not claim a fully audited base set.
 
-## Implemented since the early release
+## Implemented
 
-- Shared-Power dialogs now project Bringer's dream pushes across the full island before constructing later damage fields. Incoming physical Invaders retain their identity and existing wounds. Pieces already dreamed by this Power remain available for damage allocation without acquiring a second push choice.
-- Later area-damage and moved-Dahan damage use the updated piece list. Later dream destinations can be selected for resident Invaders; submitted preferences bind to their original identities on the server. Unchanged secondary allocations and destinations survive recalculation.
-- Damage sections show allocated/required amounts and disable confirmation for incomplete or out-of-range allocations.
-- Integrated DOM/API regression cases cover chained Tsunami coastal pushes at both normal and England building health, moved-Dahan damage from Vigor of the Breaking Dawn, wound preservation, changed allocations, preserved destinations, and once-per-Power Fear. The all-58-Bringer-dialog fixture now creates complete physical identities, matching real server states.
-- Thematic reference data now includes terrain and coastal flags for NE/NW/E/W, recommended 1–4 board sets, and pinned source provenance. Counts were checked again against the source pieceMap; the original and recolored board images were visually compared. These facts are saved as preparation for integration; they do not enable thematic play.
+- The lobby has a host-only map selection modal. Thematic mode uses the recommended base-game sets: Northeast for 1 player; East/West for 2; East/West/Northeast for 3; all four for 4. The boards have 9 or 10 lands, printed terrain/coast/initial-piece data, within-board adjacency, cross-board joins, and schematic overview coordinates.
+- All four base scenarios work with thematic mode. Guard the Isle's Heart uses land 7 for 1–2 players and the central corner lands for 3–4, then applies its extra Presence/cards, Town removal and round-two loss check.
+- Initial Presence supports all eight spirits. Northeast has four coastal choices for Ocean and a choice between two Dahan-free Jungles for Green. Thunderspeaker retains its choices among the lands with the most Dahan.
+- The printed Northeast Ocean/East land 1 adjacency is represented explicitly. It works for range, piece cleanup, Ocean Presence growth and Tidal Boon's Dahan rescue, including when Ocean has Presence on Northeast but not East.
+- Ocean Gather reserves source Presence before moving anything. A single Presence on a coast shared by two Oceans cannot be counted twice. The modal permits choosing which Ocean receives it, shows an invalid assignment, and disables confirmation until the choices are consistent.
+- Bringer shared-Power dialogs project dream pushes across the island before later area/moved-Dahan damage fields. Physical IDs and wounds are preserved, and already dreamed pieces do not acquire a second dream push. Secondary allocations and destinations survive recalculation when the physical piece list is unchanged.
+- Damage sections show allocated/required totals and prevent incomplete or out-of-range confirmation.
+- Dissolve the Bonds of Kinship projects ranked City/Town/Dahan replacements and subsequent damage. Bringer can choose destinations for replacement-created Explorers; the server binds these choices to real IDs after replacement and validates them before simultaneous damage. Invalid requests save no partial replacements or damage.
 
-- Dissolve the Bonds of Kinship now projects the selected physical City/Town/Dahan replacements, including wound arrays and identity lists. Changing the replacement priority rebuilds the later damage allocation. The Dahan replacement also respects the selected priority on the server.
-- Bringer can choose dream destinations for Explorers created by Kinship. Those choices are bound to real piece identities after replacement and before simultaneous damage, so the client does not submit invented physical IDs. Original and newly created Explorers then share the normal once-per-Power dream context.
-- A dedicated DOM/API suite covers normal and England building health, threshold on/off, ordinary spirits and Bringer, ranked healthy/wounded replacements, created-Explorer destinations, simultaneous return attacks, and rejection of malformed, duplicate or nonadjacent choices without saving partial state.
+## Deliberate limits and remaining work
 
-## Remaining work
+- Thematic topology is visually transcribed from board images. It has executable tests for symmetry, reachability, key special adjacencies and gameplay progression, but an independent geometric audit of every within-board boundary and cross-board join is still pending. The saved reference remains `verifiedForRelease: false`; this is the main evidence limit for thematic play.
 
-- Optional thematic maps: within-board adjacency, corner contacts, cross-board joins, spirit starting Presence, adversary setup and scenario compatibility require implementation and validation.
-- Continue compound-Power and action-tree auditing beyond the newly covered Kinship cases, including Ocean and triggered scenario interactions.
-- Expand end-to-end rule interaction testing, including action-tree timing, Ocean cleanup and modified printed costs in Blitz.
+- Continue full-game interaction auditing, including Ocean and scenario-triggered action trees. Setup/one-round combination checks are not complete-game proof.
+- Real-browser visual QA of this draft remains unverified. The managed preview CLI failed while starting the existing Wrangler development command. DOM/API modal tests passed; no preview infrastructure workaround or production deployment was used.
 
-## Validation and limits
+## Validation
 
-The focused all-58 Bringer modal suite and all-58 shared/all-12 innate modal suite passed after these changes. Full npm test passed (285 PASS output lines), including the 440 setup/one-round combinations. These are executable DOM/API checks, not a new real-browser visual pass. Reference map data is explicitly `verifiedForRelease: false` and is not loaded by the public game. No board artwork is bundled in this draft.
+Validation passed: `npm test` (294 PASS output lines) and `npx wrangler deploy --dry-run`. The new thematic suite exercises all eight spirits across 1–4 players, Presence conservation, physical piece lists, connected/symmetric adjacency, initial setup choices, shared Ocean coast handling, host-only settings and thematic Heart setup/loss conditions. It also checks 440 thematic scenario/adversary/level/player-count combinations through setup and one idle round, in addition to the existing 440 balanced combinations.
+
+The DOM/API suite selects the thematic map, completes Green's setup choice, reaches the nine-land overview and Growth modal, and reassigns a shared-coast Presence between two Ocean Gather controls.
+
+## References
+
+- Original board images and numeric setup data: pinned sources are listed per board in `drafts/spirit-island/thematic-setup-reference.json`. No board artwork is bundled.
+- Official terrain clarification: https://querki.net/raw/darker/spirit-island-faq/Thematic%2Bmap
+- Guard the Isle's Heart card reference: https://github.com/spirit-island/spirit-island-mod/blob/2655f6104cf1d267f4dbf4b182912fbeba1a565e/objects/04397d/object.json
+- Official Northeast Ocean/East1 clarification: https://querki.net/raw/darker/spirit-island-faq/.7w4ghyo
