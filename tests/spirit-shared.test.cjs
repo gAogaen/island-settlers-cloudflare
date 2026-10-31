@@ -76,5 +76,5 @@ console.log('PASS conditional terrain/element damage and Fear for Mawbeasts, Ant
 }
 
 {
- const x=make();x.p.spirit='bringer';x.l.terrain='ジャングル';x.l.towns=1;gift(x.p,{動物:3});resolve(x,0,{damagePlan:[{type:'towns',index:0,amount:1}],extraDamagePlans:{[x.l.id]:[{type:'towns',index:0,amount:1}]}});assert.equal(x.l.towns,1);assert.equal(x.l.invaderDamage.towns[0],0);assert.equal(x.g.fear,1);console.log('PASS distinct damage instructions remain separate for Bringer and never combine into a spurious dreamed destruction');
+ const x=make();x.p.spirit='bringer';x.l.terrain='ジャングル';x.l.towns=1;gift(x.p,{動物:3});resolve(x,0,{damagePlan:[{type:'towns',index:0,amount:1}],extraDamagePlans:{[x.l.id]:[{type:'towns',index:0,amount:1}]}});assert.equal(x.l.towns,0);assert.equal(x.n.towns,1);assert.equal(x.n.invaderDamage.towns[0],0);assert.equal(x.g.fear,3);console.log('PASS multiple damage instructions of one Bringer Power combine into dream Fear/push without creating real wounds');
 }

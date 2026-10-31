@@ -1,0 +1,908 @@
+{
+  "status": "integrated in draft runtime; topology visually transcribed; independent boundary audit remains pending",
+  "boards": [
+    {
+      "board": "NE",
+      "lands": [
+        {
+          "number": 1,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 1,
+            "dahan": 0,
+            "blight": 0
+          },
+          "terrain": "砂漠",
+          "coastal": true,
+          "neighbors": [
+            2,
+            5
+          ]
+        },
+        {
+          "number": 2,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          },
+          "terrain": "ジャングル",
+          "coastal": true,
+          "neighbors": [
+            1,
+            3,
+            5,
+            7
+          ]
+        },
+        {
+          "number": 3,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 1,
+            "blight": 0
+          },
+          "terrain": "ジャングル",
+          "coastal": true,
+          "neighbors": [
+            2,
+            4,
+            7
+          ]
+        },
+        {
+          "number": 4,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 1,
+            "blight": 0
+          },
+          "terrain": "湿地",
+          "coastal": true,
+          "neighbors": [
+            3,
+            7
+          ]
+        },
+        {
+          "number": 5,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 1,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          },
+          "terrain": "ジャングル",
+          "coastal": false,
+          "neighbors": [
+            1,
+            2,
+            7,
+            8,
+            9
+          ]
+        },
+        {
+          "number": 6,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 2,
+            "blight": 0
+          },
+          "terrain": "山",
+          "coastal": false,
+          "neighbors": [
+            7
+          ]
+        },
+        {
+          "number": 7,
+          "basePieces": {
+            "explorers": 3,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 3,
+            "blight": 0
+          },
+          "terrain": "山",
+          "coastal": false,
+          "neighbors": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            8
+          ]
+        },
+        {
+          "number": 8,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          },
+          "terrain": "砂漠",
+          "coastal": false,
+          "neighbors": [
+            5,
+            7,
+            9
+          ]
+        },
+        {
+          "number": 9,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          },
+          "terrain": "湿地",
+          "coastal": false,
+          "neighbors": [
+            5,
+            8
+          ]
+        }
+      ],
+      "source": {
+        "object": "https://github.com/spirit-island/spirit-island-mod/blob/2655f6104cf1d267f4dbf4b182912fbeba1a565e/objects/ThematicMapBag/contained/bd6555/object.json",
+        "originalBoardImage": "https://steamusercontent-a.akamaihd.net/ugc/15037723417491722401/479445306C868008A27AC22BC48B0535E95993ED/",
+        "countsCheckedAgainstPieceMap": true,
+        "terrainAndCoastVisuallyChecked": true,
+        "adjacencyChecked": false
+      },
+      "verifiedForRelease": false
+    },
+    {
+      "board": "NW",
+      "lands": [
+        {
+          "number": 1,
+          "basePieces": {
+            "explorers": 2,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 1,
+            "blight": 0
+          },
+          "terrain": "砂漠",
+          "coastal": true,
+          "neighbors": [
+            2,
+            6
+          ]
+        },
+        {
+          "number": 2,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 1,
+            "dahan": 0,
+            "blight": 0
+          },
+          "terrain": "砂漠",
+          "coastal": true,
+          "neighbors": [
+            1,
+            3,
+            4,
+            5,
+            6
+          ]
+        },
+        {
+          "number": 3,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 1,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          },
+          "terrain": "湿地",
+          "coastal": true,
+          "neighbors": [
+            2,
+            4
+          ]
+        },
+        {
+          "number": 4,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          },
+          "terrain": "ジャングル",
+          "coastal": false,
+          "neighbors": [
+            2,
+            3,
+            5,
+            7
+          ]
+        },
+        {
+          "number": 5,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          },
+          "terrain": "山",
+          "coastal": false,
+          "neighbors": [
+            2,
+            4,
+            6,
+            7,
+            8
+          ]
+        },
+        {
+          "number": 6,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 2,
+            "blight": 0
+          },
+          "terrain": "砂漠",
+          "coastal": false,
+          "neighbors": [
+            1,
+            2,
+            5,
+            8,
+            9
+          ]
+        },
+        {
+          "number": 7,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 1,
+            "blight": 0
+          },
+          "terrain": "湿地",
+          "coastal": false,
+          "neighbors": [
+            4,
+            5,
+            8
+          ]
+        },
+        {
+          "number": 8,
+          "basePieces": {
+            "explorers": 1,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 1,
+            "blight": 0
+          },
+          "terrain": "山",
+          "coastal": false,
+          "neighbors": [
+            5,
+            6,
+            7,
+            9
+          ]
+        },
+        {
+          "number": 9,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 1,
+            "blight": 0
+          },
+          "terrain": "山",
+          "coastal": false,
+          "neighbors": [
+            6,
+            8
+          ]
+        }
+      ],
+      "source": {
+        "object": "https://github.com/spirit-island/spirit-island-mod/blob/2655f6104cf1d267f4dbf4b182912fbeba1a565e/objects/ThematicMapBag/contained/e0c325/object.json",
+        "originalBoardImage": "https://steamusercontent-a.akamaihd.net/ugc/13334447005323699558/F1ACFBF42BA1F2CC96952DD705EC46FDA5D9FD4C/",
+        "countsCheckedAgainstPieceMap": true,
+        "terrainAndCoastVisuallyChecked": true,
+        "adjacencyChecked": false
+      },
+      "verifiedForRelease": false
+    },
+    {
+      "board": "E",
+      "lands": [
+        {
+          "number": 1,
+          "basePieces": {
+            "explorers": 1,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          },
+          "terrain": "ジャングル",
+          "coastal": true,
+          "neighbors": [
+            2,
+            5,
+            6
+          ]
+        },
+        {
+          "number": 2,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 1,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          },
+          "terrain": "湿地",
+          "coastal": true,
+          "neighbors": [
+            1,
+            3,
+            4,
+            5
+          ]
+        },
+        {
+          "number": 3,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 1,
+            "cities": 1,
+            "dahan": 2,
+            "blight": 1
+          },
+          "terrain": "湿地",
+          "coastal": true,
+          "neighbors": [
+            2,
+            4,
+            7
+          ]
+        },
+        {
+          "number": 4,
+          "basePieces": {
+            "explorers": 1,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 3,
+            "blight": 0
+          },
+          "terrain": "湿地",
+          "coastal": false,
+          "neighbors": [
+            2,
+            3,
+            5,
+            7,
+            8,
+            9
+          ]
+        },
+        {
+          "number": 5,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          },
+          "terrain": "砂漠",
+          "coastal": false,
+          "neighbors": [
+            1,
+            2,
+            4,
+            6,
+            9
+          ]
+        },
+        {
+          "number": 6,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          },
+          "terrain": "山",
+          "coastal": false,
+          "neighbors": [
+            1,
+            5,
+            9,
+            10
+          ]
+        },
+        {
+          "number": 7,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          },
+          "terrain": "山",
+          "coastal": false,
+          "neighbors": [
+            3,
+            4,
+            8
+          ]
+        },
+        {
+          "number": 8,
+          "basePieces": {
+            "explorers": 1,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          },
+          "terrain": "山",
+          "coastal": false,
+          "neighbors": [
+            4,
+            7,
+            9
+          ]
+        },
+        {
+          "number": 9,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 2,
+            "blight": 0
+          },
+          "terrain": "湿地",
+          "coastal": false,
+          "neighbors": [
+            4,
+            5,
+            6,
+            8,
+            10
+          ]
+        },
+        {
+          "number": 10,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 2,
+            "blight": 0
+          },
+          "terrain": "湿地",
+          "coastal": false,
+          "neighbors": [
+            6,
+            9
+          ]
+        }
+      ],
+      "source": {
+        "object": "https://github.com/spirit-island/spirit-island-mod/blob/2655f6104cf1d267f4dbf4b182912fbeba1a565e/objects/ThematicMapBag/contained/051c66/object.json",
+        "originalBoardImage": "https://steamusercontent-a.akamaihd.net/ugc/15840865627556463834/BB97E08D514AD14AD73E08885F5CAAABC64E5F61/",
+        "countsCheckedAgainstPieceMap": true,
+        "terrainAndCoastVisuallyChecked": true,
+        "adjacencyChecked": false
+      },
+      "verifiedForRelease": false
+    },
+    {
+      "board": "W",
+      "lands": [
+        {
+          "number": 1,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 2,
+            "cities": 0,
+            "dahan": 2,
+            "blight": 0
+          },
+          "terrain": "ジャングル",
+          "coastal": true,
+          "neighbors": [
+            2,
+            5,
+            7,
+            8,
+            9
+          ]
+        },
+        {
+          "number": 2,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 1,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          },
+          "terrain": "砂漠",
+          "coastal": true,
+          "neighbors": [
+            1,
+            3,
+            4,
+            5
+          ]
+        },
+        {
+          "number": 3,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          },
+          "terrain": "砂漠",
+          "coastal": true,
+          "neighbors": [
+            2,
+            4
+          ]
+        },
+        {
+          "number": 4,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          },
+          "terrain": "砂漠",
+          "coastal": false,
+          "neighbors": [
+            2,
+            3,
+            5,
+            6
+          ]
+        },
+        {
+          "number": 5,
+          "basePieces": {
+            "explorers": 1,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          },
+          "terrain": "ジャングル",
+          "coastal": false,
+          "neighbors": [
+            1,
+            2,
+            4,
+            6,
+            7
+          ]
+        },
+        {
+          "number": 6,
+          "basePieces": {
+            "explorers": 1,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 1,
+            "blight": 0
+          },
+          "terrain": "山",
+          "coastal": false,
+          "neighbors": [
+            4,
+            5,
+            7
+          ]
+        },
+        {
+          "number": 7,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 2,
+            "blight": 0
+          },
+          "terrain": "湿地",
+          "coastal": false,
+          "neighbors": [
+            1,
+            5,
+            6,
+            8
+          ]
+        },
+        {
+          "number": 8,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 2,
+            "blight": 0
+          },
+          "terrain": "ジャングル",
+          "coastal": false,
+          "neighbors": [
+            1,
+            7,
+            9,
+            10
+          ]
+        },
+        {
+          "number": 9,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          },
+          "terrain": "砂漠",
+          "coastal": false,
+          "neighbors": [
+            1,
+            8,
+            10
+          ]
+        },
+        {
+          "number": 10,
+          "basePieces": {
+            "explorers": 0,
+            "towns": 0,
+            "cities": 0,
+            "dahan": 0,
+            "blight": 0
+          },
+          "terrain": "山",
+          "coastal": false,
+          "neighbors": [
+            8,
+            9
+          ]
+        }
+      ],
+      "source": {
+        "object": "https://github.com/spirit-island/spirit-island-mod/blob/2655f6104cf1d267f4dbf4b182912fbeba1a565e/objects/ThematicMapBag/contained/9d9b8f/object.json",
+        "originalBoardImage": "https://steamusercontent-a.akamaihd.net/ugc/10446595517739930954/106C736ED3D0B7F032CFF06DA989DE16343CE8EC/",
+        "countsCheckedAgainstPieceMap": true,
+        "terrainAndCoastVisuallyChecked": true,
+        "adjacencyChecked": false
+      },
+      "verifiedForRelease": false
+    }
+  ],
+  "sourceCommit": "2655f6104cf1d267f4dbf4b182912fbeba1a565e",
+  "recommendedBoardSets": {
+    "1": [
+      "NE"
+    ],
+    "2": [
+      "E",
+      "W"
+    ],
+    "3": [
+      "E",
+      "W",
+      "NE"
+    ],
+    "4": [
+      "E",
+      "W",
+      "NE",
+      "NW"
+    ]
+  },
+  "remainingVerification": [
+    "independent geometric audit of transcribed adjacencies and joins",
+    "real-browser visual QA and complete-game interaction audit"
+  ],
+  "crossBoardJoins": [
+    [
+      "W",
+      "E",
+      [
+        [
+          6,
+          10
+        ],
+        [
+          7,
+          10
+        ],
+        [
+          7,
+          9
+        ],
+        [
+          8,
+          9
+        ],
+        [
+          8,
+          8
+        ],
+        [
+          10,
+          8
+        ],
+        [
+          10,
+          7
+        ]
+      ]
+    ],
+    [
+      "NW",
+      "W",
+      [
+        [
+          1,
+          3
+        ],
+        [
+          6,
+          3
+        ],
+        [
+          6,
+          4
+        ],
+        [
+          9,
+          4
+        ],
+        [
+          9,
+          6
+        ]
+      ]
+    ],
+    [
+      "NE",
+      "E",
+      [
+        [
+          6,
+          10
+        ],
+        [
+          6,
+          6
+        ],
+        [
+          7,
+          6
+        ],
+        [
+          4,
+          6
+        ],
+        [
+          4,
+          1
+        ]
+      ]
+    ],
+    [
+      "NW",
+      "NE",
+      [
+        [
+          7,
+          9
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          7,
+          7
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          9,
+          7
+        ],
+        [
+          9,
+          6
+        ]
+      ]
+    ],
+    [
+      "W",
+      "NE",
+      [
+        [
+          6,
+          6
+        ]
+      ]
+    ],
+    [
+      "NW",
+      "E",
+      [
+        [
+          9,
+          10
+        ]
+      ]
+    ]
+  ],
+  "officialTerrainReference": "https://querki.net/raw/darker/spirit-island-faq/Thematic%2Bmap",
+  "officialOceanReference": "https://querki.net/raw/darker/spirit-island-faq/.7w4ghyo",
+  "thematicHeartInnerNumbers": {
+    "1": {
+      "NE": 7
+    },
+    "2": {
+      "E": 7,
+      "W": 7
+    },
+    "3": {
+      "E": 10,
+      "W": 6,
+      "NE": 6
+    },
+    "4": {
+      "E": 10,
+      "W": 6,
+      "NE": 6,
+      "NW": 9
+    }
+  }
+}
