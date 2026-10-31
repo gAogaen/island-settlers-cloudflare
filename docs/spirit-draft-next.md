@@ -12,6 +12,7 @@ The earlier approximately 90% figure was an engineering estimate of feature scop
 - The printed Northeast Ocean/East land 1 adjacency is represented explicitly. It works for range, piece cleanup, Ocean Presence growth and Tidal Boon's Dahan rescue, including when Ocean has Presence on Northeast but not East.
 - Ocean Gather reserves source Presence before moving anything. A single Presence on a coast shared by two Oceans cannot be counted twice. The modal permits choosing which Ocean receives it, shows an invalid assignment, and disables confirmation until the choices are consistent.
 - Bringer shared-Power dialogs project dream pushes across the island before later area/moved-Dahan damage fields. Physical IDs and wounds are preserved, and already dreamed pieces do not acquire a second dream push. Secondary allocations and destinations survive recalculation when the physical piece list is unchanged.
+- Bringer's imagined damage accumulates across multiple damage instructions of one Power, including each-piece damage followed by allocated damage. It is stored only in the transient Power context and never becomes a real wound or carries into a separate Power. Modal health limits use the same transient state. The older split-Town and two-City regression expectations were corrected against the official FAQ: damage instructions of one Power combine; separate Powers do not.
 - Damage sections show allocated/required totals and prevent incomplete or out-of-range confirmation.
 - Dissolve the Bonds of Kinship projects ranked City/Town/Dahan replacements and subsequent damage. Bringer can choose destinations for replacement-created Explorers; the server binds these choices to real IDs after replacement and validates them before simultaneous damage. Invalid requests save no partial replacements or damage.
 
@@ -24,7 +25,7 @@ The earlier approximately 90% figure was an engineering estimate of feature scop
 
 ## Validation
 
-Validation passed: `npm test` (294 PASS output lines) and `npx wrangler deploy --dry-run`. The new thematic suite exercises all eight spirits across 1–4 players, Presence conservation, physical piece lists, connected/symmetric adjacency, initial setup choices, shared Ocean coast handling, host-only settings and thematic Heart setup/loss conditions. It also checks 440 thematic scenario/adversary/level/player-count combinations through setup and one idle round, in addition to the existing 440 balanced combinations.
+Validation passed: `npm test` (295 PASS output lines) and `npx wrangler deploy --dry-run`. The new thematic suite exercises all eight spirits across 1–4 players, Presence conservation, physical piece lists, connected/symmetric adjacency, initial setup choices, shared Ocean coast handling, host-only settings and thematic Heart setup/loss conditions. It also checks 440 thematic scenario/adversary/level/player-count combinations through setup and one idle round, in addition to the existing 440 balanced combinations.
 
 The DOM/API suite selects the thematic map, completes Green's setup choice, reaches the nine-land overview and Growth modal, and reassigns a shared-coast Presence between two Ocean Gather controls.
 
@@ -34,3 +35,5 @@ The DOM/API suite selects the thematic map, completes Green's setup choice, reac
 - Official terrain clarification: https://querki.net/raw/darker/spirit-island-faq/Thematic%2Bmap
 - Guard the Isle's Heart card reference: https://github.com/spirit-island/spirit-island-mod/blob/2655f6104cf1d267f4dbf4b182912fbeba1a565e/objects/04397d/object.json
 - Official Northeast Ocean/East1 clarification: https://querki.net/raw/darker/spirit-island-faq/.7w4ghyo
+
+- Official Bringer cumulative/real-damage clarification: https://querki.net/raw/darker/spirit-island-faq/To%2BDream%2Ba%2BThousand%2BDeaths%2B%28Bringer%2Bof%2BDreams%2Band%2BNightmares%29
