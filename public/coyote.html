@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="app-version" content="coyote-20261101">
 <title>コヨーテ | ボードゲームオンライン</title>
 <meta name="description" content="自分の数字だけが見えない、コヨーテのオンライン対戦。2〜10人で、時計回りに卓を囲もう。">
-<link rel="stylesheet" href="/theme.css"><script src="/theme.js"></script><link rel="stylesheet" href="/site-shell.css?v=20261101-logo"><link rel="stylesheet" href="/coyote.css?v=20261102-card-pool">
+<link rel="stylesheet" href="/theme.css"><script src="/theme.js"></script><link rel="stylesheet" href="/site-shell.css?v=20261101-logo"><link rel="stylesheet" href="/coyote.css?v=20261102-public-discards">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="ja_JP">
   <meta property="og:site_name" content="ボードゲームオンライン">
@@ -44,11 +44,12 @@
 <p class="fine">ゲームで使用する全カードと枚数です（山札の残り枚数ではありません）。</p>
 <ul class="card-pool-grid"><li class="card-pool-item"><div class="card-pool-face"><strong>1</strong><span>4枚</span></div></li><li class="card-pool-item"><div class="card-pool-face"><strong>2</strong><span>4枚</span></div></li><li class="card-pool-item"><div class="card-pool-face"><strong>3</strong><span>4枚</span></div></li><li class="card-pool-item"><div class="card-pool-face"><strong>4</strong><span>4枚</span></div></li><li class="card-pool-item"><div class="card-pool-face"><strong>5</strong><span>4枚</span></div></li><li class="card-pool-item"><div class="card-pool-face"><strong>10</strong><span>3枚</span></div></li><li class="card-pool-item"><div class="card-pool-face"><strong>15</strong><span>2枚</span></div></li><li class="card-pool-item"><div class="card-pool-face"><strong>20</strong><span>1枚</span></div></li><li class="card-pool-item"><div class="card-pool-face"><strong>0</strong><span>3枚</span></div></li><li class="card-pool-item is-negative"><div class="card-pool-face"><strong>−5</strong><span>2枚</span></div></li><li class="card-pool-item is-negative"><div class="card-pool-face"><strong>−10</strong><span>1枚</span></div></li><li class="card-pool-item is-special"><div class="card-pool-face"><strong>0 ↻</strong><span>1枚</span></div><p>夜：数字は0。答え合わせ後、全36枚を切り直す。</p></li><li class="card-pool-item is-special"><div class="card-pool-face"><strong>×2</strong><span>1枚</span></div><p>合計を最後に2倍にする。</p></li><li class="card-pool-item is-special"><div class="card-pool-face"><strong>MAX→0</strong><span>1枚</span></div><p>最大の正の数字カード1枚を0にする。</p></li><li class="card-pool-item is-special"><div class="card-pool-face"><strong>？</strong><span>1枚</span></div><p>答え合わせで山札から1枚追加する。</p></li></ul>
 </section>
+<section class="discard-panel panel" aria-labelledby="discardTitle"><div class="section-title"><h2 id="discardTitle">公開の捨て札</h2><span id="discardCount" class="muted" aria-live="polite">0枚</span></div><div id="publicDiscards" class="discard-chips"><p class="fine">入室すると、この卓の公開された捨て札を表示します。</p></div><p id="discardNote" class="fine">カードの切り直しに合わせて更新されます。</p></section>
 </main>
 <dialog id="dialog" aria-labelledby="dialogTitle"><header><div><small id="dialogEyebrow">COYOTE</small><h2 id="dialogTitle"></h2></div><button id="close" aria-label="閉じる">×</button></header><div id="dialogBody"></div><div id="dialogActions" class="dialog-actions"></div><p id="dialogError" class="error" role="alert"></p></dialog>
 <div id="mobileDock" class="mobile-dock" hidden aria-label="あなたの手番の操作"></div>
 <p id="toast" role="status"></p>
-<script src="/coyote.js?v=20261101"></script>
+<script src="/coyote.js?v=20261102-public-discards"></script>
 </body></html>
 
 

@@ -69,6 +69,7 @@ function cardMarkup(p){
  return `<button class="seat-card ${typeof p.card.value==='string'?'special':''} ${p.card.kind==='negative'?'negative':''}" data-card-player="${p.id}" aria-label="席${p.seat} ${esc(p.name)}のカード ${esc(p.card.label)}"><strong>${esc(p.card.label)}</strong><small>${p.card.kind==='number'||p.card.kind==='negative'?'NUMBER':({night:'夜',double:'2倍',fox:'最大1枚を0',cave:'追加で1枚'})[p.card.kind]}</small></button>`;
 }
 function render(){
+ renderPublicDiscards();
  const me=game.me?.id,host=me===game.hostId,alive=game.players.filter(p=>p.life>0),lobby=game.phase==='lobby',revealed=['reveal','finished'].includes(game.phase);
  if(['bid','challenge'].includes(modalKind)&&!mine()||modalKind==='result'&&!revealed)closeModal();
  $('roomCode').textContent='ROOM '+code;$('roundLabel').textContent=lobby?'着席中':'ROUND '+game.round;
@@ -125,3 +126,12 @@ $('invite').onclick=async()=>{const u=location.origin+'/coyote.html?room='+code;
 $('sound').onclick=()=>{soundOn=!soundOn;localStorage.setItem('cy-sound',soundOn?'1':'0');initAudio();showSound();if(soundOn)chime();};showSound();
 $('name').value=localStorage.getItem('cy-name')||'';$('code').value=new URL(location.href).searchParams.get('room')||'';
 window.addEventListener('resize',layoutSeats);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
+
+function renderPublicDiscards(){
+ const cards=game?.discard||[];
+ const counts=new Map();
+ for(const card of cards){const label=String(card.label);counts.set(label,(counts.get(label)||0)+1);}
+ $('discardCount').textContent=cards.length+'枚';
+ $('publicDiscards').innerHTML=counts.size?[...counts].map(([label,count])=>'<span><b>'+esc(label)+'</b> × '+count+'枚</span>').join(''):'<p class="fine">'+(game?'捨て札はまだありません。':'入室すると、この卓の公開された捨て札を表示します。')+'</p>';
+ $('discardNote').textContent=game?'山札 '+game.deckCount+'枚 · 切り直し後は捨て札表示もリセットされます。':'カードの切り直しに合わせて更新されます。';
+}
