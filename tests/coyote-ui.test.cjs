@@ -21,7 +21,7 @@ async function click(c,id){assert(c.el(id),'missing '+id);await c.el(id).onclick
  // Verify available seat spacing across narrow phones and desktop for every supported count.
  const original=host.run('game.players');for(const width of [320,390,760,1000,1280])for(let n=2;n<=10;n++){
   host.c.window.innerWidth=width;host.c.seatSample=original.slice(0,n);host.run('game.players=seatSample;render()');const w=width<=980?Math.min(width-24,560):Math.min(width-64,1156),h=parseFloat(host.el('table').style.getPropertyValue('--mobile-height')),boxes=[...host.document.querySelectorAll('.seat')].map(el=>({x:parseFloat(el.style.left)*w/100,y:parseFloat(el.style.top)*h/100}));
-  for(let i=0;i<boxes.length;i++)for(let j=i+1;j<boxes.length;j++){const dx=Math.abs(boxes[i].x-boxes[j].x),dy=Math.abs(boxes[i].y-boxes[j].y);assert(dx>=(width<=980?110:142)||dy>=(width<=980?150:190),`overlap at ${width}px, ${n} seats: ${i}/${j} dx ${dx} dy ${dy}`);}
+  for(let i=0;i<boxes.length;i++)for(let j=i+1;j<boxes.length;j++){const dx=Math.abs(boxes[i].x-boxes[j].x),dy=Math.abs(boxes[i].y-boxes[j].y);assert(dx>=(width<=980?110:142)||dy>=(width<=980?154:192),`overlap at ${width}px, ${n} seats: ${i}/${j} dx ${dx} dy ${dy}`);}
  }
  host.c.seatSample=original;host.run('game.players=seatSample;render()');await click(host,'rules');assert.match(host.el('dialogBody').textContent,/最大の正の数字/);assert.match(host.el('dialogBody').textContent,/仮面カードなし/);
  console.log('PASS DOM/API ten-player create/join/start, fixed clockwise seating, private self-card, bid/challenge modals, reveal/readiness and spectator filtering');
