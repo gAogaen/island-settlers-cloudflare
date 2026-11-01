@@ -95,3 +95,9 @@ html[data-theme][data-game] body:has(.site-entry:not([hidden])){background:var(-
 /* Keep entrance alignment stable across pages with and without a vertical scrollbar. */
 html:has(.site-entry:not([hidden])){scrollbar-gutter:stable}
 html[data-theme][data-game] body:has(.site-entry:not([hidden])){margin:0;min-width:0}
+
+
+/* Original transparent brand artwork: keep its alpha channel and full aspect ratio. */
+html[data-theme][data-game] body .site-header.site-header .site-brand .site-brand-logo{display:block;flex:none;box-sizing:content-box;width:132px;height:88px;max-width:none;max-height:none;object-fit:contain;margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;filter:none}
+html[data-theme][data-game] body header.site-header.site-header:has(.site-brand-logo){padding-top:6px;padding-bottom:6px;min-height:100px}
+@media(max-width:650px){html[data-theme][data-game] body .site-header.site-header .site-brand .site-brand-logo{width:105px;height:70px}html[data-theme][data-game] body header.site-header.site-header:has(.site-brand-logo){padding-top:6px;padding-bottom:10px;gap:6px;min-height:0}}
