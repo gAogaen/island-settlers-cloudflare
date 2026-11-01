@@ -214,11 +214,8 @@ function syncSoundButton() {
   button.setAttribute("aria-pressed",String(soundOn));
 }
 
-document.querySelectorAll(".tab").forEach(tab => tab.addEventListener("click", () => {
-  document.querySelectorAll(".tab").forEach(x => x.classList.toggle("active", x === tab)); const create = tab.dataset.tab === "create"; $("createFields").hidden = !create; $("joinFields").hidden = create; setError("");
-}));
 $("playerName").value = localStorage.getItem("island-last-name") || "";
-$("playerName").addEventListener("keydown", e => { if (e.key === "Enter") (document.querySelector(".tab.active").dataset.tab === "create" ? $("createRoom") : $("joinRoom")).click(); });
+$("playerName").addEventListener("keydown", e => { if (e.key === "Enter") ($("roomCode").value.trim() ? $("joinRoom") : $("createRoom")).click(); });
 $("createRoom").addEventListener("click", async () => {
   setError(""); try { const data = await api("/api/rooms", { method: "POST", body: JSON.stringify({ playerName: rememberName() }) }); enterRoom(data.game.code, data.playerId); }
   catch (e) { setError(e.message); }
@@ -950,12 +947,12 @@ if (requestedCode) {
   if(params.get("spectate")==="1") enterRoom(requestedCode,null,true);
   else
   if (remembered) enterRoom(requestedCode, remembered);
-  else { document.querySelector('[data-tab="join"]').click(); $("roomCode").value = requestedCode; }
+  else { $("roomCode").value = requestedCode; }
 }
 
 function showCatanLobby() {$("gamePicker").hidden=true;$("homeView").hidden=false;history.replaceState({},"","/?game=catan");}
 $("chooseCatan").onclick=showCatanLobby;
-$("backToGames").onclick=()=>{$("homeView").hidden=true;$("gamePicker").hidden=false;history.replaceState({},"","/");};
+$("backToGames").onclick=event=>{event?.preventDefault?.();$("homeView").hidden=true;$("gamePicker").hidden=false;history.replaceState({},"","/");};
 if(!requestedCode&&params.get("game")==="catan")showCatanLobby();
 if(requestedCode){$("gamePicker").hidden=true;if(!roomCode)$("homeView").hidden=false;}
 
@@ -989,3 +986,4 @@ $("closeDevelopmentScene").onclick=closeDevelopmentScene;
 
 function mountDevelopmentScene(){if(!developmentSceneActive)return;const el=$("developmentScene"),modal=document.querySelector("dialog[open]"),parent=modal||document.body;if(el.showPopover&&el.parentElement!==parent){try{el.hidePopover();}catch{}parent.append(el);}el.hidden=false;try{el.showPopover?.();}catch{}}
 document.querySelectorAll("dialog").forEach(d=>d.addEventListener("close",()=>{if(developmentSceneActive)mountDevelopmentScene();}));
+

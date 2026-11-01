@@ -1,22 +1,22 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja" data-game="coyote">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="app-version" content="coyote-20261101">
 <title>コヨーテ | ボードゲームオンライン</title>
 <meta name="description" content="自分の数字だけが見えない、コヨーテのオンライン対戦。2〜10人で、時計回りに卓を囲もう。">
-<link rel="stylesheet" href="/theme.css"><script src="/theme.js"></script><link rel="stylesheet" href="/site-shell.css"><link rel="stylesheet" href="/coyote.css">
+<link rel="stylesheet" href="/theme.css"><script src="/theme.js"></script><link rel="stylesheet" href="/site-shell.css?v=20261101-entry"><link rel="stylesheet" href="/coyote.css">
 </head>
 <body>
-<header class="site-header"><a class="site-brand" href="/"><span class="site-brand-mark">⚄</span><span class="site-brand-copy"><b>ボードゲームオンライン</b><small>ONLINE BOARD GAMES</small></span></a><nav class="site-tools"><button id="rules">遊び方</button><button id="guide">次にすること</button><button id="sound" aria-pressed="false">音：オフ</button><span id="connection" role="status">入口</span></nav></header>
-<main>
-<section id="intro" class="intro"><div><small>GAME 08 · COYOTE</small><h1>コヨーテ<span class="moon" aria-hidden="true">☾</span></h1><p>自分の数字だけが、見えない。<br>同じ卓を囲んで、時計回りに読み合おう。</p></div><div class="intro-cards" aria-hidden="true"><span>10</span><span class="back">?</span><span>×2</span></div></section>
-<section id="entry" class="entry panel"><div><small>TAKE A SEAT</small><h2>みんなで卓を囲もう</h2><p>2〜10人 · 36枚の基本ルール<br>招待URLから同じ部屋へ参加できます。</p></div><div><label>あなたの名前<input id="name" maxlength="16" autocomplete="nickname" placeholder="名前を入力"></label><button id="create" class="primary wide">新しい部屋を作る</button><div class="join-row"><label>部屋コード<input id="code" maxlength="6" autocomplete="off" placeholder="6桁のコード"></label><button id="join">参加・復帰</button></div><button id="watch" class="text-button">観戦する →</button><p class="muted fine">同じ端末から復帰できます。観戦中のカードは答え合わせまで伏せられます。</p></div></section>
+<header class="site-header"><a aria-label="ボードゲームオンラインのゲーム一覧" class="site-brand" href="/"><span class="site-brand-mark" aria-hidden="true">⚄</span><span class="site-brand-copy"><b>ボードゲームオンライン</b><small>BOARD GAME ONLINE</small></span></a><nav aria-label="表示とゲームのメニュー" class="site-tools"><button class="site-tools-rules" id="rules">遊び方</button><button class="site-tools-guide" id="guide">次にすること</button><button class="site-tools-sound" id="sound" aria-pressed="false">音：オフ</button><span class="site-tools-connection" id="connection" role="status">入口</span></nav></header>
+<main id="entry" class="site-entry"><a class="site-back" href="/">← ゲーム一覧に戻る</a><div class="site-entry-layout"><section class="site-entry-hero" id="intro"><small class="site-entry-kicker">GAME 08 · COYOTE</small><h1>コヨーテ</h1><p class="site-entry-description">自分の数字だけが、見えない。同じ卓を囲んで、時計回りに読み合おう。</p><div class="site-entry-meta"><span>2〜10人</span><span>推理・ブラフ</span><span>観戦対応</span></div><div class="site-entry-art" data-entry-art="coyote" aria-hidden="true"><div class="site-entry-number-cards"><span>10</span><span>?</span><span>×2</span></div></div></section><section class="site-entry-panel"><h2>テーブルに参加</h2><label>あなたの名前<input id="name" maxlength="16" autocomplete="nickname" placeholder="名前を入力"></label><button id="create" class="primary wide">新しい部屋を作る <span aria-hidden="true">→</span></button><div class="site-entry-divider">招待された方はこちら</div><label>部屋コード<input spellcheck="false" autocapitalize="characters" id="code" maxlength="6" autocomplete="off" placeholder="例：ABC123"></label><button id="join">参加・復帰</button><button id="watch" class="text-button">観戦する</button><p class="muted fine">同じ端末から復帰できます。観戦中のカードは答え合わせまで伏せられます。</p></section></div></main><main class="site-game-shell">
+
+
 <section id="room" hidden>
 <div class="room-head"><div><small>COYOTE · 基本ルール</small><h1>コヨーテ <span id="roundLabel"></span></h1></div><div class="room-tools"><b id="roomCode"></b><button id="invite">招待URL</button><button id="deckInfo">カード構成・捨て札</button></div></div>
 <div id="lobby" class="panel lobby"><div><h2>席順を確認して、対戦スタート</h2><p>参加順に着席。開始後は脱落しても席の位置を保ちます。</p></div><div class="lobby-controls"><label>開始ライフ<select id="life"><option value="3">3（基本）</option><option value="4">4（長めに遊ぶ）</option></select></label><button id="shuffle">席順をシャッフル</button><button id="start" class="primary">対戦を始める</button></div></div>
 <section class="turn-panel panel" aria-live="polite"><div><small id="turnTag"></small><h2 id="status"></h2><p id="instruction"></p></div><div id="actions" class="actions"></div></section>
 <div class="table-top"><p><span class="clockwise" aria-hidden="true">↻</span> <b>時計回り</b><span id="tableHint">あなたの席が手前です</span></p><span id="remaining"></span></div>
-<div class="table-scroll"><section id="table" class="table" aria-label="時計回りの対戦テーブル"><div class="felt" aria-hidden="true"></div><svg id="turnArrow" class="turn-arrow" aria-hidden="true"></svg><div id="seats"></div><div id="tableCenter" class="table-center"></div></section></div>
+<div class="table-scroll"><section id="table" class="table" aria-label="時計回りの対戦テーブル"><div class="felt" aria-hidden="true"></div><svg id="turnArrow" class="turn-arrow" aria-hidden="true" /><div id="seats"></div><div id="tableCenter" class="table-center"></div></section></div>
 <div id="neighbors" class="neighbors"></div>
 
 <section class="order-panel panel"><div class="section-title"><h2>席順と手番</h2><small>数字は席番号。脱落した席は飛ばします。</small></div><ol id="order" class="order"></ol></section>
@@ -28,3 +28,5 @@
 <p id="toast" role="status"></p>
 <script src="/coyote.js?v=20261101"></script>
 </body></html>
+
+

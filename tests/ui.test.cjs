@@ -39,3 +39,11 @@ ctx.discardGame.phase='discard';ctx.discardGame.discardPending={[ctx.discardGame
   await elements.get('copyInvite').listeners.click();assert.equal(fallback,copied);
   console.log('PASS Catan invite URL contains only the room and remains copyable when clipboard is blocked');
 })().catch(error=>{console.error(error);process.exitCode=1;});
+
+// The Catan entrance uses the same direct back control as the other seven games.
+{
+ const paths=[],previousHistory=ctx.history.replaceState;ctx.history.replaceState=(_s,_t,url)=>paths.push(url);
+ elements.get('chooseCatan').click();assert.equal(elements.get('gamePicker').hidden,true);assert.equal(elements.get('homeView').hidden,false);assert.equal(paths.at(-1),'/?game=catan');
+ elements.get('backToGames').click();assert.equal(elements.get('gamePicker').hidden,false);assert.equal(elements.get('homeView').hidden,true);assert.equal(paths.at(-1),'/');ctx.history.replaceState=previousHistory;
+ console.log('PASS Catan game selection and unified back-to-list navigation');
+}
