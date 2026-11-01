@@ -101,3 +101,27 @@ html[data-theme][data-game] body:has(.site-entry:not([hidden])){margin:0;min-wid
 html[data-theme][data-game] body .site-header.site-header .site-brand .site-brand-logo{display:block;flex:none;box-sizing:content-box;width:132px;height:88px;max-width:none;max-height:none;object-fit:contain;margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;filter:none}
 html[data-theme][data-game] body header.site-header.site-header:has(.site-brand-logo){padding-top:6px;padding-bottom:6px;min-height:100px}
 @media(max-width:650px){html[data-theme][data-game] body .site-header.site-header .site-brand .site-brand-logo{width:105px;height:70px}html[data-theme][data-game] body header.site-header.site-header:has(.site-brand-logo){padding-top:6px;padding-bottom:10px;gap:6px;min-height:0}}
+
+
+/* A single compact header row: secondary game actions move into a mobile popover. */
+html[data-theme][data-game] body header.site-header.site-header:has(.site-brand-logo){min-height:84px;padding-top:6px;padding-bottom:6px;align-items:center}
+html[data-theme][data-game] body .site-header.site-header .site-brand .site-brand-logo{width:108px;height:72px}
+html[data-theme][data-game] body .site-header.site-header .site-header-overflow{position:relative;flex:none;order:60}
+html[data-theme][data-game] body .site-header.site-header .site-header-more{box-sizing:border-box;display:grid;place-items:center;width:44px;height:44px;min-width:44px;padding:0;border:1px solid var(--shell-line);border-radius:10px;background:var(--shell-panel);color:var(--shell-ink);font:750 24px/1 system-ui,sans-serif;cursor:pointer}
+html[data-theme][data-game] body .site-header.site-header .site-header-menu{position:absolute;right:0;top:calc(100% + 8px);z-index:80;box-sizing:border-box;display:flex;flex-direction:column;gap:4px;width:220px;max-width:calc(100vw - 24px);padding:8px;border:1px solid var(--shell-line);border-radius:12px;background:var(--shell-panel);color:var(--shell-ink);box-shadow:0 10px 32px #142e3326}
+html[data-theme][data-game] body .site-header.site-header .site-header-menu>button{box-sizing:border-box;display:block;width:100%;min-height:44px;margin:0;padding:10px 12px;border:0;border-radius:8px;background:var(--shell-panel);color:var(--shell-ink);font:650 13px/1.6 system-ui,sans-serif;text-align:left;cursor:pointer}
+html[data-theme][data-game] body .site-header.site-header .site-header-menu>button:hover{background:var(--shell-bg)}
+@media(max-width:650px){
+ html[data-theme][data-game] body header.site-header.site-header:has(.site-brand-logo){min-height:76px;padding:6px 12px;gap:10px;flex-wrap:nowrap;align-items:center;overflow:visible}
+ html[data-theme][data-game] body .site-header.site-header .site-brand{flex:0 0 auto;min-width:0}
+ html[data-theme][data-game] body .site-header.site-header .site-brand .site-brand-logo{width:96px;height:64px}
+ html[data-theme][data-game] body .site-header.site-header .site-tools{display:flex;flex:0 0 auto;flex-basis:auto;width:auto;max-width:none;flex-wrap:nowrap;align-items:center;justify-content:flex-end;gap:6px;margin-left:auto}
+ html[data-theme][data-game] body .site-header.site-header .site-tools>button{box-sizing:border-box;display:grid;place-items:center;flex:none;width:44px;height:44px;min-height:44px;min-width:44px;padding:0;margin:0;line-height:1}
+ html[data-theme][data-game] body .site-header.site-header .site-tools>button.theme-toggle{padding:10px}
+ html[data-theme][data-game] body .site-header.site-header .site-tools>button.site-tools-sound{position:relative;font-size:0}
+ html[data-theme][data-game] body .site-header.site-header .site-tools>button.site-tools-sound:before{content:'♫';font:600 21px/1 system-ui,sans-serif;color:var(--shell-ink)}
+ html[data-theme][data-game] body .site-header.site-header .site-tools>button.site-tools-sound[data-sound-state=off]:after{content:'';position:absolute;left:10px;top:21px;width:23px;height:2px;background:var(--shell-ink);transform:rotate(-45deg)}
+ html[data-theme][data-game] body .site-header.site-header .site-tools>.online-dot,html[data-theme][data-game] body .site-header.site-header .site-tools>.site-tools-connection{display:none}
+}
+html[data-theme][data-game] body .site-header.site-header :is(.site-header-overflow,.site-header-menu)[hidden]{display:none!important}
+@media(max-width:650px){html[data-theme][data-game] body .site-header.site-header .site-tools>.site-tools-rules,html[data-theme][data-game] body .site-header.site-header .site-tools>.site-tools-guide{display:none}}
