@@ -92,3 +92,6 @@ body:has(.site-entry:not([hidden])) .site-game-shell{display:none}
 @media(max-width:650px){html[data-theme][data-game] body :is(#entry,#homeView).site-entry{padding:22px 16px 40px}html[data-theme][data-game] body .site-entry .site-entry-panel{padding:24px 20px;border-radius:16px}html[data-theme][data-game] body .site-entry .site-entry-hero{padding:22px 20px 14px;border-radius:16px}html[data-theme][data-game] body .site-entry .site-entry-hero h1{font-size:29px}html[data-theme][data-game] body .site-entry .site-back{margin-bottom:20px}html[data-theme][data-game] body .site-header.site-header :is(#connection,#connectionLabel){display:none}html[data-theme][data-game] body .site-header.site-header .site-tools{justify-content:flex-end}}
 
 html[data-theme][data-game] body:has(.site-entry:not([hidden])){background:var(--shell-bg);color:var(--shell-ink)}html[data-theme][data-game] body:has(.site-entry:not([hidden])):before{opacity:0}
+/* Keep entrance alignment stable across pages with and without a vertical scrollbar. */
+html:has(.site-entry:not([hidden])){scrollbar-gutter:stable}
+html[data-theme][data-game] body:has(.site-entry:not([hidden])){margin:0;min-width:0}
