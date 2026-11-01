@@ -15,6 +15,13 @@ export default {
     const url = new URL(request.url);
     if (!url.pathname.startsWith("/api/")) return env.ASSETS.fetch(request);
     try {
+      const cy=url.pathname.match(/^\/api\/coyote(?:\/([A-Z0-9]{6})(?:\/(join|action))?)?$/i);
+      if(cy){
+        const code=cy[1]?.toUpperCase()||randomCode(),route=cy[1]?(cy[2]||'state'):'create';
+        if((route==='state'&&request.method!=='GET')||(route!=='state'&&request.method!=='POST'))return json({error:'不正な操作です。'},405);
+        const room=env.ROOMS.get(env.ROOMS.idFromName('coyote:'+code));
+        return room.fetch('https://room/cy/'+route+url.search,request.method==='POST'?{method:'POST',body:JSON.stringify({...await request.json(),code})}:undefined);
+      }
       const bh=url.pathname.match(/^\/api\/bahamut(?:\/([A-Z0-9]{6})(?:\/(join|action))?)?$/i);
       if(bh){const code=bh[1]?.toUpperCase()||randomCode(),route=bh[1]?(bh[2]||'state'):'create';if((route==='state'&&request.method!=='GET')||(route!=='state'&&request.method!=='POST'))return json({error:'不正な操作です。'},405);const room=env.ROOMS.get(env.ROOMS.idFromName('bahamut:'+code));return room.fetch('https://room/bh/'+route+url.search,request.method==='POST'?{method:'POST',body:JSON.stringify({...await request.json(),code})}:undefined);}
       const df=url.pathname.match(/^\/api\/daifugo(?:\/([A-Z0-9]{6})(?:\/(join|action))?)?$/i);
@@ -66,6 +73,7 @@ export class GameRoom {
   }
 
   async handleRequest(request) {
+    if(new URL(request.url).pathname.startsWith('/cy/'))return handleCoyote(this.storage,request);
     if(new URL(request.url).pathname.startsWith("/bh/"))return handleBahamut(this.storage,request);
     if(new URL(request.url).pathname.startsWith("/df/"))return handleDaifugo(this.storage,request);
     if(new URL(request.url).pathname.startsWith("/rd/"))return handleReddoor(this.storage,request);
@@ -2467,3 +2475,103 @@ function bhAction(g,p,a){const current=g.players[g.turn];if(a.type==='start'){if
  if(g.phase!=='play')throw Error('処理中です。');if(a.type==='end'){if(p.hand.length>5)g.phase='discard';else bhBeginTurn(g);return;}if(a.type!=='play'||!g.remaining||!p.hand.includes(a.card)||a.card===0)throw Error('プレイできるカードを選んでください。');p.hand.splice(p.hand.indexOf(a.card),1);g.remaining--;g.pending={card:a.card};bhLog(g,`${p.name}が${BH_NAMES[a.card]}をプレイ。`);if(g.players[1-g.turn].counters)g.phase='counter';else bhResolve(g);}
 function bhView(g,p){const me=g.players.find(x=>x.id===p?.id),actor=g.players[g.turn],privateChoice=me?.id===actor?.id&&g.phase==='choice';return{code:g.code,hostId:g.hostId,revision:g.revision,matchId:g.matchId,phase:g.phase,turnId:actor?.id,remaining:g.remaining,round:g.round,winner:g.winner,stock:g.stock,deckCount:g.deck?.length||0,discard:g.discard||[],pending:g.pending?{card:g.pending.card,discardCount:privateChoice?g.pending.discardCount:undefined}:null,attacks:g.phase==='attack'?g.attacks:[],options:privateChoice?bhOptions(g,me):[],players:g.players.map(x=>({id:x.id,name:x.name,life:x.life,counters:x.counters,field:x.field,handCount:x.hand.length})),me:me?{id:me.id,hand:me.hand}:null,log:g.log,catalog:BH_NAMES.map((name,id)=>({id,name,text:BH_TEXT[id]}))};}
 async function handleBahamut(storage,request){const u=new URL(request.url),route=u.pathname.split('/').pop();try{let g=await storage.get('bahamut');const a=request.method==='POST'?await request.json():{};if(route==='create'){if(g)throw Error('部屋コードが重複しました。');const p=bhPlayer(a.name);g={code:a.code,hostId:p.id,players:[p],phase:'lobby',revision:1,log:[]};await storage.put('bahamut',g);return json({game:bhView(g,p),token:p.token});}if(!g)throw Error('部屋が見つかりません。');if(route==='join'){const name=cleanName(a.name),old=g.players.find(p=>p.name===name);if(old){if(old.token!==a.token)throw Error('同名の参加者がいます。保存済みの端末から復帰してください。');return json({game:bhView(g,old),token:old.token});}if(g.phase!=='lobby'||g.players.length>=2)throw Error('参加できる空きがありません。');const p=bhPlayer(name);g.players.push(p);g.revision++;await storage.put('bahamut',g);return json({game:bhView(g,p),token:p.token});}const token=a.token||u.searchParams.get('token'),p=g.players.find(p=>p.token===token);if(route==='state'&&request.method==='GET'){if(!p&&u.searchParams.get('spectate')!=='1')throw Error('参加情報を確認してください。');return json({game:bhView(g,p)});}if(route==='action'&&p){g=structuredClone(g);const actor=g.players.find(x=>x.id===p.id);bhAction(g,actor,a);g.revision++;await storage.put('bahamut',g);return json({game:bhView(g,actor)});}throw Error('操作できません。');}catch(e){return json({error:e.message},400);}}
+
+// Coyote basic rules: 36 cards, fixed clockwise seats, three lives, no mask variants.
+const CY_VALUES=[...Array(4).fill(1),...Array(4).fill(2),...Array(4).fill(3),...Array(4).fill(4),...Array(4).fill(5),10,10,10,15,15,20,0,0,0,-5,-5,-10,'night','double','fox','cave'];
+function cyCard(id){const v=CY_VALUES[id];return {value:v,label:typeof v==='number'?String(v):({night:'0 ↻',double:'×2',fox:'MAX→0',cave:'？'})[v],kind:typeof v==='number'?(v<0?'negative':'number'):v};}
+function cyShuffle(a){for(let i=a.length-1;i>0;i--){const r=new Uint32Array(1);crypto.getRandomValues(r);const j=r[0]%(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;}
+function cyLog(g,s){g.log.unshift(s);g.log=g.log.slice(0,80);}
+function cyPlayer(name){name=cleanName(name);if(!name)throw Error('名前を入力してください。');return{id:crypto.randomUUID(),token:crypto.randomUUID(),name,life:3,card:null,lastBid:null};}
+function cyAlive(g){return g.players.filter(p=>p.life>0);}
+function cyNext(g,id){const start=g.players.findIndex(p=>p.id===id);for(let n=1;n<=g.players.length;n++){const p=g.players[(start+n)%g.players.length];if(p.life>0)return p.id;}return null;}
+function cyDraw(g){if(!g.deck.length){g.deck=cyShuffle(g.discard.splice(0));cyLog(g,'山札が尽きたため、捨て札を切り直しました。');}if(!g.deck.length)throw Error('山札にカードがありません。');return g.deck.pop();}
+function cyRound(g,starter){
+  // Gather the full previous round before rebuilding; never mix face-up current cards into a mid-round draw.
+  if(g.round>0){for(const p of g.players){if(p.card!==null)g.discard.push(p.card);p.card=null;}
+    g.discard.push(...(g.revealDraws||[]));
+    if(g.result?.reshuffle||g.deck.length<cyAlive(g).length){g.deck=cyShuffle([...g.deck,...g.discard]);g.discard=[];cyLog(g,'すべてのカードを切り直しました。');}}
+  g.round++;g.roundId=crypto.randomUUID();g.phase='bidding';g.bid=null;g.bidderId=null;g.bids=[];g.ready=[];g.revealDraws=[];
+  g.players.forEach(p=>{p.lastBid=null;if(p.life>0)p.card=cyDraw(g);});g.turnId=starter;g.result=null;
+  cyLog(g,`第${g.round}ラウンド。席${g.players.findIndex(p=>p.id===starter)+1}から時計回りです。`);
+}
+function cyStart(g){
+  if(g.players.length<2)throw Error('2人以上そろってから開始してください。');
+  g.matchId=crypto.randomUUID();g.round=0;g.deck=cyShuffle(CY_VALUES.map((_,i)=>i));g.discard=[];g.revealDraws=[];g.history=[];g.winner=null;
+  g.players.forEach(p=>{p.life=g.startingLife;p.card=null;});
+  const starter=g.players[cyShuffle(g.players.map((_,i)=>i))[0]].id;cyRound(g,starter);
+}
+function cyCalculate(g){
+  const ids=cyAlive(g).map(p=>p.card),drawn=[];
+  if(ids.some(id=>CY_VALUES[id]==='cave')){const id=cyDraw(g);ids.push(id);drawn.push(id);}
+  const numbers=ids.map(id=>CY_VALUES[id]).filter(v=>typeof v==='number');
+  const raw=numbers.reduce((a,b)=>a+b,0),removed=ids.some(id=>CY_VALUES[id]==='fox')?Math.max(0,...numbers):0;
+  const multiplier=ids.some(id=>CY_VALUES[id]==='double')?2:1,total=(raw-removed)*multiplier;
+  return{raw,removed,multiplier,total,drawn,reshuffle:ids.some(id=>CY_VALUES[id]==='night')};
+}
+function cyChallenge(g,p){
+  if(g.bid===null)throw Error('最初の数字が宣言されるまでコヨーテはできません。');
+  const calc=cyCalculate(g),success=g.bid>calc.total,loserId=success?g.bidderId:p.id,winnerId=success?p.id:g.bidderId;
+  const cards=cyAlive(g).map(x=>({playerId:x.id,card:cyCard(x.card)}));
+  const loser=g.players.find(x=>x.id===loserId);loser.life--;g.revealDraws=calc.drawn;
+  g.result={round:g.round,challengerId:p.id,bidderId:g.bidderId,bid:g.bid,success,loserId,winnerId,cards,...calc,drawn:calc.drawn.map(cyCard),eliminated:loser.life===0,nextStarterId:loser.life>0?loser.id:winnerId};
+  g.history.unshift(structuredClone(g.result));g.history=g.history.slice(0,20);g.ready=[];
+  const alive=cyAlive(g);g.phase=alive.length===1?'finished':'reveal';g.winner=alive.length===1?alive[0].id:null;g.turnId=null;
+  cyLog(g,`${p.name}がコヨーテ！ 宣言${g.bid}／合計${calc.total}。${loser.name}がライフを1失いました${loser.life===0?'（脱落）':''}。`);
+}
+function cyAction(g,p,a){
+  if(a.revision!==g.revision&&!(a.type==='ready'&&Number.isSafeInteger(a.revision)&&a.revision>=1&&a.revision<g.revision))throw Error('状態が更新されました。最新の画面でもう一度操作してください。');
+  if(a.type==='start'){if(p.id!==g.hostId||!['lobby','finished'].includes(g.phase))throw Error('ホストだけが開始できます。');cyStart(g);return;}
+  if(a.type==='settings'){if(p.id!==g.hostId||g.phase!=='lobby'||![3,4].includes(a.life))throw Error('ロビーのホストだけがライフを設定できます。');g.startingLife=a.life;g.players.forEach(x=>x.life=a.life);return;}
+  if(a.type==='shuffleSeats'){if(p.id!==g.hostId||g.phase!=='lobby')throw Error('開始前にホストが操作してください。');cyShuffle(g.players);cyLog(g,'席順をシャッフルしました。開始後は席を固定します。');return;}
+  if(a.matchId!==g.matchId||a.roundId!==g.roundId)throw Error('ラウンドが変わりました。画面を確認してください。');
+  if(a.type==='ready'){
+    if(g.phase!=='reveal'||p.life<=0)throw Error('次のラウンドの確認は参加中のプレイヤーが行います。');
+    if(!g.ready.includes(p.id))g.ready.push(p.id);
+    if(cyAlive(g).every(x=>g.ready.includes(x.id)))cyRound(g,g.result.nextStarterId);return;
+  }
+  if(a.type==='next'){
+    if(g.phase!=='reveal'||p.id!==g.hostId||a.force!==true)throw Error('ホストが確認後に進めてください。');
+    cyRound(g,g.result.nextStarterId);return;
+  }
+  if(g.phase!=='bidding'||g.turnId!==p.id||p.life<=0)throw Error('あなたの手番ではありません。');
+  if(a.type==='bid'){
+    if(!Number.isSafeInteger(a.value)||a.value<1||(g.bid!==null&&a.value<=g.bid))throw Error('直前より大きい、1以上の整数を宣言してください。');
+    g.bid=a.value;g.bidderId=p.id;p.lastBid=a.value;g.bids.push({playerId:p.id,value:a.value});g.bids=g.bids.slice(-100);g.turnId=cyNext(g,p.id);
+    cyLog(g,`席${g.players.findIndex(x=>x.id===p.id)+1} ${p.name}：「${a.value}」`);return;
+  }
+  if(a.type==='challenge'){cyChallenge(g,p);return;}
+  throw Error('この操作はできません。');
+}
+function cyView(g,p){
+  const me=g.players.find(x=>x.id===p?.id),reveal=['reveal','finished'].includes(g.phase);
+  // A spectator has no assigned seat: hide every live card to prevent a second-tab self-card leak.
+  return{code:g.code,hostId:g.hostId,revision:g.revision,matchId:g.matchId,roundId:g.roundId,phase:g.phase,round:g.round||0,startingLife:g.startingLife,
+    turnId:g.turnId||null,nextId:g.turnId?cyNext(g,g.turnId):null,bid:g.bid??null,bidderId:g.bidderId||null,bids:g.bids||[],deckCount:g.deck?.length||0,
+    discard:(g.discard||[]).map(cyCard),ready:g.ready||[],result:g.result||null,history:g.history||[],winner:g.winner||null,me:me?{id:me.id}:null,
+    players:g.players.map((x,i)=>({id:x.id,name:x.name,seat:i+1,life:x.life,lastBid:x.lastBid,card:x.card!==null&&(reveal||me&&me.id!==x.id)?cyCard(x.card):null,hasCard:x.card!==null})),log:g.log};
+}
+async function handleCoyote(storage,request){
+  const u=new URL(request.url),route=u.pathname.split('/').pop();
+  try{
+    let g=await storage.get('coyote');const a=request.method==='POST'?await request.json():{};
+    if(route==='create'){
+      if(g)throw Error('この部屋コードは使用中です。');const p=cyPlayer(a.name);
+      g={code:a.code,hostId:p.id,players:[p],phase:'lobby',revision:1,startingLife:3,log:[]};cyLog(g,`${p.name}が卓を作りました。`);
+      await storage.put('coyote',g);return json({game:cyView(g,p),token:p.token});
+    }
+    if(!g)throw Error('部屋が見つかりません。');
+    if(route==='join'){
+      const old=g.players.find(p=>p.token===a.token);if(old)return json({game:cyView(g,old),token:old.token});
+      if(g.players.some(p=>p.name===cleanName(a.name)))throw Error('同じ名前の参加者がいます。保存済みの端末から復帰してください。');
+      if(g.phase!=='lobby'||g.players.length>=10)throw Error('参加できる空きがありません。');
+      g=structuredClone(g);const p=cyPlayer(a.name);p.life=g.startingLife;g.players.push(p);g.revision++;cyLog(g,`${p.name}が席${g.players.length}に座りました。`);
+      await storage.put('coyote',g);return json({game:cyView(g,p),token:p.token});
+    }
+    const token=a.token||u.searchParams.get('token'),p=g.players.find(p=>p.token===token);
+    if(route==='state'&&request.method==='GET'){
+      if(!p&&u.searchParams.get('spectate')!=='1')throw Error('部屋に参加するか観戦してください。');return json({game:cyView(g,p)});
+    }
+    if(route==='action'&&p){g=structuredClone(g);const actor=g.players.find(x=>x.id===p.id);cyAction(g,actor,a);g.revision++;await storage.put('coyote',g);return json({game:cyView(g,actor)});}
+    throw Error('操作できません。');
+  }catch(e){return json({error:e.message},400);}
+}
