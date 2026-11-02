@@ -7,3 +7,21 @@ html[data-theme=dark][data-game=coyote] .seat{background:transparent;color:var(-
 .card-pool{margin-top:24px}.card-pool>.fine{margin:8px 0 18px}.card-pool-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:12px}.card-pool-item{min-width:0}.card-pool-face{min-height:100px;border:2px solid #c3a06d;border-radius:12px;background:linear-gradient(145deg,#fff7e7,#edcda0);color:#6b3a22;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 6px;gap:4px}.card-pool-face strong{font-size:28px;line-height:1.2;white-space:nowrap}.card-pool-face span{font-size:13px;font-weight:700}.card-pool-item.is-negative .card-pool-face{background:linear-gradient(145deg,#d6e5ee,#a8c5d0);color:#244a58;border-color:#94afb6}.card-pool-item.is-special .card-pool-face strong{font-size:22px}.card-pool-item p{font-size:12px;color:var(--cy-muted);line-height:1.6;margin:8px 0 0;overflow-wrap:anywhere}@media(max-width:600px){.card-pool-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.card-pool-face{min-height:88px}.card-pool-item.is-special .card-pool-face strong{font-size:18px}}
 
 .discard-panel{margin-top:20px}.discard-panel .discard-chips{margin-top:16px;gap:10px}.discard-panel .discard-chips span{padding:9px 13px;font-size:14px;background:var(--cy-bg)}.discard-panel>.fine{margin:14px 0 0}
+
+.coyote-reference{min-width:0}
+@media(min-width:1280px){
+ html[data-game=coyote] main.site-game-shell:has(#room:not([hidden])){display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px;max-width:1640px;align-items:start}
+ .site-game-shell:has(#room:not([hidden])) #room{min-width:0}
+ .site-game-shell:has(#room:not([hidden])) .coyote-reference{position:sticky;top:16px;max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;padding:0 3px 4px}
+ .site-game-shell:has(#room:not([hidden])) .coyote-reference .panel{padding:16px}
+ .site-game-shell:has(#room:not([hidden])) .card-pool{margin-top:0}
+ .site-game-shell:has(#room:not([hidden])) .card-pool-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+ .site-game-shell:has(#room:not([hidden])) .card-pool-face{min-height:54px;padding:6px 4px;gap:2px}
+ .site-game-shell:has(#room:not([hidden])) .card-pool-face strong{font-size:22px}
+ .site-game-shell:has(#room:not([hidden])) .card-pool-item.is-special .card-pool-face strong{font-size:17px}
+ .site-game-shell:has(#room:not([hidden])) .card-pool-face span{font-size:11px}
+ .site-game-shell:has(#room:not([hidden])) .card-pool-item p{font-size:11px;margin-top:5px}
+ .site-game-shell:has(#room:not([hidden])) .discard-panel{margin-top:16px}
+ .site-game-shell:has(#room:not([hidden])) .discard-panel .discard-chips{gap:6px}
+ .site-game-shell:has(#room:not([hidden])) .discard-panel .discard-chips span{padding:6px 8px;font-size:12px}
+}
