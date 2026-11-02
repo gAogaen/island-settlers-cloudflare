@@ -642,33 +642,51 @@ async function handlePenguin(storage,request){const url=new URL(request.url),rou
 // Red Door: basic 16-card game. Hidden rooms and roles never enter public views.
 const RD_DECK={killer:1,silver:3,trap:1,gas:2,empty:2,exit:1,gun:1,vest:1,clue:2,insight:1,ammo:1};
 const RD_NAMES={killer:'殺人鬼の鍵',silver:'銀の鍵',trap:'殺人鬼の罠',gas:'催眠ガス',empty:'何も無い部屋',exit:'脱出口',gun:'拳銃',vest:'防弾チョッキ',clue:'小さな手がかり',insight:'違和感の看破',ammo:'弾丸のある部屋',fbi:'FBI手帳'};
-const RD_EXTRA={clown:'道化の灯',shadow:'脱出口の影',fbi:'FBI手帳'};
+const RD_EXTRA={clown:'道化の灯',shadow:'脱出口の影',fbi:'FBI手帳',tattoo:'数字の入れ墨',nerve:'神経ガス',gift:'殺人鬼の贈り物',peephole:'危険なのぞき穴',corpse:'死体のある部屋',axe:'殺人鬼の斧',clock:'眩暈の時計',restraint:'拘束具の部屋',xray:'レントゲン写真',knife:'軍人のナイフ',silence:'沈黙の毒蜘蛛',monitor:'モニター室',mask:'ガスマスク',cuffs:'手錠',cardkey:'カードキー',whisper:'仮面の囁き',guard:'守りの鍵',incense:'反魂の香',tome:'教団の魔導書',labyrinth:'迷宮の秘密',necklace:'絶叫の罠'};
+Object.assign(RD_NAMES,RD_EXTRA);
 function rdSettings(raw={}){const extras=raw.extras??[];if(!Array.isArray(extras)||extras.some(x=>!Object.hasOwn(RD_EXTRA,x))||new Set(extras).size!==extras.length)throw Error('追加カードの設定が正しくありません。');return {extras};}
-const rdKey=c=>['silver','killer'].includes(c.type);
+const rdKey=c=>['silver','killer','guard'].includes(c.type);
 function rdPlayer(name){return {id:crypto.randomUUID(),token:crypto.randomUUID(),name:cleanName(name),alive:true,killer:false,fbi:false,items:[],notes:[]};}
 function rdLog(g,text){g.log.unshift(text);g.log=g.log.slice(0,80);}
 function rdEvent(g,type,text,extra={}){g.lastEvent={id:crypto.randomUUID(),type,text,...extra};rdLog(g,text);}
-function rdShuffle(g){g.layout=(g.layout||0)+1;g.doorHistory=[];g.board=shuffled(g.board).map((c,slot)=>({id:crypto.randomUUID(),type:c.type,open:false,slot}));g.layoutSize=g.board.length;g.players.forEach(p=>p.notes=[]);}
-function rdStart(g,firstId){if(g.players.length<4||g.players.length>6)throw Error('基本ルールは4〜6人で遊びます。');if(firstId&&!g.players.some(p=>p.id===firstId))throw Error('最初のプレイヤーを選び直してください。');g.matchId=crypto.randomUUID();g.phase='explore';g.turn=1;g.activeIndex=firstId?g.players.findIndex(p=>p.id===firstId):crypto.getRandomValues(new Uint32Array(1))[0]%g.players.length;g.pending=null;g.removed=[];g.winnerIds=[];g.ending=null;g.reason=null;g.escapeKeys=null;g.log=[];g.players.forEach(p=>Object.assign(p,{alive:true,killer:false,fbi:false,items:[],notes:[]}));g.rules=rdSettings(g.rules);g.board=Object.entries({...RD_DECK,...Object.fromEntries(g.rules.extras.map(t=>[t,1]))}).flatMap(([type,n])=>Array.from({length:n},()=>({type})));rdShuffle(g);rdEvent(g,'start','屋敷の扉が閉ざされました。'+g.players[g.activeIndex].name+'から探索を始めます。');}
-function rdFinish(g,ending,winners,text){g.phase='finished';g.ending=ending;g.winnerIds=winners.map(p=>p.id);g.reason=text;g.pending=null;rdEvent(g,'ending',text);}
+function rdShuffle(g){
+ const attached=new Set(g.board.filter(c=>c.type==='whisper'&&c.attachedId).flatMap(c=>[c.id,c.attachedId]));
+ const pinned=g.board.filter(c=>attached.has(c.id)),rest=shuffled(g.board.filter(c=>!attached.has(c.id)));
+ const size=Math.max(g.board.length,...pinned.map(c=>c.slot+1));const result=[...pinned];let slot=0;
+ for(const c of rest){while(pinned.some(x=>x.slot===slot))slot++;result.push({id:crypto.randomUUID(),type:c.type,uid:c.uid||crypto.randomUUID(),open:false,slot:slot++});}
+ g.layout=(g.layout||0)+1;g.doorHistory=[];g.board=result;g.layoutSize=size;g.players.forEach(p=>p.notes=[]);
+}
+function rdStart(g,firstId){if(g.players.length<4||g.players.length>6)throw Error('基本ルールは4〜6人で遊びます。');if(firstId&&!g.players.some(p=>p.id===firstId))throw Error('最初のプレイヤーを選び直してください。');g.matchId=crypto.randomUUID();g.phase='explore';g.turn=1;g.activeIndex=firstId?g.players.findIndex(p=>p.id===firstId):crypto.getRandomValues(new Uint32Array(1))[0]%g.players.length;g.pending=null;g.removed=[];g.winnerIds=[];g.ending=null;g.reason=null;g.escapeKeys=null;g.log=[];g.players.forEach(p=>Object.assign(p,{alive:true,killer:false,fbi:false,monster:false,items:[],notes:[]}));g.rules=rdSettings(g.rules);g.board=Object.entries({...RD_DECK,...Object.fromEntries(g.rules.extras.map(t=>[t,1]))}).flatMap(([type,n])=>Array.from({length:n},()=>({type})));if(g.rules.extras.includes('guard')){const at=g.board.findIndex(c=>c.type==='silver');g.board.splice(at,1);g.removed.push({type:'silver'});}g.monster=false;g.cardkeyChain=[];g.cardkeyActor=null;g.resumeIndex=null;g.guardDecisions=[];g.guardReturn=null;g.fbiShufflePending=false;rdShuffle(g);rdEvent(g,'start','屋敷の扉が閉ざされました。'+g.players[g.activeIndex].name+'から探索を始めます。');}
+function rdFinish(g,ending,winners,text){g.phase='finished';g.ending=ending;g.winnerIds=winners.map(p=>p.id);g.reason=text;g.pending=null;g.cardkeyChain=[];g.cardkeyActor=null;rdEvent(g,'ending',text);}
 function rdCheck(g){const alive=g.players.filter(p=>p.alive);if(!alive.length){rdFinish(g,'lost',[],'屋敷に生き残った者はいませんでした。');return true;}if(alive.length===1&&alive[0].killer){rdFinish(g,'last',alive,'最後に生き残ったのは、殺人鬼でした。');return true;}return false;}
-function rdNext(g){g.pending=null;if(g.fbiShufflePending){g.fbiShufflePending=false;rdShuffle(g);rdEvent(g,'shuffle','FBIの捜査が完了し、残りの扉を混ぜて再配置しました。');}if(rdCheck(g))return;g.phase='explore';do{g.activeIndex=(g.activeIndex+1)%g.players.length;}while(!g.players[g.activeIndex].alive);g.turn++;}
-function rdScatter(g,p){g.board.push(...p.items.map(c=>({type:c.type})));p.items=[];rdShuffle(g);}
-function rdDamage(g,p,scatter=false){const vest=p.items.find(c=>c.type==='vest');if(vest){p.items=p.items.filter(c=>c.id!==vest.id);g.removed.push({type:'vest'});}else p.alive=false;if(scatter||!p.alive)rdScatter(g,p);return !!vest;}
+function rdNext(g){
+ if(g.guardDecisions?.length){const d=g.guardDecisions[0];g.phase='resolve';g.pending={id:crypto.randomUUID(),kind:'guardDecision',type:'guard',actorId:d.playerId};return;}
+ g.pending=null;if(g.fbiShufflePending){g.fbiShufflePending=false;g.board=g.board.filter(c=>c.type!=='fbi');rdShuffle(g);rdEvent(g,'shuffle','FBIの捜査が完了し、残りの扉を混ぜて再配置しました。');}
+ if(rdContinueChain(g))return;if(rdCheck(g))return;if(g.resumeIndex!==null&&g.resumeIndex!==undefined){g.activeIndex=g.resumeIndex;g.resumeIndex=null;}
+ g.phase='explore';do{g.activeIndex=(g.activeIndex+1)%g.players.length;}while(!g.players[g.activeIndex].alive);g.turn++;
+ rdBeginTurn(g);
+}
+function rdScatter(g,p){g.board.push(...p.items.filter(c=>c.type!=='xray').map(c=>({type:c.type})));p.items=p.items.filter(c=>c.type==='xray');rdShuffle(g);}
+function rdDamage(g,p,scatter=false,ignoreVest=false,skipGuard=false){
+ const guard=!skipGuard&&p.items.find(c=>c.type==='guard'&&!c.open);
+ if(guard){(g.guardDecisions??=[]).push({playerId:p.id,scatter,ignoreVest});return true;}
+ const vest=!ignoreVest&&p.items.find(c=>c.type==='vest');if(vest){p.items=p.items.filter(c=>c.id!==vest.id);g.removed.push({type:'vest'});}else p.alive=false;
+ if(scatter||!p.alive)rdScatter(g,p);return !!vest;
+}
 function rdKeys(g){return g.players.flatMap(p=>p.items.filter(rdKey));}
-function rdFourthKey(g){if(rdKeys(g).length!==4)return false;const keys=[];for(const p of g.players){keys.push(...p.items.filter(rdKey));p.items=p.items.filter(c=>!rdKey(c));}g.removed.push(...keys.filter(c=>c.type==='killer').map(c=>({type:c.type})));g.board.push(...keys.filter(c=>c.type==='silver').map(c=>({type:c.type})));rdShuffle(g);rdEvent(g,'shuffle','4つ目の鍵が見つかり、すべての鍵が回収されました。殺人鬼の鍵を除外し、扉を並べ直します。');return true;}
+function rdFourthKey(g){if(rdKeys(g).length!==4)return false;const keys=[];for(const p of g.players){keys.push(...p.items.filter(rdKey));p.items=p.items.filter(c=>!rdKey(c));}g.removed.push(...keys.filter(c=>c.type==='killer').map(c=>({type:c.type})));g.board.push(...keys.filter(c=>['silver','guard'].includes(c.type)).map(c=>({type:c.type})));rdShuffle(g);rdEvent(g,'shuffle','4つ目の鍵が見つかり、すべての鍵が回収されました。殺人鬼の鍵を除外し、扉を並べ直します。');return true;}
 function rdRemember(p,g,c){p.notes=p.notes.filter(n=>n.slot!==c.slot);p.notes.push({slot:c.slot,type:c.type,layout:g.layout});}
-function rdAction(g,p,a){
+function rdBaseAction(g,p,a){
  if(a.type==='start'){if(p.id!==g.hostId||!['lobby','finished'].includes(g.phase))throw Error('ホストだけが開始できます。');if(a.rules)g.rules=rdSettings(a.rules);rdStart(g,a.firstPlayerId);return;}
  if(a.type==='chat'){const text=String(a.message||'').trim().slice(0,180);if(!text)throw Error('メッセージを入力してください。');g.messages.push({id:crypto.randomUUID(),name:p.name,text});g.messages=g.messages.slice(-60);return;}
- if(g.phase==='lobby'||g.phase==='finished'||!p.alive||g.players[g.activeIndex]?.id!==p.id)throw Error('あなたの探索の番ではありません。');
+ if(g.phase==='lobby'||g.phase==='finished'||!p.alive||(g.pending?.actorId||g.players[g.activeIndex]?.id)!==p.id)throw Error('あなたの探索の番ではありません。');
  if(a.matchId!==g.matchId||a.turn!==g.turn)throw Error('手番が更新されました。画面を確認してください。');
- if(a.type==='open'){if(g.phase!=='explore')throw Error('先に確認中のカードを処理してください。');const card=g.board.find(c=>c.id===a.cardId&&!c.open);if(!card)throw Error('閉じている扉を選んでください。');g.phase='resolve';g.pending={id:crypto.randomUUID(),kind:'room',cardId:card.id};rdRemember(p,g,card);(g.doorHistory??=[]).push({slot:card.slot,name:p.name,playerId:p.id,turn:g.turn});rdEvent(g,'open',p.name+'が扉 '+String(card.slot+1).padStart(2,'0')+' を調べています。');return;}
+ if(a.type==='open'){if(p.items.some(i=>i.type==='restraint'))throw Error('拘束中は扉を開けません。銀の鍵を返すか手番を終了してください。');if(g.phase!=='explore')throw Error('先に確認中のカードを処理してください。');const card=g.board.find(c=>c.id===a.cardId&&!c.open);if(!card)throw Error('閉じている扉を選んでください。');g.phase='resolve';g.pending={id:crypto.randomUUID(),kind:'room',cardId:card.id};rdRemember(p,g,card);(g.doorHistory??=[]).push({slot:card.slot,name:p.name,playerId:p.id,turn:g.turn});rdEvent(g,'open',p.name+'が扉 '+String(card.slot+1).padStart(2,'0')+' を調べています。');return;}
  const pending=g.pending;if(!pending||a.pendingId!==pending.id)throw Error('確認内容が更新されました。');if(pending.kind==='fbiSelect'){if(a.type!=='fbiSelect')throw Error('公開する扉を選んでください。');const target=g.board.find(x=>x.id===a.targetId&&!x.open);if(!target)throw Error('まだ閉じている扉を選んでください。');g.fbiShufflePending=true;g.phase='resolve';g.pending={id:crypto.randomUUID(),kind:'room',cardId:target.id,fbi:true};rdRemember(p,g,target);(g.doorHistory??=[]).push({slot:target.slot,name:p.name,playerId:p.id,turn:g.turn});rdEvent(g,'fbi',p.name+'がFBI手帳で扉を選びました。');return;}const c=g.board.find(c=>c.id===pending.cardId);if(!c)throw Error('扉が並べ替えられました。');
 
  if(pending.kind==='escapeChoice'){
   if(a.type!=='escapeDoor'||![0,1].includes(a.door))throw Error('最後の扉を選んでください。');
-  const bad=pending.shadowAt===a.door;if(bad){g.players.forEach(x=>x.alive=false);rdFinish(g,'lost',[],'選んだのは脱出口の影でした。生存者は全員死亡しました。');}else rdFinish(g,'escaped',g.players.filter(x=>!x.killer),'本当の脱出口を選び、脱出に成功しました！');return;
+  const bad=pending.shadowAt===a.door;if(bad){for(const x of g.players.filter(x=>x.alive))rdDamage(g,x,false,true);rdLog(g,'選んだのは脱出口の影でした。生存者全員を死が襲います。');rdNext(g);}else rdFinish(g,'escaped',g.players.filter(x=>!x.killer),'本当の脱出口を選び、脱出に成功しました！');return;
  }
  if(pending.kind==='peek'){
   if(a.type!=='peek')throw Error('確認する扉を選んでください。');const target=g.board.find(x=>x.id===a.cardId&&!x.open&&x.id!==c.id);if(!target)throw Error('別の閉じた扉を選んでください。');rdRemember(p,g,target);pending.kind='peekResult';pending.peek={slot:target.slot,type:target.type};return;
@@ -681,12 +699,13 @@ function rdAction(g,p,a){
   if(a.type!=='shoot')throw Error('撃つ相手を選んでください。');const target=g.players.find(x=>x.id===a.targetId&&x.id!==p.id&&x.alive);if(!target)throw Error('他の生存者を選んでください。');const saved=rdDamage(g,target);rdEvent(g,saved?'saved':'death',p.name+'が'+target.name+'を撃ちました。'+(saved?'防弾チョッキが命を守りました。':'死亡し、持ち物が場へ戻りました。扉が並べ直されます。'));rdNext(g);return;
  }
  if(pending.kind!=='room'||a.type!=='resolve')throw Error('カードの案内に従ってください。');const choice=a.choice;
+ if(choice==='return'&&c.type==='empty'&&p.items.some(i=>i.type==='axe')){g.pending.kind='axeTarget';return;}
  if(choice==='return'){
-  const allowed=c.type==='empty'||c.type==='exit'||c.type==='ammo'||(p.killer&&['trap','gas'].includes(c.type));if(!allowed)throw Error('このカードは伏せて戻せません。');rdEvent(g,'return',p.name+'は「何も無い部屋だった」と告げ、扉を閉じました。');rdNext(g);return;
+  const allowed=c.type==='empty'||c.type==='exit'||c.type==='ammo'||(p.killer&&!p.monster&&['trap','gas'].includes(c.type));if(!allowed)throw Error('このカードは伏せて戻せません。');rdEvent(g,'return',p.name+'は「何も無い部屋だった」と告げ、扉を閉じました。');rdNext(g);return;
  }
  if(c.type==='fbi'){if(choice!=='use')throw Error('FBI手帳を公開してください。');c.open=true;g.removed.push({type:'fbi'});p.fbi=true;pending.kind='fbiSelect';rdEvent(g,'fbi',p.name+'がFBI手帳を公開しました。');return;}
- if(['silver','killer','gun','vest'].includes(c.type)){
-  if(choice!=='take')throw Error('アイテムを受け取ってください。');g.board=g.board.filter(x=>x.id!==c.id);p.items.push({id:crypto.randomUUID(),type:c.type,open:!rdKey(c)});if(c.type==='killer')p.killer=true;rdEvent(g,'item',p.name+'が'+(rdKey(c)?'伏せた鍵':RD_NAMES[c.type])+'を手に入れました。');rdFourthKey(g);rdNext(g);return;
+ if(['silver','killer','guard','gun','vest'].includes(c.type)){
+  if(choice!=='take')throw Error('アイテムを受け取ってください。');g.board=g.board.filter(x=>x.id!==c.id);rdGive(g,p,{id:crypto.randomUUID(),type:c.type,open:!rdKey(c)||!!pending.forcePublic});rdEvent(g,'item',p.name+'が'+(rdKey(c)?'伏せた鍵':RD_NAMES[c.type])+'を手に入れました。');rdFourthKey(g);rdNext(g);return;
  }
  if(c.type==='clown'){
   if(choice!=='use')throw Error('カードの内容を確認してください。');p.killer=!p.killer;rdEvent(g,'return',p.name+'は「何も無い部屋だった」と告げ、扉を閉じました。');rdNext(g);return;
@@ -695,7 +714,7 @@ function rdAction(g,p,a){
   if(choice!=='use')throw Error('カードを公開してください。');c.open=true;rdEvent(g,'shadow',p.name+'が脱出口の影を公開しました。脱出成功時は最後の二択が待ち受けます。');rdNext(g);return;
  }
  if(c.type==='exit'){
-  if(choice!=='escape'||rdKeys(g).length!==3)throw Error('脱出には手元の鍵が合計3枚必要です。');c.open=true;const failed=rdKeys(g).some(rdKeyCard=>rdKeyCard.type==='killer');g.escapeKeys=rdKeys(g).map(k=>k.type);if(!failed&&g.board.some(x=>x.type==='shadow'&&x.open)){pending.kind='escapeChoice';pending.shadowAt=crypto.getRandomValues(new Uint32Array(1))[0]%2;rdEvent(g,'shadow','銀の鍵がそろいました。最後に本物の脱出口を選びます。');return;}rdFinish(g,failed?'betrayed':'escaped',g.players.filter(x=>failed?x.killer:!x.killer),failed?'3本の鍵の中に、殺人鬼の鍵が紛れていました。脱出失敗。':'3本すべてが銀の鍵でした。屋敷からの脱出に成功しました！');return;
+  if(choice!=='escape'||rdKeys(g).length!==rdRequired(g))throw Error('脱出には手元の鍵が合計'+rdRequired(g)+'枚必要です。');c.open=true;const failed=rdKeys(g).some(rdKeyCard=>rdKeyCard.type==='killer');g.escapeKeys=rdKeys(g).map(k=>k.type);if(!failed&&g.board.some(x=>x.type==='shadow'&&x.open)){pending.kind='escapeChoice';pending.shadowAt=crypto.getRandomValues(new Uint32Array(1))[0]%2;rdEvent(g,'shadow','銀の鍵がそろいました。最後に本物の脱出口を選びます。');return;}rdFinish(g,failed?'betrayed':'escaped',g.players.filter(x=>failed?x.killer:!x.killer),failed?'3本の鍵の中に、殺人鬼の鍵が紛れていました。脱出失敗。':'3本すべてが銀の鍵でした。屋敷からの脱出に成功しました！');return;
  }
  if(c.type==='ammo'){
   if(choice!=='aim'||!p.items.some(i=>i.type==='gun')||!g.players.some(x=>x.alive&&x.id!==p.id))throw Error('拳銃と撃つ相手が必要です。');c.open=true;pending.kind='shoot';rdEvent(g,'ammo',p.name+'が弾丸を見つけ、拳銃を構えました。');return;
@@ -707,6 +726,8 @@ function rdAction(g,p,a){
   if(choice!=='use')throw Error('鍵を調べてください。');c.open=true;rdEvent(g,'insight',p.name+'が違和感の看破を発見しました。');if(g.players.some(x=>x.id!==p.id&&x.alive&&x.items.some(k=>rdKey(k)&&!k.open)))pending.kind='insight';else{rdLog(g,'他の生存者に伏せた鍵がないため、効果はありません。');rdNext(g);}return;
  }
  if(c.type==='gas'){
+  if(p.monster){g.board=g.board.filter(x=>x.id!==c.id);g.removed.push({type:'gas'});rdDamage(g,p,true);rdEvent(g,'death',p.name+'が怪物に襲われました。');rdNext(g);return;}
+  if(p.items.some(i=>i.type==='mask')){c.open=true;rdEvent(g,'saved',p.name+'のガスマスクがガスを防ぎました。');rdNext(g);return;}
   if(choice!=='use')throw Error('ガスの処理を進めてください。');g.board=g.board.filter(x=>x.id!==c.id);g.removed.push({type:'gas'});rdScatter(g,p);rdEvent(g,'shuffle',p.name+'が催眠ガスを浴びました。持ち物を場へ戻し、扉が並べ直されます。');rdNext(g);return;
  }
  if(c.type==='trap'){
@@ -714,7 +735,130 @@ function rdAction(g,p,a){
  }
  throw Error('カードの処理を選んでください。');
 }
-function rdView(g,p){const finished=g.phase==='finished',omniscient=finished||!!p&&!p.alive,active=g.players[g.activeIndex],pending=g.pending,card=pending&&g.board.find(c=>c.id===pending.cardId);return {code:g.code,phase:g.phase,revision:g.revision,matchId:g.matchId,hostId:g.hostId,activeId:active?.id,turn:g.turn,layout:g.layout,rules:g.rules||{extras:[]},boardSlots:g.layoutSize||0,omniscient,doorHistory:g.doorHistory||[],ending:g.ending,reason:g.reason,winnerIds:g.winnerIds||[],escapeKeys:finished?g.escapeKeys:undefined,log:g.log,messages:g.messages,lastEvent:g.lastEvent,keyCount:rdKeys(g).length,removed:g.removed||[],pending:pending?{actorId:active.id,cardId:pending.cardId}:null,board:(g.board||[]).map(c=>({id:c.id,slot:c.slot,open:c.open,type:c.open||omniscient||pending?.kind==='fbiSelect'&&p?.id===active?.id?c.type:undefined})),players:g.players.map(x=>({id:x.id,name:x.name,alive:x.alive,killer:omniscient?x.killer:undefined,fbi:!!x.fbi&&p?.id===x.id,items:x.items.map(c=>({id:c.id,key:rdKey(c),open:c.open,type:c.open||omniscient||pending?.kind==='fbiSelect'&&p?.id===active?.id?c.type:undefined}))})),me:p?{id:p.id,killer:p.killer,fbi:!!p.fbi,alive:p.alive,items:p.items,notes:p.notes,pending:pending&&active?.id===p.id?{...Object.fromEntries(Object.entries(pending).filter(([k])=>k!=='shadowAt')),type:pending?.kind==='fbiSelect'?'fbi':card?.type,slot:card?.slot,canHide:p.killer&&['trap','gas'].includes(card?.type)}:null}:null};}
+function rdRequired(g){return 3-(g.players.some(p=>!p.alive&&p.items.some(i=>i.type==='xray'))?1:0);}
+function rdGive(g,p,item){
+ const cuffs=p.items.find(i=>i.type==='cuffs');const owner=cuffs&&g.players.find(x=>x.id===cuffs.ownerId);const receiver=owner||p;
+ receiver.items.push(item);if(['killer','gift','axe'].includes(item.type))receiver.killer=true;return receiver;
+}
+function rdRemove(g,c){g.board=g.board.filter(x=>x.id!==c.id);g.removed.push({type:c.type});}
+function rdBeginTurn(g){
+ const p=g.players[g.activeIndex];
+ for(const item of [...p.items]){
+  if(item.type==='nerve'&&!p.items.some(i=>i.type==='mask')){item.ticks=(item.ticks||0)+1;if(item.ticks%4===0){const saved=rdDamage(g,p,false,true);rdEvent(g,saved?'saved':'death',p.name+'の神経ガスが一周しました。');if(!p.alive){rdNext(g);return;}}}
+  if(item.type==='necklace'){item.ticks=(item.ticks||0)+1;if(item.ticks%2===0){if(g.board.filter(c=>c.type==='clue'&&c.open).length===0){rdDamage(g,p,false);rdEvent(g,'death',p.name+'の絶叫の罠が作動しました。');if(!p.alive){rdNext(g);return;}}else if(g.board.filter(c=>c.type==='clue'&&c.open).length>=2){p.items=p.items.filter(i=>i.id!==item.id);g.removed.push({type:'necklace'});rdLog(g,'絶叫の罠は条件を満たさず除外されました。');}}}
+ }
+ if(g.guardDecisions?.length){g.guardReturn='explore';rdNext(g);return;}
+ rdBeginCardkey(g,p);
+}
+function rdContinueChain(g){
+ if(!g.cardkeyActor)return false;const p=g.players.find(x=>x.id===g.cardkeyActor);
+ if(!p?.alive){g.cardkeyChain=[];g.cardkeyActor=null;return false;}
+ let card;while(g.cardkeyChain.length&&!card){const uid=g.cardkeyChain.shift();card=g.board.find(c=>c.uid===uid);}
+ if(!card){g.cardkeyActor=null;return false;}
+ g.activeIndex=g.players.indexOf(p);g.resumeIndex=null;rdPickPending(g,p,card,p.items.some(i=>i.type==='knife')?'knifeTarget':'room');if(g.pending.kind==='room')rdRemember(p,g,card);return true;
+}
+function rdBeginCardkey(g,p){
+ if(p.items.some(i=>i.type==='cardkey')){const candidates=g.board.filter(c=>!c.open);if(candidates.length){g.phase='resolve';g.pending={id:crypto.randomUUID(),kind:'cardkeyFirst',type:'cardkey',actorId:p.id};}}
+}
+function rdPickPending(g,p,c,kind,extra={}){g.phase='resolve';g.pending={id:crypto.randomUUID(),kind,type:c?.type,cardId:c?.id,actorId:p.id,...extra};}
+function rdExpansionAction(g,p,a){
+ const q=g.pending,c=q&&g.board.find(x=>x.id===q.cardId);if(q&&a.type==='skipEffect'&&a.pendingId!==q.id)throw Error('確認内容が更新されました。');
+ if(q?.kind==='guardDecision'){if(a.type!=='guardChoice'||a.pendingId!==q.id||q.actorId!==p.id||typeof a.use!=='boolean')throw Error('守りの鍵を使うか選んでください。');const d=g.guardDecisions.shift();if(a.use){const guard=p.items.find(i=>i.type==='guard'&&!i.open);if(!guard)throw Error('守りの鍵がありません。');guard.open=true;rdEvent(g,'saved',p.name+'が守りの鍵を公開し、死亡と持ち物の回収を防ぎました。');}else{const saved=rdDamage(g,p,d.scatter,d.ignoreVest,true);rdEvent(g,saved?'saved':'death',p.name+(saved?'は防弾チョッキで生還しました。':'は死亡しました。'));}if(!g.guardDecisions.length&&g.guardReturn==='explore'){g.guardReturn=null;g.pending=null;if(rdCheck(g))return true;if(p.alive){g.phase='explore';rdBeginCardkey(g,p);return true;}}rdNext(g);return true;}
+ if(q?.kind==='tattoo'&&a.type==='tattooVote'){
+  if(a.pendingId!==q.id||!q.voters.includes(p.id)||!Number.isInteger(a.number)||a.number<1||a.number>5||q.votes[p.id]!==undefined)throw Error('数字を1〜5から1回だけ選んでください。');
+  q.votes[p.id]=a.number;
+  if(q.voters.every(id=>q.votes[id]!==undefined)){const total=Object.values(q.votes).reduce((n,v)=>n+v,0),max=Math.max(...Object.values(q.votes));rdLog(g,'数字の入れ墨：'+q.voters.map(id=>g.players.find(x=>x.id===id).name+'＝'+q.votes[id]).join('、')+'／合計 '+total);if(total!==7)for(const x of g.players.filter(x=>x.alive&&q.votes[x.id]===max))rdDamage(g,x);rdNext(g);}return true;
+ }
+ if(q?.kind==='tattoo')throw Error('全員の数字がそろうまでお待ちください。');
+ if(a.type==='releaseRestraint'){
+  const key=p.items.find(i=>i.id===a.itemId&&['silver','guard'].includes(i.type));if(!key||!g.players.some(x=>x.id!==p.id&&x.items.some(i=>i.type==='restraint')))throw Error('銀の鍵と拘束具が必要です。');
+  p.items=p.items.filter(i=>i.id!==key.id);g.board.push({type:key.type});for(const x of g.players){const items=x.items.filter(i=>i.type==='restraint');x.items=x.items.filter(i=>i.type!=='restraint');g.board.push(...items.map(i=>({type:i.type})));}rdShuffle(g);rdLog(g,p.name+'が銀の鍵を戻し、拘束を解除しました。');return true;
+ }
+ if(a.type==='skipRestricted'&&g.phase==='explore'&&p.items.some(i=>i.type==='restraint')){rdNext(g);return true;}
+ if(a.type==='open'&&p.items.some(i=>i.type==='restraint'))throw Error('拘束中は扉を開けません。');
+ if(a.type==='open'&&g.phase==='explore'&&p.items.some(i=>i.type==='gift')){const t=g.board.find(c=>c.id===a.cardId&&!c.open);if(!t)throw Error('閉じた扉を選んでください。');rdPickPending(g,p,t,'giftChoice',{type:'gift'});return true;}
+ if(a.type==='open'&&g.phase==='explore'&&p.items.some(i=>i.type==='knife')){const t=g.board.find(c=>c.id===a.cardId&&!c.open);if(!t)throw Error('閉じた扉を選んでください。');rdPickPending(g,p,t,'knifeTarget');return true;}
+ if(q?.kind==='giftChoice'){if(a.pendingId!==q.id||q.actorId!==p.id)throw Error('確認内容が更新されました。');if(a.type==='giftUse'){q.kind='giftSelect';q.cardId=undefined;return true;}if(a.type==='selfOpenGift'){const id=q.cardId;if(p.items.some(i=>i.type==='knife')){q.kind='knifeTarget';return true;}g.pending=null;g.phase='explore';rdBaseAction(g,p,{...a,type:'open',cardId:id});return true;}throw Error('贈り物を使うか選んでください。');}
+ if(q?.kind==='fbiSelect'&&a.type==='fbiSkip'){if(a.pendingId!==q.id)throw Error('確認内容が更新されました。');g.fbiShufflePending=true;rdNext(g);return true;}
+ if(q?.kind==='whisperTarget'&&a.type==='skipEffect'){c.open=true;rdNext(g);return true;}
+ if(q?.kind==='peephole'&&a.type==='skipEffect'){const keys=p.items.filter(rdKey);p.items=p.items.filter(i=>!rdKey(i));g.board.push(...keys.map(i=>({type:i.type})));rdShuffle(g);rdNext(g);return true;}
+ if(!q)return false;
+ if(a.pendingId!==q.id)throw Error('確認内容が更新されました。');
+ if((q.actorId||g.players[g.activeIndex].id)!==p.id)throw Error('あなたの選択ではありません。');
+ const choosePlayer=(allowSelf=false,dead=false)=>{const t=g.players.find(x=>x.id===a.targetId&&(allowSelf||x.id!==p.id)&&(dead?!x.alive:x.alive));if(!t)throw Error('対象のプレイヤーを選び直してください。');return t;};
+ const chooseDoor=(includeOpen=false)=>{const t=g.board.find(x=>x.id===a.targetId&&(includeOpen||!x.open)&&x.id!==q.cardId);if(!t)throw Error('対象の扉を選び直してください。');return t;};
+ if(['giftSelect','monitorPeek'].includes(q.kind)){
+  if(a.type!=='selectDoor')throw Error('扉を選んでください。');const t=chooseDoor();if(q.kind==='monitorPeek'){rdRemember(p,g,t);q.kind='privateResult';q.peek={slot:t.slot,type:t.type};return true;}
+  const type=t.type;g.board=g.board.filter(x=>x.id!==t.id);rdShuffle(g);const selected={id:crypto.randomUUID(),type,open:false,slot:g.layoutSize++};g.board.push(selected);rdPickPending(g,p,selected,'room',{forcePublic:true});rdRemember(p,g,selected);return true;
+ }
+ if(q.kind==='cardkeyFirst'||q.kind==='cardkeySecond'){
+  if(a.type!=='selectDoor')throw Error('確認する扉を選んでください。');const t=chooseDoor();if(q.seen?.some(x=>x.id===t.id))throw Error('別の扉を選んでください。');q.seen=[...(q.seen||[]),{id:t.id,uid:t.uid,slot:t.slot}];if(q.seen.length<2&&g.board.some(x=>!x.open&&!q.seen.some(y=>y.id===x.id))){q.kind='cardkeySecond';return true;}g.cardkeyChain=q.seen.map(x=>x.uid);g.cardkeyActor=p.id;rdContinueChain(g);return true;
+ }
+ if(q.kind==='cardkeyResult'){if(a.type!=='continue')throw Error('確認して進んでください。');g.pending=null;g.phase='explore';return true;}
+ if(q.kind==='privateResult'){if(a.type!=='continue')throw Error('確認して進んでください。');rdNext(g);return true;}
+ if(q.kind==='peephole'){
+  if(a.type!=='selectDoor')throw Error('覗く扉を選んでください。');const t=chooseDoor();rdRemember(p,g,t);q.kind='peepholeResult';q.peek={slot:t.slot,type:t.type};return true;
+ }
+ if(q.kind==='peepholeResult'){
+  if(a.type!=='continue')throw Error('確認して進んでください。');const red=['trap','gas','nerve','peephole','necklace'].includes(q.peek.type);if(red)rdDamage(g,p,false,true);else{const keys=p.items.filter(rdKey);p.items=p.items.filter(i=>!rdKey(i));g.board.push(...keys.map(i=>({type:i.type})));rdShuffle(g);}rdEvent(g,red?'death':'shuffle',red?'のぞき穴から銃声が響きました。':'のぞき穴を離れ、鍵が場に戻り扉が並べ直されました。');rdNext(g);return true;
+ }
+ if(q.kind==='knifeTarget'&&a.type==='selfOpen'){const id=q.cardId;g.pending=null;g.phase='explore';rdBaseAction(g,p,{...a,type:'open',cardId:id});return true;}
+ if(['axeTarget','knifeTarget','restraintTarget','cuffsTarget','incenseTarget','whisperTarget'].includes(q.kind)){
+  if(a.type==='skipEffect'&&q.kind==='axeTarget'){rdNext(g);return true;}
+  if(q.kind==='whisperTarget'){if(a.type!=='selectDoor')throw Error('取りつく扉を選んでください。');const t=chooseDoor(true);c.open=true;c.attachedId=t.id;rdLog(g,p.name+'が仮面の囁きを扉に取りつかせました。');rdNext(g);return true;}
+  if(a.type!=='selectPlayer')throw Error('プレイヤーを選んでください。');const target=choosePlayer(false,q.kind==='incenseTarget');
+  if(q.kind==='axeTarget'){rdDamage(g,target);rdEvent(g,'death',p.name+'が斧で'+target.name+'を襲いました。');rdNext(g);return true;}
+  if(q.kind==='knifeTarget'){g.resumeIndex=g.activeIndex;g.activeIndex=g.players.indexOf(target);rdPickPending(g,target,c,'room');rdRemember(target,g,c);return true;}
+  if(q.kind==='incenseTarget'){rdRemove(g,c);g.players.forEach(x=>{g.board.push(...x.items.filter(rdKey).map(i=>({type:i.type})));x.items=x.items.filter(i=>!rdKey(i));});target.alive=true;rdShuffle(g);rdEvent(g,'revive',target.name+'が反魂の香で復活しました。');rdNext(g);return true;}
+  g.board=g.board.filter(x=>x.id!==c.id);target.items.push({id:crypto.randomUUID(),type:c.type,open:true,...(q.kind==='cuffsTarget'?{ownerId:p.id}:{})});rdEvent(g,'item',target.name+'に'+RD_NAMES[c.type]+'が置かれました。');rdNext(g);return true;
+ }
+ if(q.kind==='delegatedDoor'){
+  if(a.type!=='selectDoor')throw Error('扉を選んでください。');const t=chooseDoor();rdPickPending(g,p,t,'room');rdRemember(p,g,t);return true;
+ }
+ if(q.kind==='labyrinth'){
+  if(a.type!=='guess')throw Error('扉とカード名を選んでください。');const t=chooseDoor();if(!Object.hasOwn(RD_NAMES,a.guess))throw Error('カード名を選んでください。');t.open=true;rdLog(g,p.name+'の推理：'+RD_NAMES[a.guess]+' → '+RD_NAMES[t.type]);if(a.guess!==t.type){rdDamage(g,p,true);rdNext(g);return true;}if(!g.board.some(x=>!x.open&&x.id!==q.cardId)){rdFinish(g,'secret',[p],p.name+'が迷宮の秘密を解き明かしました。');return true;}return true;
+ }
+ if(q.kind==='incenseChoice'){
+  if(a.type==='skipEffect'){rdRemove(g,c);rdNext(g);return true;}
+  if(a.type!=='reviveChoice')throw Error('復活させるか選んでください。');if(!g.players.some(x=>!x.alive))throw Error('死亡したプレイヤーがいません。');q.kind='incenseTarget';return true;
+ }
+ if(q.kind!=='room'||a.type!=='resolve'||!Object.hasOwn(RD_EXTRA,c?.type)||['clown','shadow','fbi'].includes(c.type))return false;
+ if(c.type==='incense'&&a.choice==='return'){rdEvent(g,'return',p.name+'は「何も無い部屋だった」と告げ、扉を閉じました。');rdNext(g);return true;}
+ if(a.choice!=='use'&&a.choice!=='take')throw Error('カードの効果を確認してください。');
+ if(c.type==='tattoo'){c.open=true;rdPickPending(g,p,c,'tattoo',{voters:g.players.map(x=>x.id),votes:{}});rdEvent(g,'tattoo','数字の入れ墨：全員が秘密の数字を選んでいます。');return true;}
+ if(c.type==='peephole'){c.open=true;rdPickPending(g,p,c,'peephole');return true;}
+ if(c.type==='corpse'){c.open=true;const index=g.players.indexOf(p),dead=Array.from({length:g.players.length-1},(_,i)=>g.players[(index+i+1)%g.players.length]).find(x=>!x.alive);if(dead){rdRemove(g,c);dead.alive=true;dead.killer=true;rdEvent(g,'revive',dead.name+'が動き出し、殺人鬼として復活しました。');}else rdLog(g,'死体のある部屋には、何も起こりませんでした。');rdNext(g);return true;}
+ if(c.type==='clock'){c.open=true;const sets=g.players.map(x=>x.items);g.players.forEach((x,i)=>{x.items=sets[(i+g.players.length-1)%g.players.length];if(x.items.some(i=>['killer','gift','axe'].includes(i.type)))x.killer=true;});rdEvent(g,'item','全員の持ち物が左隣へ移りました。');rdNext(g);return true;}
+ if(['cuffs','whisper'].includes(c.type)){rdPickPending(g,p,c,{restraint:'restraintTarget',cuffs:'cuffsTarget',whisper:'whisperTarget'}[c.type]);return true;}
+ if(c.type==='incense'){if(!g.players.some(x=>!x.alive))throw Error('復活させる死亡者がいません。使わず伏せてください。');rdPickPending(g,p,c,'incenseTarget');return true;}
+ if(c.type==='tome'){rdRemove(g,c);g.monster=true;g.players.forEach(x=>x.monster=true);rdEvent(g,'item',p.name+'が教団の魔導書を公開しました。罠と催眠ガスは怪物の襲撃になります。');rdNext(g);return true;}
+ if(c.type==='labyrinth'){c.open=true;rdPickPending(g,p,c,'labyrinth');return true;}
+ if(c.type==='nerve'&&p.items.some(i=>i.type==='mask')){c.open=true;rdLog(g,'ガスマスクにより神経ガスの効果を受けません。');rdNext(g);return true;}
+ g.board=g.board.filter(x=>x.id!==c.id);rdGive(g,p,{id:crypto.randomUUID(),type:c.type,open:!['guard'].includes(c.type),ticks:0});rdEvent(g,'item',p.name+'が'+(c.type==='guard'?'伏せた鍵':RD_NAMES[c.type])+'を手に入れました。');rdFourthKey(g);rdNext(g);return true;
+}
+function rdMonitor(g,p){if(g.pending){const c=g.board.find(x=>x.id===g.pending.cardId);if(c)for(const x of g.players)if(x.id!==p.id&&x.items.some(i=>i.type==='monitor'))rdRemember(x,g,c);}}
+function rdAction(g,p,a){
+ if(a.type==='chat'&&p.items.some(i=>i.type==='silence'))throw Error('沈黙の毒蜘蛛により発言できません。');
+ if(!['start','chat'].includes(a.type)){
+  if(g.phase==='lobby'||g.phase==='finished'||a.matchId!==g.matchId||a.turn!==g.turn)throw Error('手番が更新されました。');
+  if(g.pending?.kind==='tattoo'){rdExpansionAction(g,p,a);return;}
+  if(a.type!=='releaseRestraint'&&(!p.alive||(g.pending?.actorId||g.players[g.activeIndex]?.id)!==p.id))throw Error('あなたの探索ではありません。');
+  if(a.type==='releaseRestraint'&&g.pending)throw Error('効果の解決後に拘束を解除してください。');
+  if(g.pending?.forcePublic&&a.type==='resolve'){const card=g.board.find(x=>x.id===g.pending.cardId);if(card)card.open=true;}
+  if(rdExpansionAction(g,p,a)){rdMonitor(g,p);return;}
+ }
+ rdBaseAction(g,p,a);
+ rdMonitor(g,p);
+}
+
+function rdView(g,p){
+ const finished=g.phase==='finished',omniscient=finished||!!p&&!p.alive&&!(g.rules?.extras||[]).some(t=>['corpse','incense'].includes(t)),active=g.players[g.activeIndex],q=g.pending,card=q&&g.board.find(c=>c.id===q.cardId);
+ const actorId=q?.actorId||active?.id,allSelect=q?.kind==='tattoo',privateActor=p&&(p.id===actorId||allSelect&&q.voters.includes(p.id));
+ const seeAll=privateActor&&['fbiSelect','giftSelect'].includes(q?.kind);
+ let ownPending=null;
+ if(q&&privateActor){ownPending={id:q.id,kind:q.kind,actorId,cardId:q.cardId,type:q.type||(['fbiSelect'].includes(q.kind)?'fbi':card?.type),slot:card?.slot,canHide:p.killer&&!p.monster&&['trap','gas'].includes(card?.type)};if(q.peek)ownPending.peek=q.peek;if(q.seen)ownPending.seen=q.seen;if(allSelect){ownPending.voted=q.votes[p.id]!==undefined;ownPending.voteCount=Object.keys(q.votes).length;ownPending.voterCount=q.voters.length;}}
+ return {code:g.code,phase:g.phase,revision:g.revision,matchId:g.matchId,hostId:g.hostId,activeId:active?.id,turn:g.turn,layout:g.layout,rules:g.rules||{extras:[]},boardSlots:g.layoutSize||0,omniscient,doorHistory:g.doorHistory||[],ending:g.ending,reason:g.reason,winnerIds:g.winnerIds||[],escapeKeys:finished?g.escapeKeys:undefined,log:g.log,messages:g.messages,lastEvent:g.lastEvent,keyCount:rdKeys(g).length,requiredKeys:rdRequired(g),removed:g.removed||[],pending:q?{actorId,cardId:q.cardId,kind:allSelect?'tattoo':undefined}:null,board:(g.board||[]).map(c=>({id:c.id,slot:c.slot,open:c.open,pinned:g.board.some(x=>x.type==='whisper'&&x.attachedId&&(x.id===c.id||x.attachedId===c.id)),type:c.open||omniscient||seeAll?c.type:undefined})),players:g.players.map(x=>({id:x.id,name:x.name,alive:x.alive,killer:omniscient?x.killer:undefined,silenced:x.items.some(i=>i.type==='silence'),restrained:x.items.some(i=>i.type==='restraint'),monster:!!x.monster,fbi:!!x.fbi&&p?.id===x.id,items:x.items.map(c=>({id:c.id,key:rdKey(c),open:c.open,ticks:c.open?c.ticks:undefined,type:c.open||omniscient?c.type:undefined}))})),me:p?{id:p.id,killer:p.killer,fbi:!!p.fbi,alive:p.alive,monster:!!p.monster,items:p.items,notes:p.notes,pending:ownPending}:null};
+}
 async function handleReddoor(storage,request){const url=new URL(request.url),route=url.pathname.split('/').pop();try{let g=await storage.get('reddoor');const a=request.method==='POST'?await request.json():{};
  if(route==='create'){if(g)return json({error:'この部屋は使用中です。'},409);const p=rdPlayer(a.name);g={code:a.code,hostId:p.id,players:[p],rules:rdSettings(a.rules),phase:'lobby',revision:1,log:['赤い屋敷の入口です。'],messages:[],board:[],removed:[]};await storage.put('reddoor',g);return json({game:rdView(g,p),token:p.token});}
  if(!g)return json({error:'部屋が見つかりません。'},404);
@@ -2575,3 +2719,4 @@ async function handleCoyote(storage,request){
     throw Error('操作できません。');
   }catch(e){return json({error:e.message},400);}
 }
+
