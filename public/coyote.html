@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="app-version" content="coyote-20261101">
 <title>コヨーテ | ボードゲームオンライン</title>
 <meta name="description" content="自分の数字だけが見えない、コヨーテのオンライン対戦。2〜10人で、時計回りに卓を囲もう。">
-<link rel="stylesheet" href="/theme.css"><script src="/theme.js"></script><link rel="stylesheet" href="/site-shell.css?v=20261101-logo"><link rel="stylesheet" href="/coyote.css?v=20261102-desktop-sidebar">
+<link rel="stylesheet" href="/theme.css"><script src="/theme.js"></script><link rel="stylesheet" href="/site-shell.css?v=20261101-logo"><link rel="stylesheet" href="/coyote.css?v=20261102-mobile-discards">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="ja_JP">
   <meta property="og:site_name" content="ボードゲームオンライン">
@@ -33,7 +33,7 @@
 <div id="lobby" class="panel lobby"><div><h2>席順を確認して、対戦スタート</h2><p>参加順に着席。開始後は脱落しても席の位置を保ちます。</p></div><div class="lobby-controls"><label>開始ライフ<select id="life"><option value="3">3（基本）</option><option value="4">4（長めに遊ぶ）</option></select></label><button id="shuffle">席順をシャッフル</button><button id="start" class="primary">対戦を始める</button></div></div>
 <section class="turn-panel panel" aria-live="polite"><div><small id="turnTag"></small><h2 id="status"></h2><p id="instruction"></p></div><div id="actions" class="actions"></div></section>
 <div class="table-top"><p><span class="clockwise" aria-hidden="true">↻</span> <b>時計回り</b><span id="tableHint">あなたの席が手前です</span></p><span id="remaining"></span></div>
-<div class="table-scroll"><section id="table" class="table" aria-label="時計回りの対戦テーブル"><div class="felt" aria-hidden="true"></div><svg id="turnArrow" class="turn-arrow" aria-hidden="true" /><div id="seats"></div><div id="tableCenter" class="table-center"></div></section></div>
+<div class="table-scroll"><section class="mobile-table-discards" aria-labelledby="mobileDiscardTitle"><div class="section-title"><h2 id="mobileDiscardTitle">捨て札</h2><span id="mobileDiscardCount">0枚</span></div><div id="mobilePublicDiscards" class="discard-chips"><span>まだありません</span></div></section><section id="table" class="table" aria-label="時計回りの対戦テーブル"><div class="felt" aria-hidden="true"></div><svg id="turnArrow" class="turn-arrow" aria-hidden="true" /><div id="seats"></div><div id="tableCenter" class="table-center"></div></section></div>
 <div id="neighbors" class="neighbors"></div>
 
 <section class="order-panel panel"><div class="section-title"><h2>席順と手番</h2><small>数字は席番号。脱落した席は飛ばします。</small></div><ol id="order" class="order"></ol></section>
@@ -51,7 +51,7 @@
 <dialog id="dialog" aria-labelledby="dialogTitle"><header><div><small id="dialogEyebrow">COYOTE</small><h2 id="dialogTitle"></h2></div><button id="close" aria-label="閉じる">×</button></header><div id="dialogBody"></div><div id="dialogActions" class="dialog-actions"></div><p id="dialogError" class="error" role="alert"></p></dialog>
 <div id="mobileDock" class="mobile-dock" hidden aria-label="あなたの手番の操作"></div>
 <p id="toast" role="status"></p>
-<script src="/coyote.js?v=20261102-public-discards"></script>
+<script src="/coyote.js?v=20261102-mobile-discards"></script>
 </body></html>
 
 

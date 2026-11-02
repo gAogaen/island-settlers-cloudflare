@@ -133,5 +133,7 @@ function renderPublicDiscards(){
  for(const card of cards){const label=String(card.label);counts.set(label,(counts.get(label)||0)+1);}
  $('discardCount').textContent=cards.length+'枚';
  $('publicDiscards').innerHTML=counts.size?[...counts].map(([label,count])=>'<span><b>'+esc(label)+'</b> × '+count+'枚</span>').join(''):'<p class="fine">'+(game?'捨て札はまだありません。':'入室すると、この卓の公開された捨て札を表示します。')+'</p>';
+ $('mobileDiscardCount').textContent=cards.length+'枚';
+ $('mobilePublicDiscards').innerHTML=counts.size?[...counts].map(([label,count])=>'<span><b>'+esc(label)+'</b> × '+count+'</span>').join(''):'<span>まだありません</span>';
  $('discardNote').textContent=game?'山札 '+game.deckCount+'枚 · 切り直し後は捨て札表示もリセットされます。':'カードの切り直しに合わせて更新されます。';
 }
