@@ -118,7 +118,7 @@ function showResult(){
 }
 function confirmStart(rematch=false){modal('start',rematch?'同じ席順で再戦しますか？':'この席順で始めますか？',`<p>${game.players.length}人・ライフ${game.startingLife}。最初の手番だけランダムで決まり、その後は時計回りです。</p><ol>${game.players.map(p=>`<li>席${p.seat} ${esc(p.name)}</li>`).join('')}</ol>`,'<button id="submitStart" data-submit class="primary">'+(rematch?'再戦を始める':'対戦を始める')+'</button>');$('submitStart').onclick=()=>act('start');}
 function showRules(){modal('rules','コヨーテの遊び方',`<ol class="rule-list"><li>2〜10人で、1人1枚。<b>自分の数字だけ見えません。</b> 自分の席は画面手前、席順は固定です。</li><li>最初の人は1以上の整数を宣言。次の人は<b>時計回り</b>に、もっと大きな数字を言うか「コヨーテ！」。</li><li>直前の数字が全カードの合計を超えていると疑ったらコヨーテ。<b>超えていたら直前の人、同じか少なければコヨーテと言った人</b>がライフを1失います。</li><li>全員が確認すると次のラウンドへ。負けた人から始め、脱落した場合はその勝負の勝者から始めます。</li><li>基本はライフ3。0になると脱落し、手番はその席を飛ばします。<b>最後に残った1人が勝利。</b></li></ol><h3>4種類の特殊カード</h3><div class="special-list">${Object.entries(specialText).map(([k,t])=>`<div class="special-item"><strong>${({night:'0 ↻ 夜',double:'×2',fox:'MAX→0',cave:'？'})[k]}</strong>${t}</div>`).join('')}</div><p class="fine">「？」の追加カードも特殊効果の計算に含めます。MAX→0は同じ最大値が複数あっても1枚のみ。山札が足りないときは捨て札を切り直します。</p><p>この卓は仮面カードなしの基本ルールです。開始前にライフ4も選べます。</p><a href="https://www.newgamesorder.jp/games/coyote" target="_blank" rel="noopener">公式サイト・説明書 ↗</a>`);}
-function showDeck(){const rows=[['1〜5','各4'],['10','3'],['15','2'],['20','1'],['0','3'],['−5','2'],['−10','1'],['0 ↻ / ×2 / MAX→0 / ？','各1']];modal('deck','36枚のカード構成',`<table class="card-counts"><thead><tr><th>カード</th><th>枚数</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</tbody></table>${game?`<h3>公開の捨て札 · ${game.discard.length}枚</h3><div class="discard-chips">${game.discard.map(c=>'<span>'+esc(c.label)+'</span>').join('')||'<p class="fine">まだありません。</p>'}</div><p class="fine">山札は${game.deckCount}枚。順番やあなたのカードの数字は表示しません。</p>`:''}`);}
+function showDeck(){const rows=[['1〜5','各4'],['10','3'],['15','2'],['20','1'],['0','3'],['−5','2'],['−10','1'],['0 ↻ / ×2 / MAX→0 / ？','各1']];modal('deck','36枚のカード構成',`<table class="card-counts"><thead><tr><th>カード</th><th>枚数</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</tbody></table>${game?`<h3>公開の捨て札 · ${game.discard.length}枚</h3><div class="discard-chips">${discardGroupsMarkup(game.discard)}</div><p class="fine">山札は${game.deckCount}枚。順番やあなたのカードの数字は表示しません。</p>`:''}`);}
 $('create').onclick=()=>enter('create');$('join').onclick=()=>enter('join');$('watch').onclick=()=>enter('watch');$('close').onclick=closeModal;$('dialog').addEventListener('cancel',()=>{modalKind='';});$('rules').onclick=showRules;$('deckInfo').onclick=showDeck;
 $('guide').onclick=()=>{if(!game){showRules();return;}if(game.phase==='reveal'||game.phase==='finished'){showResult();return;}if(mine()){openBid();return;}modal('guide','次にすること',`<p>${esc($('status').textContent)}</p><p>${esc($('instruction').textContent)}</p><p>金色の枠がいまの手番。「次の手番」の席へ時計回りに進みます。あなたの席は常に手前です。</p>`);};
 $('start').onclick=()=>confirmStart();$('shuffle').onclick=()=>act('shuffleSeats');$('life').onchange=()=>act('settings',{life:Number($('life').value)});
@@ -127,13 +127,21 @@ $('sound').onclick=()=>{soundOn=!soundOn;localStorage.setItem('cy-sound',soundOn
 $('name').value=localStorage.getItem('cy-name')||'';$('code').value=new URL(location.href).searchParams.get('room')||'';
 window.addEventListener('resize',layoutSeats);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
 
+
+function discardGroupsMarkup(cards){
+ const order=['-10','-5','0','1','2','3','4','5','10','15','20','night','double','fox','cave'];
+ const labels={night:'0 ↻',double:'×2',fox:'MAX→0',cave:'？'};
+ const aliases={'0 ↻':'night','×2':'double','MAX→0':'fox','？':'cave'};
+ const counts=new Map();
+ for(const card of cards){const raw=String(card.value??card.label).replace('−','-');const key=aliases[raw]||raw;counts.set(key,(counts.get(key)||0)+1);}
+ return [...counts].sort((a,b)=>{const ai=order.indexOf(a[0]),bi=order.indexOf(b[0]);return (ai<0?99:ai)-(bi<0?99:bi)||a[0].localeCompare(b[0]);}).map(([key,count])=>'<span class="discard-kind'+(Number(key)<0?' is-negative':'')+'" aria-label="'+esc(labels[key]||key)+'：'+count+'枚"><b>'+esc(labels[key]||key)+'</b><strong>'+count+'<small>枚</small></strong></span>').join('')||'<p class="fine">捨て札はまだありません。</p>';
+}
 function renderPublicDiscards(){
  const cards=game?.discard||[];
- const counts=new Map();
- for(const card of cards){const label=String(card.label);counts.set(label,(counts.get(label)||0)+1);}
+ const markup=discardGroupsMarkup(cards);
  $('discardCount').textContent=cards.length+'枚';
- $('publicDiscards').innerHTML=counts.size?[...counts].map(([label,count])=>'<span><b>'+esc(label)+'</b> × '+count+'枚</span>').join(''):'<p class="fine">'+(game?'捨て札はまだありません。':'入室すると、この卓の公開された捨て札を表示します。')+'</p>';
+ $('publicDiscards').innerHTML=game?markup:'<p class="fine">入室すると、この卓の公開された捨て札を表示します。</p>';
  $('mobileDiscardCount').textContent=cards.length+'枚';
- $('mobilePublicDiscards').innerHTML=counts.size?[...counts].map(([label,count])=>'<span><b>'+esc(label)+'</b> × '+count+'</span>').join(''):'<span>まだありません</span>';
- $('discardNote').textContent=game?'山札 '+game.deckCount+'枚 · 切り直し後は捨て札表示もリセットされます。':'カードの切り直しに合わせて更新されます。';
+ $('mobilePublicDiscards').innerHTML=markup;
+ $('discardNote').textContent=game?'数字の小さい順 → 特殊カード · 山札 '+game.deckCount+'枚 · 切り直し後はリセットされます。':'数字の小さい順に、種類ごとの枚数を表示します。';
 }
