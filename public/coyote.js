@@ -69,6 +69,7 @@ function cardMarkup(p){
  return `<button class="seat-card ${typeof p.card.value==='string'?'special':''} ${p.card.kind==='negative'?'negative':''}" data-card-player="${p.id}" aria-label="席${p.seat} ${esc(p.name)}のカード ${esc(p.card.label)}"><strong>${esc(p.card.label)}</strong><small>${p.card.kind==='number'||p.card.kind==='negative'?'NUMBER':({night:'夜',double:'2倍',fox:'最大1枚を0',cave:'追加で1枚'})[p.card.kind]}</small></button>`;
 }
 function render(){
+ setTimeout(()=>{if(game)globalThis.BoardgameIntro?.check({game:'coyote',playing:!['lobby','finished'].includes(game.phase)&&!game.winner,participant:!!game.me});},0);
  renderPublicDiscards();
  const me=game.me?.id,host=me===game.hostId,alive=game.players.filter(p=>p.life>0),lobby=game.phase==='lobby',revealed=['reveal','finished'].includes(game.phase);
  if(['bid','challenge'].includes(modalKind)&&!mine()||modalKind==='result'&&!revealed)closeModal();
@@ -145,3 +146,4 @@ function renderPublicDiscards(){
  $('mobilePublicDiscards').innerHTML=markup;
  $('discardNote').textContent=game?'数字の小さい順 → 特殊カード · 山札 '+game.deckCount+'枚 · 切り直し後はリセットされます。':'数字の小さい順に、種類ごとの枚数を表示します。';
 }
+
