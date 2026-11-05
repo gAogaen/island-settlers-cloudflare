@@ -246,7 +246,7 @@ $("soundToggle").addEventListener("click", () => { soundOn=!soundOn;localStorage
 syncSoundButton();
 
 function render() {
- setTimeout(()=>{if(currentGame)globalThis.BoardgameIntro?.check({game:'catan',playing:currentGame.status==='playing'&&!currentGame.winner,participant:!spectating&&currentGame.players.some(p=>p.id===playerId)});},0);
+ setTimeout(()=>{if(currentGame)globalThis.BoardgameUX?.update({game:'catan',state:currentGame,code:roomCode,meId:playerId,watching:spectating,getBusy:()=>actionInFlight});if(currentGame)globalThis.BoardgameIntro?.check({game:'catan',playing:currentGame.status==='playing'&&!currentGame.winner,participant:!spectating&&currentGame.players.some(p=>p.id===playerId)});},0);
   if (!currentGame) return;
   syncActionNotifications(currentGame); syncImpactEffects(currentGame);
   const g = currentGame, me = spectating ? {id:playerId,hand:{},devCards:[],roads:[],settlements:[],cities:[]} : g.players.find(p => p.id === playerId), active = g.phase === "special" ? g.players.find(p => p.id === g.specialPlayerId) : g.players[g.activeIndex];
@@ -987,5 +987,6 @@ $("closeDevelopmentScene").onclick=closeDevelopmentScene;
 
 function mountDevelopmentScene(){if(!developmentSceneActive)return;const el=$("developmentScene"),modal=document.querySelector("dialog[open]"),parent=modal||document.body;if(el.showPopover&&el.parentElement!==parent){try{el.hidePopover();}catch{}parent.append(el);}el.hidden=false;try{el.showPopover?.();}catch{}}
 document.querySelectorAll("dialog").forEach(d=>d.addEventListener("close",()=>{if(developmentSceneActive)mountDevelopmentScene();}));
+
 
 
