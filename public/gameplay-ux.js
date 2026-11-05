@@ -1,0 +1,81 @@
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id),page=document.documentElement.dataset.game,game=page==='index'?'catan':page;
+const configs={
+ catan:{title:'カタン',room:'gameView',entry:'homeView',name:'playerName',code:'roomCode',join:'joinRoom',watch:'spectateRoom',invite:'copyInvite',status:'turnBanner',area:'actionPanel',min:3,max:6},
+ timebomb:{title:'タイムボム',room:'game',entry:'entry',name:'name',code:'code',join:'join',watch:'watch',invite:'copy',status:'instruction',area:'controls',min:3,max:8},
+ penguin:{title:'ペンギンパーティ',room:'game',entry:'entry',name:'name',code:'code',join:'join',watch:'watch',invite:'copy',status:'turnText',area:'handDock',min:2,max:6},
+ reddoor:{title:'赤い扉と殺人鬼の鍵',room:'game',entry:'entry',name:'name',code:'code',join:'join',watch:'watch',invite:'copy',status:'turnText',area:'doors',min:4,max:6},
+ daifugo:{title:'大富豪',room:'game',entry:'entry',name:'name',code:'code',join:'join',watch:'watch',invite:'copy',status:'turnText',area:'handDock',min:3,max:6},
+ spirit:{title:'スピリット・アイランド',room:'room',entry:'entry',name:'name',code:'code',join:'join',watch:'watch',invite:'invite',status:'phaseTitle',area:'mainAction',min:1,max:4},
+ bahamut:{title:'はらぺこバハムート',room:'room',entry:'entry',name:'name',code:'code',join:'join',watch:'watch',invite:'invite',status:'status',area:'hand',min:2,max:2},
+ coyote:{title:'コヨーテ',room:'room',entry:'entry',name:'name',code:'code',join:'join',watch:'watch',invite:'invite',status:'status',area:'seats',min:2,max:10}
+};
+const config=configs[game];if(!config)return;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const storageKey='boardgame-resume-v1:'+game;
+let model=null,lastRoom='',lastSave='',previousFocus=null,noticeTimer=0,syncQueued=false,signature='';
+const room=$(config.room),entry=$(config.entry);if(!room)return;
+const banner=document.createElement('section');banner.id='uxRoomBanner';banner.className='ux-room-banner';banner.setAttribute('aria-label','入室情報');banner.innerHTML='<div><span id="uxJoined">入室しました</span><b id="uxRoomCode"></b><p id="uxMembers"></p></div><button type="button" id="uxInvite">友達を招待</button>';room.prepend(banner);
+const dock=document.createElement('section');dock.id='uxDock';dock.className='ux-dock';dock.hidden=true;dock.setAttribute('aria-label','対戦状況と操作');dock.innerHTML='<div class="ux-dock-copy"><span id="uxMode"></span><b id="uxStatus" role="status" aria-live="polite"></b><small id="uxDetail"></small></div><div id="uxActions" class="ux-actions"></div><button type="button" id="uxRoomMenu" aria-label="部屋情報・招待を開く">部屋</button>';document.body.append(dock);
+const modal=document.createElement('dialog');modal.id='uxRoomDialog';modal.className='ux-dialog';modal.setAttribute('aria-labelledby','uxDialogTitle');document.body.append(modal);
+function close(){modal.close();previousFocus?.focus?.({preventScroll:true});}
+function present(title,body){if(!modal.open)previousFocus=document.activeElement;modal.innerHTML=`<header><h2 id="uxDialogTitle">${esc(title)}</h2><button type="button" id="uxClose" aria-label="閉じる">×</button></header><div class="ux-dialog-body">${body}</div>`;if(!modal.open)modal.showModal();$('uxClose').onclick=close;$('uxClose').focus();}
+modal.addEventListener('cancel',e=>{e.preventDefault();close();});
+function tell(message){let node=$('uxNotice');if(!node){node=document.createElement('p');node.id='uxNotice';node.setAttribute('role','status');document.body.append(node);}node.textContent=message;node.hidden=false;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>node.hidden=true,3500);}
+function inviteURL(){const u=new URL(location.href);u.pathname=game==='catan'?'/':'/'+game+'.html';u.search='';u.hash='';u.searchParams.set('room',model.code);return u.href;}
+function invite(){if(!model)return;const url=inviteURL();present('友達を招待',`<p>部屋コード <strong class="ux-code">${esc(model.code)}</strong></p><p>リンクを開き、名前を入力して「参加・復帰」を押すと、この卓に参加できます。</p><label for="uxInviteURL">招待リンク</label><input id="uxInviteURL" readonly value="${esc(url)}"><div class="ux-dialog-actions"><button type="button" id="uxCopyLink">リンクをコピー</button>${navigator.share?'<button type="button" id="uxShare">共有する</button>':''}</div><p id="uxCopyStatus" role="status"></p>`);$('uxInviteURL').onclick=()=>{$('uxInviteURL').focus();$('uxInviteURL').select();};$('uxCopyLink').onclick=async()=>{try{await navigator.clipboard.writeText(url);$('uxCopyStatus').textContent='招待リンクをコピーしました。';}catch{$('uxInviteURL').focus();$('uxInviteURL').select();$('uxCopyStatus').textContent='コピーできない場合は、選択中のリンクを長押ししてコピーしてください。';}};if($('uxShare'))$('uxShare').onclick=async()=>{try{await navigator.share({title:config.title+'で遊ぼう',text:'部屋コード：'+model.code,url});}catch(e){if(e.name!=='AbortError')$('uxCopyStatus').textContent='共有できませんでした。「リンクをコピー」をお使いください。';}};}
+function roomMenu(){if(!model)return;const g=model.state;present('部屋の情報',`<p class="ux-code">${esc(model.code)}</p><p>${model.watching?'観戦中':esc(g.players?.find(p=>p.id===model.meId)?.name||'参加者')+' として参加中'} · ${g.players?.length||0}人参加</p><ul class="ux-member-list">${(g.players||[]).map(p=>`<li>${esc(p.name)}${p.id===model.meId?'（あなた）':''}${p.id===g.hostId?' · ホスト':''}</li>`).join('')}</ul><div class="ux-dialog-actions"><button type="button" id="uxMenuInvite">友達を招待</button><button type="button" id="uxMenuRules">遊び方</button><button type="button" id="uxMenuTable">卓へ移動</button></div><p class="ux-muted">同じブラウザーなら、ゲームの入口にある「前回の部屋へ戻る」から復帰できます。部屋が終了・削除されている場合は復帰できません。</p>`);$('uxMenuInvite').onclick=invite;$('uxMenuTable').onclick=()=>{close();moveTo(room);};$('uxMenuRules').onclick=()=>{close();($('rules')||$('showRules')||$('firstPlayOpen'))?.click();};}
+$('uxInvite').onclick=invite;$('uxRoomMenu').onclick=roomMenu;
+$(config.invite)?.addEventListener('click',e=>{if(!model)return;e.preventDefault();e.stopImmediatePropagation();invite();},true);
+function moveTo(target){if(!target)return;target.scrollIntoView?.({block:'start',behavior:'auto'});if(!document.querySelector('dialog[open]')){target.setAttribute('tabindex','-1');target.focus?.({preventScroll:true});}}
+function readSaved(){try{const r=JSON.parse(localStorage.getItem(storageKey)||'null');return r&&typeof r.code==='string'&&/^[A-Z0-9]{4,8}$/.test(r.code)?r:null;}catch{return null;}}
+function renderResume(){const saved=readSaved();let box=$('uxResume');if(!saved){box?.remove();return;}if(!box){box=document.createElement('section');box.id='uxResume';box.className='ux-resume';const field=$(config.name);const label=field?.closest('label');(label||field)?.before(box);if(!box.isConnected)entry?.prepend(box);}box.innerHTML=`<div><small>前回のテーブル</small><b>${esc(saved.code)} · ${esc(saved.name||'観戦')}</b><p>${saved.watching?'観戦に戻ります。':'同じブラウザーから手札・参加状態を引き継ぎます。'}</p></div><div class="ux-resume-actions"><button type="button" id="uxResumeGo">前回の部屋へ戻る</button><button type="button" id="uxForget">表示を消す</button></div>`;$('uxResumeGo').onclick=()=>{if(new URL(location.href).searchParams.get('room')&&new URL(location.href).searchParams.get('room')!==saved.code){present('前回の部屋へ戻りますか？',`<p>いま開いている招待先とは別の部屋 ${esc(saved.code)} に移動します。</p><button type="button" id="uxResumeConfirm">前回の部屋へ戻る</button>`);$('uxResumeConfirm').onclick=()=>{close();resume(saved);};}else resume(saved);};$('uxForget').onclick=()=>{try{localStorage.removeItem(storageKey);}catch{}box.remove();};}
+function resume(saved){if($(config.name))$(config.name).value=saved.name||'';if($(config.code))$(config.code).value=saved.code;const action=saved.watching?config.watch:config.join;$(action)?.click();}
+function remember(){const name=model.state.players?.find(p=>p.id===model.meId)?.name||$(config.name)?.value||'',saved={code:model.code,name,watching:!!model.watching};const key=JSON.stringify(saved);if(key===lastSave)return;lastSave=key;try{localStorage.setItem(storageKey,key);}catch{}renderResume();}
+const isVisible=node=>!!node&&!node.closest('[hidden]')&&!node.closest('dialog:not([open])');
+const buttons=selector=>[...document.querySelectorAll(selector)].filter(b=>isVisible(b)&&b.tagName==='BUTTON');
+const byId=(id,label)=>({id,label});const scroll=(id,label)=>({scroll:id,label});
+function derive(m){const g=m.state,me=g.players?.find(p=>p.id===m.meId),self=g.me||me,watch=m.watching||!me,host=!watch&&m.meId===g.hostId,lobby=(g.status||g.phase)==='lobby',finished=!!g.winner||g.phase==='finished',activeId=g.activeId||g.turnId||g.holderId||g.players?.[g.phase==='special'?g.players.findIndex(p=>p.id===g.specialPlayerId):g.activeIndex]?.id,active=g.players?.find(p=>p.id===activeId);let mine=!watch&&m.meId===activeId,detail='',actions=[];
+ if(game==='timebomb')mine=!watch&&(g.phase==='inspect'?!self?.ready:['cut','between'].includes(g.phase)&&m.meId===g.holderId);
+ if(game==='catan')mine=!watch&&(g.phase==='discard'?!!g.discardPending?.[m.meId]:mine);
+ if(game==='reddoor')mine=!watch&&self?.alive!==false&&(self?.pending?!self.pending.voted:mine);
+ if(game==='daifugo')mine=!watch&&(g.phase==='exchange'?!!self?.exchange:mine);
+ if(game==='bahamut')mine=!watch&&(g.phase==='counter'?m.meId!==g.turnId:g.phase==='counterBack'?m.meId===g.turnId:mine);
+ if(game==='coyote')mine=mine&&g.phase==='bidding'&&me?.life>0;
+ if(game==='spirit')mine=!watch&&buttons('#mainAction button').some(b=>!b.disabled&&!/やり方|ガイド/.test(b.textContent));
+ let label=watch?'観戦中':lobby?'開始待ち':finished?'対戦終了':mine?'あなたの操作':(active?.name?active.name+'さんの操作待ち':'ほかの人の操作待ち');
+ let status=$(config.status)?.textContent.trim()||'';
+ if(game==='coyote'&&g.phase==='reveal'&&!watch)label=(g.ready||[]).includes(m.meId)?'ほかの人の確認待ち':'答え合わせ';
+ if(game==='catan')status=$('phaseNotice')?.textContent.trim()||status;
+ if(game==='timebomb'&&g.phase==='inspect'&&!watch&&self?.ready)label='ほかの人の確認待ち';
+ if(game==='daifugo'&&g.phase==='exchange'&&!watch&&!self?.exchange)label='ほかの人の交換待ち';
+ if(game==='timebomb')status=$('instruction')?.textContent.trim()||({inspect:'配られたカードを確認して伏せます',cut:'ニッパーを持つ人が切るカードを選びます',between:'残りのカードを混ぜて配り直します'}[g.phase]||'');
+ if(lobby){status=`${g.players?.length||0}人参加 · ${config.min}〜${config.max}人でプレイ`;detail=host?'設定を確認し、仲間がそろったら開始してください。':'ホストが開始するのを待っています。';if(host)actions=game==='catan'?[byId('startGame','ゲームを始める')]:[byId('start','ゲームを始める')];if(game==='timebomb'&&host)actions=[{selector:'#controls [data-action="start"]',label:'ゲームを始める'}];actions.push({invite:true,label:'友達を招待'});}
+ else if(finished){detail=watch?'同じ卓で次の対戦も観戦できます。':host?'同じメンバーで再戦できます。':'再戦の準備やホストの開始を確認してください。';const result={catan:byId('rematchReadyButton','再戦の準備'),timebomb:byId('viewWinner','結果・再戦'),penguin:byId('openResults','結果・再戦'),reddoor:byId('openResult','結果・再戦'),daifugo:byId('openResults','結果・再戦'),coyote:byId('showResult','結果を見る')};actions=result[game]?[result[game]]:[];if(!watch){if(game==='bahamut'&&host)actions=[byId('start','同じメンバーで再戦')];if(game==='spirit'&&host)actions=[byId('rematch','再戦の準備')];if(game==='coyote'&&host)actions.push(byId('rematch','同じメンバーで再戦'));}if(watch&&game==='catan')actions=[];}
+ else if(!watch){switch(game){
+ case 'catan':if(g.phase==='setup')actions=[scroll('boardWrap',mine?'配置する場所を選ぶ':'盤面を見る')];else if(mine){actions=g.phase==='main'?[scroll('actionPanel','建設・交換'),{selector:'#mainActions [data-action="endTurn"]',label:'ターン終了'}]:buttons('#mainActions button').slice(0,2).map(b=>({node:b,selector:b.id?'#'+b.id:b.dataset.resolve?'[data-resolve="'+b.dataset.resolve+'"]':undefined,label:b.textContent}));}break;
+ case 'timebomb':if(g.phase==='inspect')actions=[byId('peek',self?.ready?'カードを見返す':'カードを確認')];else if(g.phase==='between'&&mine)actions=[byId('roundContinue','混ぜて次へ')];else if(mine)actions=[scroll('opponents','切るカードを選ぶ')];break;
+ case 'penguin':actions=['roundEnd'].includes(g.phase)?[byId('openResults','結果・次のラウンド')]:mine?[scroll('handDock','手札から色を選ぶ')]:[];break;
+ case 'reddoor':if(mine)actions=g.phase==='resolve'?[byId('reopenRoom','カードの処理を続ける')]:[scroll('doors','扉を選ぶ')];break;
+ case 'daifugo':if(g.phase==='roundEnd')actions=[byId('openResults','結果・次のゲーム')];else if(self?.exchange||self?.pending)actions=[byId(self?.exchange?'openTask':'reopenTask','必要なカードを選ぶ')];else if(mine)actions=[byId('play','選んだカードを出す'),byId('pass','パス')];break;
+ case 'spirit':actions=buttons('#mainAction button').filter(b=>!b.disabled).slice(0,2).map(b=>({node:b,selector:b.id?'#'+b.id:b.dataset.resolve?'[data-resolve="'+b.dataset.resolve+'"]':undefined,label:b.textContent}));detail=$('mainAction')?.textContent.trim()||'';break;
+ case 'bahamut':if(mine)actions=g.phase==='play'?[scroll('hand','カードを選ぶ'),byId('end','手番終了')]:[byId('resolve','必要な選択を開く')];break;
+ case 'coyote':if(mine)actions=[byId('openBid','数字を宣言'),byId('openChallenge','コヨーテ！')];else if(g.phase==='reveal')actions=[byId('showResult','答え合わせ'),byId('ready','確認して次へ')];break;
+ }}
+ if(watch&&!finished&&!lobby)detail='公開情報を見ながら対戦を見守れます。';
+ if(!watch&&!lobby&&!finished&&((game==='reddoor'&&self?.alive===false)||(game==='coyote'&&me?.life===0))){label=game==='reddoor'?'死亡後の観戦':'脱落後の観戦';actions=[];}
+ return{label,status,detail,actions:actions.slice(0,2),mine,lobby,finished,watch};}
+function resolveAction(a){return a.selector?document.querySelector(a.selector):a.id?$(a.id):a.node?.id?$(a.node.id):a.node;}
+function sync(){syncQueued=false;if(!model)return;const visible=!room.hidden;dock.hidden=!visible;document.body.classList.toggle('ux-in-room',visible);if(!visible){lastRoom='';return;}const d=derive(model),connection=$('connection')||$('connectionLabel'),offline=/再接続|切断|エラー/.test(connection?.textContent||'');const label=offline?'再接続中 · 自動で再試行':d.label;const status=offline?'通信が戻るまで操作をお待ちください。':d.status;
+ const set=(id,value)=>{if($(id).textContent!==value)$(id).textContent=value;};set('uxMode',label);set('uxStatus',status||config.title);set('uxDetail',d.detail);dock.dataset.turn=String(d.mine&&!offline&&!d.lobby&&!d.finished);banner.dataset.lobby=String(d.lobby);const s=JSON.stringify([d.actions.map(a=>[a.id,a.selector,a.scroll,a.label,resolveAction(a)?.disabled,resolveAction(a)?.hidden]),offline,model.getBusy?.()]);if(signature!==s){signature=s;const host=$('uxActions');host.replaceChildren();for(const a of d.actions){const target=resolveAction(a);if(!a.scroll&&!a.invite&&!a.run&&!target)continue;const b=document.createElement('button');b.type='button';b.textContent=a.label;b.disabled=!!(offline||model.getBusy?.()||target?.disabled||target?.hidden);b.onclick=()=>{if(b.disabled)return;const current=resolveAction(a);if(current&&(current.disabled||!current.isConnected))return;if(a.invite)invite();else if(a.scroll)moveTo($(a.scroll));else if(a.run)a.run();else current?.click();};host.append(b);}}
+ measure();}
+function queue(){if(!syncQueued){syncQueued=true;setTimeout(sync,0);}}
+function measure(){const h=dock.hidden?0:Math.ceil(dock.getBoundingClientRect().height),hand=$('handDock'),hh=hand&&!hand.hidden?Math.ceil(hand.getBoundingClientRect().height):0;document.documentElement.style.setProperty('--ux-dock-height',h+'px');document.documentElement.style.setProperty('--ux-hand-height',hh+'px');}
+new MutationObserver(queue).observe(room,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['hidden','disabled']});for(const id of ['connection','connectionLabel'])if($(id))new MutationObserver(queue).observe($(id),{childList:true,characterData:true,subtree:true});
+if(typeof ResizeObserver!=='undefined'){const observer=new ResizeObserver(measure);observer.observe(dock);if($('handDock'))observer.observe($('handDock'));}window.addEventListener('resize',measure);
+function update(next){model=next;if(!model.code)return;const key=model.code+':'+!!model.watching;const changed=lastRoom!==key;lastRoom=key;setBanner();remember();sync();if(changed){moveTo(banner);tell(model.watching?'観戦を開始しました。部屋 '+model.code:'部屋 '+model.code+' に入室しました。');}}
+function setBanner(){const g=model.state,name=g.players?.find(p=>p.id===model.meId)?.name;const set=(id,s)=>{if($(id).textContent!==s)$(id).textContent=s;};set('uxJoined',model.watching?'観戦中':(name||'あなた')+' として入室済み');set('uxRoomCode','ROOM '+model.code);set('uxMembers',`${g.players?.length||0}人参加 · `+(g.players||[]).map(p=>p.name).join(' / '));}
+globalThis.BoardgameUX={update,derive,invite};
+document.addEventListener('DOMContentLoaded',renderResume);if(document.readyState!=='loading')renderResume();
+})();
