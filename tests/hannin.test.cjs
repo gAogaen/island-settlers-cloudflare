@@ -2,7 +2,7 @@ const assert=require('node:assert/strict');
 const {webcrypto}=require('node:crypto');
 if(!globalThis.crypto)globalThis.crypto=webcrypto;
 (async()=>{
- const {handleHannin}=await import('../src/hannin.mjs');
+ const {handleHannin,dealInitialHands}=await import('../src/hannin.mjs');
  for(let n=3;n<=8;n++){
   const state=new Map(),storage={get:async k=>state.get(k),put:async(k,v)=>state.set(k,structuredClone(v))};
   const call=async(route,body)=>{const request=new Request('https://room/hn/'+route,{method:body?'POST':'GET',...(body?{headers:{'content-type':'application/json'},body:JSON.stringify(body)}:{})});const response=await handleHannin(storage,request);return {status:response.status,...await response.json()}};
@@ -16,6 +16,7 @@ if(!globalThis.crypto)globalThis.crypto=webcrypto;
   assert.equal(all.filter(c=>c.type==='first').length,1);
   assert.equal(state.get('hannin').discard[0].type,'first');
   assert.equal(state.get('hannin').players.reduce((a,p)=>a+p.hand.length,0),4*n-1);
+  for(const player of state.get('hannin').players){const detectives=player.hand.filter(c=>c.type==='detective').length;assert.notEqual(detectives,4,`player ${player.name} received four Detectives`);assert.ok(!(detectives===3&&player.hand.some(c=>c.type==='culprit')),`player ${player.name} received the Culprit and three Detectives`);}
   const spectator=await call('state?spectate=1');assert.equal(spectator.status,200);assert.equal(spectator.game.me,null);
   for(const u of users){const response=await call('state?token='+u.token);assert.equal(response.status,200);assert.equal(response.game.me.id,u.game.me.id);assert.equal(JSON.stringify(spectator).includes(u.token),false);}
   const active=started.game.players[started.game.turn];const user=users.find(u=>u.game.me.id===active.id);
@@ -35,6 +36,18 @@ if(!globalThis.crypto)globalThis.crypto=webcrypto;
     }
    }
   }
+ }
+ // Invalid initial detective hands are rejected and reshuffled before dealing.
+ {
+  const deck=[...Array.from({length:4},(_,i)=>({id:'detective-'+i,type:'detective'})),{id:'culprit',type:'culprit'},...Array.from({length:7},(_,i)=>({id:'citizen-'+i,type:'citizen'}))];
+  const allDetectives=deck.slice();
+  const culpritAndThree=[deck[4],deck[0],deck[1],deck[2],deck[3],...deck.slice(5)];
+  const valid=[deck[4],deck[0],deck[5],deck[6],deck[1],deck[2],deck[3],deck[7],...deck.slice(8)];
+  const attempts=[allDetectives,culpritAndThree,valid];
+  const hands=dealInitialHands(deck,3,()=>attempts.shift());
+  assert.equal(attempts.length,0);
+  assert.deepEqual(hands[0].map(c=>c.id),['culprit','detective-0','citizen-0','citizen-1']);
+  assert.deepEqual(hands[1].map(c=>c.id),['detective-1','detective-2','detective-3','citizen-2']);
  }
  // Third edition: the dog reveals one selected card; a non-culprit card returns to its owner.
  {
