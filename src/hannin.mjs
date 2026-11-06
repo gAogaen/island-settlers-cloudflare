@@ -56,7 +56,7 @@ function play(g,p,a){
  }else if(type==='trade'){
   g.pending={type:'trade',actor:p.id,target:t.id,description:'交換する自分のカードを選択',options:p.hand.map(c=>c.id)};return;
  }else if(type==='rumor'){
-  queue(g,'rumor',g.players.filter(x=>x.hand.length), '右隣からカードを1枚引きます。');return;
+  const moves=g.players.filter(x=>x.hand.length).map(x=>({from:x.id,cardId:x.hand[rnd(x.hand.length)].id}));for(const m of moves){const from=find(g,m.from),idx=g.players.findIndex(x=>x.id===from.id),to=nextPlayer(g,idx);to.hand.push(pop(from,m.cardId));}log(g,'全員が右隣からカードを1枚引きました。');
  }else if(type==='information'){
   queue(g,'information',g.players.filter(x=>x.hand.length),'左隣へ渡すカードを1枚選択');return;
  }else if(type==='plot'){
@@ -80,15 +80,15 @@ function resolve(g,p,a){
   if(!mine)throw Error('自分のカードを選択してください。');
   const theirs=randomCard(t);pop(p,mine.id);p.hand.push(theirs);t.hand.push(mine);log(g,p.name+'と'+t.name+'がカードを交換しました。');advance(g);return;
  }
- if(pending.type==='rumor'||pending.type==='information'){
+ if(pending.type==='information'){
   if(!p.hand.length)throw Error('手札がありません。');
   if(!p.hand.some(c=>c.id===a.cardId))throw Error('手札から1枚選択してください。');
   (pending.moves??=[]).push({player:p.id,cardId:a.cardId});
   pending.queue.shift();pending.actor=pending.queue[0]||null;
   if(pending.actor)return;
   const moves=pending.moves;
-  for(const move of moves){const from=find(g,move.player);const card=pop(from,move.cardId);const index=g.players.findIndex(x=>x.id===from.id);const to=pending.type==='information'?nextPlayer(g,index):g.players[(index+g.players.length-1)%g.players.length];to.hand.push(card);}
-  log(g,pending.type==='rumor'?'全員が右隣から1枚引きました。':'全員が左隣に1枚渡しました。');
+  for(const move of moves){const from=find(g,move.player);const card=pop(from,move.cardId);const index=g.players.findIndex(x=>x.id===from.id);nextPlayer(g,index).hand.push(card);}
+  log(g,'全員が左隣に1枚渡しました。');
   advance(g);return;
  }
  throw Error('未対応の効果です。');
