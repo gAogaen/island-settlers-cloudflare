@@ -27,7 +27,7 @@ function play(g,p,a){
  const requires=['detective','rumor','trade','information','witness','dog','boy','plot'].includes(type);
  const t=requires?requireTarget(g,p,a.targetId):null;
  if(t&&['rumor','trade','information','witness','dog','boy','plot'].includes(type)&&!t.hand.length)throw Error('対象の手札がありません。');
- if(type==='trade'&&!p.hand.length)throw Error('交換する手札がありません。');
+ if(type==='trade'&&p.hand.length<2)throw Error('交換する手札がありません。');
  if(type==='culprit'){
   if(g.players.some(x=>x.id!==p.id&&x.hand.length===0))throw Error('この状態では犯人カードを出せません。');
   pop(p,c.id);g.discard.push(c);finish(g,p.name+'（犯人）',p.name+'が犯人カードを出しました。');return;
@@ -47,7 +47,7 @@ function play(g,p,a){
    g.pending={type:'peek',actor:p.id,description:t.name+'の手札を確認しました。',peek:peek(t)};return;
  }else if(type==='dog'){
    if(t.hand.some(x=>x.type==='culprit')){finish(g,p.name+'（いぬ）',p.name+'のいぬが犯人を見つけました。');return}
-   log(g+'',t.name+'は犯人カードを持っていません。');
+   log(g,t.name+'は犯人カードを持っていません。');
  }else if(type==='plot'){
    g.pending={type:'plot',actor:p.id,description:'相手の手札から1枚を選んで交換します。',options:t.hand.map(x=>x.id),target:t.id};return;
  }else if(type==='first'){
