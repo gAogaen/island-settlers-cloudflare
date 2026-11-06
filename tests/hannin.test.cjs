@@ -34,7 +34,7 @@ if(!globalThis.crypto)globalThis.crypto=webcrypto;
    }
   }
  }
- // Regression: a non-culprit revealed by the dog must remain in the target's hand.
+ // Third-edition regression: the drawn card is discarded and the dog moves to the target.
  {
   const state=new Map(),storage={get:async k=>state.get(k),put:async(k,v)=>state.set(k,structuredClone(v))};
   const call=async(route,body)=>{const request=new Request('https://room/hn/'+route,{method:body?'POST':'GET',...(body?{headers:{'content-type':'application/json'},body:JSON.stringify(body)}:{})});const response=await handleHannin(storage,request);return {status:response.status,...await response.json()}};
@@ -44,15 +44,23 @@ if(!globalThis.crypto)globalThis.crypto=webcrypto;
   const g=state.get('hannin'),actor=g.players[g.turn],target=g.players[(g.turn+1)%3];
   actor.hand[0]={id:'dog-test-card',type:'dog'};
   target.hand[0]={id:'dog-target-card',type:'citizen'};
+  // The player holding the culprit must not be able to play an alibi.
+  actor.hand[1]={id:'alibi-test-card',type:'alibi'};
+  actor.hand[2]={id:'culprit-test-card',type:'culprit'};
   await storage.put('hannin',g);
   const token=users.find(u=>u.game.me.id===actor.id).token;
+  const blocked=await call('action',{token,type:'play',cardId:'alibi-test-card'});
+  assert.equal(blocked.status,400);
   const played=await call('action',{token,type:'play',cardId:'dog-test-card',targetId:target.id});
   assert.equal(played.status,200,JSON.stringify(played));
   const resolved=await call('action',{token,type:'resolve',cardId:'0'});
   assert.equal(resolved.status,200,JSON.stringify(resolved));
   const after=state.get('hannin');
-  assert.ok(after.players.find(p=>p.id===target.id).hand.some(c=>c.id==='dog-target-card'));
-  assert.ok(after.discard.some(c=>c.id==='dog-test-card'));
+  assert.ok(!after.players.find(p=>p.id===target.id).hand.some(c=>c.id==='dog-target-card'));
+  assert.ok(after.discard.some(c=>c.id==='dog-target-card'));
+  assert.ok(after.players.find(p=>p.id===target.id).hand.some(c=>c.id==='dog-test-card'));
+  assert.ok(!after.discard.some(c=>c.id==='dog-test-card'));
+  assert.equal(after.players.flatMap(p=>p.hand).length+after.discard.length,12);
  }
  console.log('Hannin: 3–8 player setup, hidden information, opening turn, actions OK');
 })().catch(e=>{console.error(e);process.exitCode=1});
