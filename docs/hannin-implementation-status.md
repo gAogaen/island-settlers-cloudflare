@@ -1,11 +1,28 @@
-// Work in progress — not production ready.
-// This module is intentionally not wired into src/worker.mjs or the site catalog yet.
-// Before release: verify the official third-edition deck distribution and each card's
-// exact effect, including first discovery, deduction, private information and win conditions.
-// The current src/hannin.mjs is a prototype; do not deploy it as a complete rules engine.
-// Requirements from the project conversation:
-// 3–8 players; mobile-first layout; invite URLs; spectator-safe views;
-// secure reconnect by token; server-side hidden information; first-play rules;
-// dark mode; activity log; full turn resolution and rematches.
-// Release gate: exhaustive effect tests, 3/4/5/6/7/8-player scenarios,
-// no hidden-card leakage, and browser-based UI regression tests.
+# 犯人は踊る — 実装状況（2026-11-06）
+
+作業ブランチ: `feature/hannin-wa-odoru`
+
+## 実装済み
+- 3〜8人の部屋作成・参加・復帰、招待URL、観戦、再戦
+- 手札をサーバーで保持し、本人以外には非公開。観戦者に個別情報を返さない
+- 第三版の32枚構成と人数別必須カードの選定
+- 第一発見者から開始、時計回り、空手札のプレイヤーをスキップ
+- 犯人・探偵・アリバイ・たくらみ・いぬ・うわさ・取り引き・情報操作・目撃者・少年・一般人の処理
+- 対象選択・非公開確認・双方のカード交換選択・情報操作時の個別選択
+- 初回のみルール表示、いつでも再表示、ゲーム一覧への追加
+- サーバー側の操作認可、revision による古い操作の拒否
+
+## 検証
+- JavaScript構文検査: 正常
+- 3〜8人の部屋作成・配布・初手・観戦非公開のシミュレーション: 6ケース正常
+- 3〜8人のランダムなカード使用と保有枚数不変条件のシミュレーション: 80対戦・2,347操作、操作エラーなし（空手札スキップ修正前）
+- `tests/hannin.test.cjs` を追加し、npm test に組み込み済み
+
+## 公開前に残る確認
+- GitHub Actions / Node実環境でのテスト結果と Wrangler dry-run を確認する
+- PC・スマホでの実ブラウザー操作確認（暗色・明色・再接続・対戦終了）
+- 少年カードはオンライン向けに犯人の名前を本人だけに表示する仕様に変更している
+- 対象者の手札が0枚の場合など、実際の版の例外処理との最終照合
+- 本番へのデプロイは未実施
+
+参照: すごろくや販売ページ、および第三版ルール紹介資料。カード画像は公式画像の複製ではなく文字ベースのUI。
