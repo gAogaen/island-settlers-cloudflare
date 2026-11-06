@@ -23,7 +23,7 @@ function win(g,p,role){const conspirators=g.players.filter(x=>x.plotUsed).map(x=
 
 function view(g,p){
  const pending=g.pending;
- return {code:g.code,phase:g.phase,hostId:g.hostId,turn:g.turn,revision:g.revision,winner:g.winner||null,reason:g.reason||'',players:g.players.map(x=>({id:x.id,name:x.name,count:x.hand.length})),me:p?{id:p.id,hand:p.hand.map(c=>({...c,name:NAMES[c.type]}))}:null,
+ return {code:g.code,phase:g.phase,hostId:g.hostId,turn:g.turn,rounds:g.rounds||0,revision:g.revision,winner:g.winner||null,reason:g.reason||'',players:g.players.map(x=>({id:x.id,name:x.name,count:x.hand.length})),me:p?{id:p.id,hand:p.hand.map(c=>({...c,name:NAMES[c.type]}))}:null,
  pending:pending?{type:pending.type,actor:pending.actor,needsAction:p?.id===pending.actor,description:pending.description||'',options:p?.id===pending.actor?(pending.options||(['rumor','information'].includes(pending.type)?p.hand.map(c=>c.id):[])):[],peek:p?.id===pending.actor?(pending.peek||[]):[]}:null,discard:g.discard.map(c=>c.type),log:g.log.slice(-40)};
 }
 function finish(g,winner,reason){g.phase='finished';g.winner=winner;g.reason=reason;g.pending=null;log(g,reason)}
