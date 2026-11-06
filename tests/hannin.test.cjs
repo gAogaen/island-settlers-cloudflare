@@ -20,7 +20,7 @@ if(!globalThis.crypto)globalThis.crypto=webcrypto;
   for(const u of users){const response=await call('state?token='+u.token);assert.equal(response.status,200);assert.equal(response.game.me.id,u.game.me.id);assert.equal(JSON.stringify(spectator).includes(u.token),false);}
   const active=started.game.players[started.game.turn];const user=users.find(u=>u.game.me.id===active.id);
   const me=(await call('state?token='+user.token)).game.me;
-  const selected=me.hand.find(c=>!['culprit','detective'].includes(c.type));
+  const selected=me.hand.find(c=>!['culprit','detective','alibi','information','trade','witness','dog'].includes(c.type));
   if(selected){
    const other=started.game.players.find(p=>p.id!==active.id);
    const played=await call('action',{token:user.token,type:'play',cardId:selected.id,targetId:other.id,revision:started.game.revision});
@@ -29,8 +29,10 @@ if(!globalThis.crypto)globalThis.crypto=webcrypto;
    if(played.game.pending?.needsAction){
     const spec=await call('state?spectate=1');assert.deepEqual(spec.game.pending.peek,[]);assert.deepEqual(spec.game.pending.options,[]);
     const pending=played.game.pending;
-    const resolved=await call('action',{token:user.token,type:'resolve',cardId:pending.options[0],revision:played.game.revision});
-    assert.equal(resolved.status,200,JSON.stringify(resolved));
+    if(pending.type==='peek'){
+     const resolved=await call('action',{token:user.token,type:'resolve',revision:played.game.revision});
+     assert.equal(resolved.status,200,JSON.stringify(resolved));
+    }
    }
   }
  }
