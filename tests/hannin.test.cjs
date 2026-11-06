@@ -36,7 +36,7 @@ if(!globalThis.crypto)globalThis.crypto=webcrypto;
    }
   }
  }
- // Third-edition regression: the drawn card is discarded and the dog moves to the target.
+ // Third edition: the dog reveals one selected card; a non-culprit card returns to its owner.
  {
   const state=new Map(),storage={get:async k=>state.get(k),put:async(k,v)=>state.set(k,structuredClone(v))};
   const call=async(route,body)=>{const request=new Request('https://room/hn/'+route,{method:body?'POST':'GET',...(body?{headers:{'content-type':'application/json'},body:JSON.stringify(body)}:{})});const response=await handleHannin(storage,request);return {status:response.status,...await response.json()}};
@@ -58,11 +58,12 @@ if(!globalThis.crypto)globalThis.crypto=webcrypto;
   const resolved=await call('action',{token,type:'resolve',cardId:'0'});
   assert.equal(resolved.status,200,JSON.stringify(resolved));
   const after=state.get('hannin');
-  assert.ok(!after.players.find(p=>p.id===target.id).hand.some(c=>c.id==='dog-target-card'));
-  assert.ok(after.discard.some(c=>c.id==='dog-target-card'));
-  assert.ok(after.players.find(p=>p.id===target.id).hand.some(c=>c.id==='dog-test-card'));
-  assert.ok(!after.discard.some(c=>c.id==='dog-test-card'));
+  assert.ok(after.players.find(p=>p.id===target.id).hand.some(c=>c.id==='dog-target-card'));
+  assert.ok(!after.discard.some(c=>c.id==='dog-target-card'));
+  assert.ok(after.discard.some(c=>c.id==='dog-test-card'));
+  assert.ok(!after.players.find(p=>p.id===target.id).hand.some(c=>c.id==='dog-test-card'));
   assert.equal(after.players.flatMap(p=>p.hand).length+after.discard.length,12);
+  assert.ok(after.log.some(entry=>/元に戻します/.test(entry)));
  }
  // UI regression: private boy reveal must render a player's name, not an undefined card label.
  {
