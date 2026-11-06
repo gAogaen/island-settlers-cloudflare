@@ -36,9 +36,10 @@ function play(g,p,a){
  const type=c.type;
  if(type==='first')throw Error('第一発見者は開始時に使用済みです。');
  if(type==='culprit'&&p.hand.length!==1)throw Error('犯人は最後の1枚のときだけ出せます。');
- if(type==='detective'&&g.rounds<1)throw Error('探偵は最初の1周目には使えません。');
+ const detectiveNoEffect=type==='detective'&&g.rounds<1&&p.hand.length===4&&(p.hand.every(x=>x.type==='detective')||(p.hand.filter(x=>x.type==='detective').length===3&&p.hand.some(x=>x.type==='culprit')));
+ if(type==='detective'&&g.rounds<1&&!detectiveNoEffect)throw Error('探偵は最初の1周目には使えません。');
  if(type==='alibi'&&p.hand.some(x=>x.type==='culprit'))throw Error('犯人カードを持っている間はアリバイを出せません。');
- const requires=['detective','trade','witness','dog'].includes(type);
+ const requires=['detective','trade','witness','dog'].includes(type)&&!detectiveNoEffect;
  const t=requires?requireTarget(g,p,a.targetId):null;
  
  if(type==='witness'&&!t.hand.length)throw Error('相手に手札がありません。');
@@ -46,8 +47,11 @@ function play(g,p,a){
  pop(p,c.id);g.discard.push(c);log(g,p.name+'が「'+NAMES[type]+'」を使用しました。');
  if(type==='culprit'){win(g,p,'犯人');return}
  if(type==='detective'){
-  if(t.hand.some(x=>x.type==='culprit')&&!t.hand.some(x=>x.type==='alibi')){win(g,p,'探偵');return}
-  log(g,t.name+'は「犯人ではありません」と回答しました。');
+  if(detectiveNoEffect)log(g,'1周目のため「探偵」の効果はありません。');
+  else{
+   if(t.hand.some(x=>x.type==='culprit')&&!t.hand.some(x=>x.type==='alibi')){win(g,p,'探偵');return}
+   log(g,t.name+'は「犯人ではありません」と回答しました。');
+  }
  }else if(type==='witness'){
   g.pending={type:'peek',actor:p.id,description:t.name+'の手札を確認',peek:t.hand.map(c=>c.type)};return;
  }else if(type==='boy'){
