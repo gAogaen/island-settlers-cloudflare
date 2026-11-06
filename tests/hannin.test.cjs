@@ -126,5 +126,39 @@ if(!globalThis.crypto)globalThis.crypto=webcrypto;
   assert.ok(g.players.find(p=>p.id===target.id).hand.some(c=>c.id==='trade-mine'));
   assert.equal(g.pending,null);
  }
- console.log('Hannin: 3–8 players, secrecy, authorization, witness, dog and trade OK');
+ // Win conditions and first-round detective restriction.
+ {
+  const state=new Map(),storage={get:async k=>state.get(k),put:async(k,v)=>state.set(k,structuredClone(v))};
+  const call=async(route,body)=>{const request=new Request('https://room/hn/'+route,{method:body?'POST':'GET',...(body?{headers:{'content-type':'application/json'},body:JSON.stringify(body)}:{})});const response=await handleHannin(storage,request);return {status:response.status,...await response.json()}};
+  const users=[];
+  for(let i=0;i<3;i++)users.push(await call(i?'join':'create',{name:'Win'+i,code:'WIN123'}));
+  await call('action',{token:users[0].token,type:'start'});
+  let g=state.get('hannin'),actor=g.players[g.turn],target=g.players[(g.turn+1)%3];
+  const token=users.find(u=>u.game.me.id===actor.id).token;
+  actor.hand=[{id:'detective-test',type:'detective'},{id:'other-test',type:'citizen'}];
+  target.hand=[{id:'culprit-test',type:'culprit'}];
+  await storage.put('hannin',g);
+  assert.equal((await call('action',{token,type:'play',cardId:'detective-test',targetId:target.id})).status,400);
+  g.rounds=1;await storage.put('hannin',g);
+  const found=await call('action',{token,type:'play',cardId:'detective-test',targetId:target.id});
+  assert.equal(found.status,200,JSON.stringify(found));
+  assert.equal(found.game.phase,'finished');
+  assert.match(found.game.winner,/探偵/);
+  assert.equal((await call('action',{token,type:'play',cardId:'other-test'})).status,400);
+  const rematch=await call('action',{token:users[0].token,type:'rematch'});
+  assert.equal(rematch.status,200,JSON.stringify(rematch));
+  assert.equal(rematch.game.phase,'lobby');
+  assert.ok(state.get('hannin').players.every(p=>p.hand.length===0));
+  await call('action',{token:users[0].token,type:'start'});
+  g=state.get('hannin');actor=g.players[g.turn];const culpritToken=users.find(u=>u.game.me.id===actor.id).token;
+  actor.hand=[{id:'last-culprit',type:'culprit'},{id:'extra',type:'citizen'}];
+  await storage.put('hannin',g);
+  assert.equal((await call('action',{token:culpritToken,type:'play',cardId:'last-culprit'})).status,400);
+  g=state.get('hannin');g.players[g.turn].hand=[{id:'last-culprit',type:'culprit'}];await storage.put('hannin',g);
+  const escaped=await call('action',{token:culpritToken,type:'play',cardId:'last-culprit'});
+  assert.equal(escaped.status,200,JSON.stringify(escaped));
+  assert.equal(escaped.game.phase,'finished');
+  assert.match(escaped.game.winner,/犯人/);
+ }
+ console.log('Hannin: 3–8 players, secrecy, witness, dog, trade, detective and culprit wins OK');
 })().catch(e=>{console.error(e);process.exitCode=1});
