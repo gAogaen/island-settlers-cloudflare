@@ -27,7 +27,7 @@ function view(g,p){
  pending:pending?{type:pending.type,actor:pending.actor,needsAction:p?.id===pending.actor,description:pending.description||'',options:p?.id===pending.actor?(pending.options||(['rumor','information'].includes(pending.type)?p.hand.map(c=>c.id):[])):[],peek:p?.id===pending.actor?(pending.peek||[]):[]}:null,discard:g.discard.map(c=>c.type),log:g.log.slice(-40)};
 }
 function finish(g,winner,reason){g.phase='finished';g.winner=winner;g.reason=reason;g.pending=null;log(g,reason)}
-function advance(g){g.pending=null;g.turn=(g.turn+1)%g.players.length;g.turnSteps=(g.turnSteps||0)+1;if(g.turnSteps>=g.players.length)g.rounds=1;checkDetectives(g);if(g.phase==='playing'&&g.players.every(p=>!p.hand.length))finish(g,'draw','手札がなくなったため終了しました。')}
+function advance(g){g.pending=null;g.turnSteps=(g.turnSteps||0)+1;if(g.turnSteps>=g.players.length)g.rounds=1;checkDetectives(g);if(g.phase!=='playing')return;if(g.players.every(p=>!p.hand.length)){finish(g,'draw','手札がなくなったため終了しました。');return;}for(let i=0;i<g.players.length;i++){g.turn=(g.turn+1)%g.players.length;if(g.players[g.turn].hand.length)break;}}
 function requireTarget(g,p,id){const t=find(g,id);if(!t||t.id===p.id)throw Error('対象プレイヤーを選択してください。');return t}
 function queue(g,type,players,description){g.pending={type,queue:players.map(p=>p.id),actor:players[0]?.id,description};if(!players.length)advance(g)}
 function play(g,p,a){
