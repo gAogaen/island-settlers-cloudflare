@@ -98,5 +98,33 @@ if(!globalThis.crypto)globalThis.crypto=webcrypto;
   assert.equal(resolved.status,200,JSON.stringify(resolved));
   assert.equal(state.get('hannin').pending,null);
  }
- console.log('Hannin: 3–8 players, hidden information, authorization, witness effect and actions OK');
+ // Trade regression: both participants choose privately; cards exchange without loss.
+ {
+  const state=new Map(),storage={get:async k=>state.get(k),put:async(k,v)=>state.set(k,structuredClone(v))};
+  const call=async(route,body)=>{const request=new Request('https://room/hn/'+route,{method:body?'POST':'GET',...(body?{headers:{'content-type':'application/json'},body:JSON.stringify(body)}:{})});const response=await handleHannin(storage,request);return {status:response.status,...await response.json()}};
+  const users=[];
+  for(let i=0;i<3;i++)users.push(await call(i?'join':'create',{name:'Trade'+i,code:'TRD123'}));
+  await call('action',{token:users[0].token,type:'start'});
+  let g=state.get('hannin'),actor=g.players[g.turn],target=g.players[(g.turn+1)%3];
+  const tokenFor=p=>users.find(u=>u.game.me.id===p.id).token;
+  const actorToken=tokenFor(actor),targetToken=tokenFor(target);
+  actor.hand=[{id:'trade-action',type:'trade'},{id:'trade-mine',type:'citizen'}];
+  target.hand=[{id:'trade-theirs',type:'alibi'}];
+  await storage.put('hannin',g);
+  const played=await call('action',{token:actorToken,type:'play',cardId:'trade-action',targetId:target.id});
+  assert.equal(played.status,200,JSON.stringify(played));
+  assert.equal(played.game.pending.actor,actor.id);
+  const chosen=await call('action',{token:actorToken,type:'resolve',cardId:'trade-mine'});
+  assert.equal(chosen.status,200,JSON.stringify(chosen));
+  assert.equal(chosen.game.pending.actor,target.id);
+  assert.deepEqual((await call('state?spectate=1')).game.pending.options,[]);
+  assert.equal((await call('action',{token:actorToken,type:'resolve',cardId:'trade-theirs'})).status,400);
+  const completed=await call('action',{token:targetToken,type:'resolve',cardId:'trade-theirs'});
+  assert.equal(completed.status,200,JSON.stringify(completed));
+  g=state.get('hannin');
+  assert.ok(g.players.find(p=>p.id===actor.id).hand.some(c=>c.id==='trade-theirs'));
+  assert.ok(g.players.find(p=>p.id===target.id).hand.some(c=>c.id==='trade-mine'));
+  assert.equal(g.pending,null);
+ }
+ console.log('Hannin: 3–8 players, secrecy, authorization, witness, dog and trade OK');
 })().catch(e=>{console.error(e);process.exitCode=1});
