@@ -160,5 +160,25 @@ if(!globalThis.crypto)globalThis.crypto=webcrypto;
   assert.equal(escaped.game.phase,'finished');
   assert.match(escaped.game.winner,/犯人/);
  }
+ // Full hidden-card rotations, exhausted detective pool, and accomplice ending.
+ {
+  const state=new Map(),storage={get:async k=>state.get(k),put:async(k,v)=>state.set(k,structuredClone(v))};
+  const call=async(route,body)=>{const request=new Request('https://room/hn/'+route,{method:body?'POST':'GET',...(body?{headers:{'content-type':'application/json'},body:JSON.stringify(body)}:{})});const response=await handleHannin(storage,request);return {status:response.status,...await response.json()}};
+  const users=[];for(let i=0;i<3;i++)users.push(await call(i?'join':'create',{name:'Move'+i,code:'MOV123'}));await call('action',{token:users[0].token,type:'start'});
+  let g=state.get('hannin');const tokenFor=p=>users.find(u=>u.game.me.id===p.id).token;
+  g.players[0].hand=[{id:'rumor-test',type:'rumor'},{id:'rumor-a',type:'citizen'}];g.players[1].hand=[{id:'rumor-b',type:'citizen'}];g.players[2].hand=[{id:'rumor-c',type:'citizen'}];g.turn=0;g.rounds=1;g.pending=null;g.revision++;
+  await storage.put('hannin',g);const rumored=await call('action',{token:tokenFor(g.players[0]),type:'play',cardId:'rumor-test',revision:g.revision});assert.equal(rumored.status,200,JSON.stringify(rumored));
+  g=state.get('hannin');assert.deepEqual(g.players.map(p=>p.hand.map(c=>c.id)),[['rumor-c'],['rumor-a'],['rumor-b']]);
+  g.players[0].hand=[{id:'info-test',type:'information'},{id:'info-a',type:'citizen'}];g.players[1].hand=[{id:'info-b',type:'citizen'}];g.players[2].hand=[{id:'info-c',type:'citizen'}];g.turn=0;g.pending=null;g.revision++;
+  await storage.put('hannin',g);const information=await call('action',{token:tokenFor(g.players[0]),type:'play',cardId:'info-test',revision:g.revision});assert.equal(information.status,200,JSON.stringify(information));
+  for(const [i,id] of ['info-a','info-b','info-c'].entries()){const current=state.get('hannin');const pendingActor=current.players.find(p=>p.id===current.pending.actor);const result=await call('action',{token:tokenFor(pendingActor),type:'resolve',cardId:id,revision:current.revision});assert.equal(result.status,200,JSON.stringify(result));}
+  g=state.get('hannin');assert.deepEqual(g.players.map(p=>p.hand.map(c=>c.id)),[['info-c'],['info-a'],['info-b']]);
+  g.players[0].hand=[{id:'plot-test',type:'plot'}];g.players[0].plotUsed=false;g.players[1].hand=[{id:'last-culprit-plot',type:'culprit'}];g.players[2].hand=[{id:'remaining-detective',type:'detective'}];g.turn=0;g.rounds=1;g.pending=null;g.revision++;
+  await storage.put('hannin',g);const plot=await call('action',{token:tokenFor(g.players[0]),type:'play',cardId:'plot-test',revision:g.revision});assert.equal(plot.status,200,JSON.stringify(plot));
+  g=state.get('hannin');g.players[0].hand=[];g.players[1].hand=[{id:'last-culprit-plot',type:'culprit'}];g.players[2].hand=[];g.turn=1;g.players[0].plotUsed=true;g.revision++;
+  await storage.put('hannin',g);const escape=await call('action',{token:tokenFor(g.players[1]),type:'play',cardId:'last-culprit-plot',revision:g.revision});assert.equal(escape.status,200,JSON.stringify(escape));assert.match(escape.game.winner,/Move0.*たくらみ/);
+  g=state.get('hannin');g.players[0].hand=[{id:'last-detective',type:'detective'},{id:'safe',type:'citizen'}];g.players[1].hand=[{id:'hidden-culprit',type:'culprit'}];g.players[2].hand=[{id:'other',type:'citizen'}];g.players[0].plotUsed=false;g.phase='playing';g.winner=null;g.reason='';g.turn=0;g.rounds=1;g.pending=null;g.revision++;
+  await storage.put('hannin',g);const miss=await call('action',{token:tokenFor(g.players[0]),type:'play',cardId:'last-detective',targetId:g.players[2].id,revision:g.revision});assert.equal(miss.status,200,JSON.stringify(miss));assert.equal(miss.game.phase,'finished');assert.match(miss.game.winner,/Move1.*犯人/);
+ }
  console.log('Hannin: 3–8 players, secrecy, witness, dog, trade, detective and culprit wins OK');
 })().catch(e=>{console.error(e);process.exitCode=1});
