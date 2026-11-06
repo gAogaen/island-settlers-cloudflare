@@ -18,7 +18,7 @@ const countDetectives=g=>allHands(g).filter(c=>c.type==='detective').length;
 const nextPlayer=(g,i)=>g.players[(i+1)%g.players.length];
 const criminal=g=>g.players.find(p=>p.hand.some(c=>c.type==='culprit'));
 function startDeck(n){const deck=Object.entries(COUNTS).flatMap(([type,k])=>Array.from({length:k},()=>({id:uid(),type})));const required=REQUIRED[n];const selected=[];for(const [type,k] of Object.entries(required)){for(let i=0;i<k;i++){const ix=deck.findIndex(c=>c.type===type);if(ix<0)throw Error('カード構成エラー');selected.push(...deck.splice(ix,1));}}return shuffle([...selected,...shuffle(deck).slice(0,n*4-selected.length)]);}
-function checkDetectives(g){if(g.phase==='playing'&&!countDetectives(g)){const c=criminal(g);if(c)finish(g,c.name+'（犯人）','探偵カードがなくなり犯人側の勝利です。');}}
+function checkDetectives(g){if(g.phase==='playing'&&!countDetectives(g)){const c=criminal(g);if(c)win(g,c,'犯人');}}
 function win(g,p,role){const conspirators=g.players.filter(x=>x.plotUsed).map(x=>x.name);finish(g,p.name+'（'+role+'）'+(role==='犯人'&&conspirators.length?'＋'+conspirators.join('・')+'（たくらみ）':''),p.name+'が'+(role==='犯人'?'逃げ切りました。':'犯人を見つけました。'));}
 
 function view(g,p){
@@ -37,6 +37,7 @@ function play(g,p,a){
  if(type==='first')throw Error('第一発見者は開始時に使用済みです。');
  if(type==='culprit'&&p.hand.length!==1)throw Error('犯人は最後の1枚のときだけ出せます。');
  if(type==='detective'&&g.rounds<1)throw Error('探偵は最初の1周目には使えません。');
+ if(type==='alibi'&&p.hand.some(x=>x.type==='culprit'))throw Error('犯人カードを持っている間はアリバイを出せません。');
  const requires=['detective','trade','witness','dog'].includes(type);
  const t=requires?requireTarget(g,p,a.targetId):null;
  
@@ -74,7 +75,11 @@ function resolve(g,p,a){
   if(!Number.isInteger(i)||i<0||i>=t.hand.length)throw Error('カードを選択してください。');
   const c=t.hand[i];log(g,t.name+'のカードは「'+NAMES[c.type]+'」でした。');
   if(c.type==='culprit'){win(g,p,'いぬ');return}
-  // Third-edition interpretation: reveal the selected card, then return it to the owner's hand.
+  // Third edition: discard the drawn card and give the dog card to its former owner.
+  t.hand.splice(i,1);g.discard.push(c);
+  const dogIndex=g.discard.findLastIndex(card=>card.type==='dog');
+  if(dogIndex<0)throw Error('いぬカードが見つかりません。');
+  t.hand.push(...g.discard.splice(dogIndex,1));
   advance(g);return;
  }
  if(pending.type==='trade'){
