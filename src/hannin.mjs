@@ -24,10 +24,10 @@ function win(g,p,role){const conspirators=g.players.filter(x=>x.plotUsed).map(x=
 function view(g,p){
  const pending=g.pending;
  return {code:g.code,phase:g.phase,hostId:g.hostId,turn:g.turn,revision:g.revision,winner:g.winner||null,reason:g.reason||'',players:g.players.map(x=>({id:x.id,name:x.name,count:x.hand.length})),me:p?{id:p.id,hand:p.hand.map(c=>({...c,name:NAMES[c.type]}))}:null,
- pending:pending?{type:pending.type,actor:pending.actor,needsAction:p?.id===pending.actor,description:pending.description||'',options:p?.id===pending.actor?(pending.options||[]):[],peek:p?.id===pending.actor?(pending.peek||[]):[]}:null,discard:g.discard.map(c=>c.type),log:g.log.slice(-40)};
+ pending:pending?{type:pending.type,actor:pending.actor,needsAction:p?.id===pending.actor,description:pending.description||'',options:p?.id===pending.actor?(pending.options||(['rumor','information'].includes(pending.type)?p.hand.map(c=>c.id):[])):[],peek:p?.id===pending.actor?(pending.peek||[]):[]}:null,discard:g.discard.map(c=>c.type),log:g.log.slice(-40)};
 }
 function finish(g,winner,reason){g.phase='finished';g.winner=winner;g.reason=reason;g.pending=null;log(g,reason)}
-function advance(g){g.pending=null;g.turn=(g.turn+1)%g.players.length;checkDetectives(g);if(g.phase==='playing'&&g.players.every(p=>!p.hand.length))finish(g,'draw','手札がなくなったため終了しました。')}
+function advance(g){g.pending=null;g.turn=(g.turn+1)%g.players.length;g.turnSteps=(g.turnSteps||0)+1;if(g.turnSteps>=g.players.length)g.rounds=1;checkDetectives(g);if(g.phase==='playing'&&g.players.every(p=>!p.hand.length))finish(g,'draw','手札がなくなったため終了しました。')}
 function requireTarget(g,p,id){const t=find(g,id);if(!t||t.id===p.id)throw Error('対象プレイヤーを選択してください。');return t}
 function queue(g,type,players,description){g.pending={type,queue:players.map(p=>p.id),actor:players[0]?.id,description};if(!players.length)advance(g)}
 function play(g,p,a){
@@ -36,7 +36,7 @@ function play(g,p,a){
  const type=c.type;
  if(type==='first')throw Error('第一発見者は開始時に使用済みです。');
  if(type==='culprit'&&p.hand.length!==1)throw Error('犯人は最後の1枚のときだけ出せます。');
- if(type==='detective'&&p.hand.length===4)throw Error('探偵は最初の1周目には使えません。');
+ if(type==='detective'&&g.rounds<1)throw Error('探偵は最初の1周目には使えません。');
  const requires=['detective','trade','witness','dog'].includes(type);
  const t=requires?requireTarget(g,p,a.targetId):null;
  if(type==='trade'&&(!t.hand.length||p.hand.length<2))throw Error('交換するカードがありません。');
@@ -122,7 +122,7 @@ export async function handleHannin(storage,request){
    if(g.players.length<3||g.players.length>8)throw Error('3〜8人で開始してください。');
    const deck=startDeck(g.players.length);
    if(deck.length<g.players.length*4)throw Error('カードが足りません。');
-   g.players.forEach(x=>{x.hand=deck.splice(0,4);x.plotUsed=false});g.discard=[];g.phase='playing';g.turn=g.players.findIndex(x=>x.hand.some(c=>c.type==='first'));const starter=g.players[g.turn];g.discard.push(pop(starter,starter.hand.find(c=>c.type==='first').id));log(g,starter.name+'が「第一発見者」を出しました。');g.turn=(g.turn+1)%g.players.length;g.pending=null;g.winner=null;g.reason='';log(g,'ゲームを開始しました。');
+   g.players.forEach(x=>{x.hand=deck.splice(0,4);x.plotUsed=false});g.discard=[];g.phase='playing';g.rounds=0;g.turnSteps=0;g.turn=g.players.findIndex(x=>x.hand.some(c=>c.type==='first'));const starter=g.players[g.turn];g.discard.push(pop(starter,starter.hand.find(c=>c.type==='first').id));log(g,starter.name+'が「第一発見者」を出しました。');g.turn=(g.turn+1)%g.players.length;g.pending=null;g.winner=null;g.reason='';log(g,'ゲームを開始しました。');
   }else if(a.type==='play')play(g,p,a);
   else if(a.type==='resolve')resolve(g,p,a);
   else if(a.type==='rematch'){
