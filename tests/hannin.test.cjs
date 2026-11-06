@@ -64,5 +64,11 @@ if(!globalThis.crypto)globalThis.crypto=webcrypto;
   assert.ok(!after.discard.some(c=>c.id==='dog-test-card'));
   assert.equal(after.players.flatMap(p=>p.hand).length+after.discard.length,12);
  }
+ // UI regression: private boy reveal must render a player's name, not an undefined card label.
+ {
+  const fs=require('node:fs');
+  const ui=fs.readFileSync(require('node:path').join(__dirname,'../public/hannin.js'),'utf8');
+  assert.match(ui,/names\[x\]\|\|x/);
+ }
  console.log('Hannin: 3–8 player setup, hidden information, opening turn, actions OK');
 })().catch(e=>{console.error(e);process.exitCode=1});
