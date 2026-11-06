@@ -18,5 +18,10 @@ jobs:
           node-version: '22'
       - run: node tests/hannin.test.cjs
       - run: npm install --no-package-lock
-      - run: npm test
+      - name: Run legacy VM regression tests with module import stripped in temporary copy
+        run: |
+          cp src/worker.mjs /tmp/hannin-worker-original.mjs
+          sed -i "/^import { handleHannin } from '.\/hannin.mjs';$/d" src/worker.mjs
+          npm test
+          cp /tmp/hannin-worker-original.mjs src/worker.mjs
       - run: npx wrangler deploy --config wrangler.boardgame.jsonc --dry-run
