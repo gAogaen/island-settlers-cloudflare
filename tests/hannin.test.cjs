@@ -1,185 +1,131 @@
-const assert=require('node:assert/strict');
-const {webcrypto}=require('node:crypto');
-if(!globalThis.crypto)globalThis.crypto=webcrypto;
-(async()=>{
- const {handleHannin}=await import('../src/hannin.mjs');
- for(let n=3;n<=8;n++){
-  const state=new Map(),storage={get:async k=>state.get(k),put:async(k,v)=>state.set(k,structuredClone(v))};
-  const call=async(route,body)=>{const request=new Request('https://room/hn/'+route,{method:body?'POST':'GET',...(body?{headers:{'content-type':'application/json'},body:JSON.stringify(body)}:{})});const response=await handleHannin(storage,request);return {status:response.status,...await response.json()}};
-  const users=[];
-  for(let i=0;i<n;i++){const d=await call(i?'join':'create',{name:'Player'+i,code:'ABC123'});assert.equal(d.status,200);users.push(d);}
-  assert.equal((await call('action',{token:users[1].token,type:'start'})).status,400);
-  const started=await call('action',{token:users[0].token,type:'start'});assert.equal(started.status,200);
-  assert.equal(started.game.phase,'playing');
-  const all=state.get('hannin').players.flatMap(p=>p.hand).concat(state.get('hannin').discard);
-  assert.equal(all.length,4*n);assert.equal(all.filter(c=>c.type==='culprit').length,1);
-  assert.equal(all.filter(c=>c.type==='first').length,1);
-  assert.equal(state.get('hannin').discard[0].type,'first');
-  assert.equal(state.get('hannin').players.reduce((a,p)=>a+p.hand.length,0),4*n-1);
-  const spectator=await call('state?spectate=1');assert.equal(spectator.status,200);assert.equal(spectator.game.me,null);
-  for(const u of users){const response=await call('state?token='+u.token);assert.equal(response.status,200);assert.equal(response.game.me.id,u.game.me.id);assert.equal(JSON.stringify(spectator).includes(u.token),false);}
-  const active=started.game.players[started.game.turn];const user=users.find(u=>u.game.me.id===active.id);
-  const me=(await call('state?token='+user.token)).game.me;
-  const selected=me.hand.find(c=>!['culprit','detective','alibi','information','trade','witness','dog'].includes(c.type));
-  if(selected){
-   const other=started.game.players.find(p=>p.id!==active.id);
-   const played=await call('action',{token:user.token,type:'play',cardId:selected.id,targetId:other.id,revision:started.game.revision});
-   assert.equal(played.status,200,JSON.stringify(played));
-   assert.equal((await call('action',{token:user.token,type:'play',cardId:selected.id,revision:started.game.revision})).status,400);
-   if(played.game.pending?.needsAction){
-    const spec=await call('state?spectate=1');assert.deepEqual(spec.game.pending.peek,[]);assert.deepEqual(spec.game.pending.options,[]);
-    const pending=played.game.pending;
-    if(pending.type==='peek'){
-     const resolved=await call('action',{token:user.token,type:'resolve',revision:played.game.revision});
-     assert.equal(resolved.status,200,JSON.stringify(resolved));
-    }
-   }
-  }
- }
- // Third edition: the dog reveals one selected card; a non-culprit card returns to its owner.
- {
-  const state=new Map(),storage={get:async k=>state.get(k),put:async(k,v)=>state.set(k,structuredClone(v))};
-  const call=async(route,body)=>{const request=new Request('https://room/hn/'+route,{method:body?'POST':'GET',...(body?{headers:{'content-type':'application/json'},body:JSON.stringify(body)}:{})});const response=await handleHannin(storage,request);return {status:response.status,...await response.json()}};
-  const users=[];
-  for(let i=0;i<3;i++)users.push(await call(i?'join':'create',{name:'Dog'+i,code:'DOG123'}));
-  await call('action',{token:users[0].token,type:'start'});
-  const g=state.get('hannin'),actor=g.players[g.turn],target=g.players[(g.turn+1)%3];
-  actor.hand[0]={id:'dog-test-card',type:'dog'};
-  target.hand[0]={id:'dog-target-card',type:'citizen'};
-  // The player holding the culprit must not be able to play an alibi.
-  actor.hand[1]={id:'alibi-test-card',type:'alibi'};
-  actor.hand[2]={id:'culprit-test-card',type:'culprit'};
-  await storage.put('hannin',g);
-  const token=users.find(u=>u.game.me.id===actor.id).token;
-  const blocked=await call('action',{token,type:'play',cardId:'alibi-test-card'});
-  assert.equal(blocked.status,400);
-  const played=await call('action',{token,type:'play',cardId:'dog-test-card',targetId:target.id});
-  assert.equal(played.status,200,JSON.stringify(played));
-  const resolved=await call('action',{token,type:'resolve',cardId:'0'});
-  assert.equal(resolved.status,200,JSON.stringify(resolved));
-  const after=state.get('hannin');
-  assert.ok(after.players.find(p=>p.id===target.id).hand.some(c=>c.id==='dog-target-card'));
-  assert.ok(!after.discard.some(c=>c.id==='dog-target-card'));
-  assert.ok(after.discard.some(c=>c.id==='dog-test-card'));
-  assert.ok(!after.players.find(p=>p.id===target.id).hand.some(c=>c.id==='dog-test-card'));
-  assert.equal(after.players.flatMap(p=>p.hand).length+after.discard.length,12);
-  assert.match(after.log.at(-1),/å…ƒã«æˆ»ã—ã¾ã™/);
- }
- // UI regression: private boy reveal must render a player's name, not an undefined card label.
- {
-  const fs=require('node:fs');
-  const ui=fs.readFileSync(require('node:path').join(__dirname,'../public/hannin.js'),'utf8');
-  assert.match(ui,/names\[x\]\|\|x/);
- }
- // Additional server-authoritative effect and authorization regressions.
- {
-  const state=new Map(),storage={get:async k=>state.get(k),put:async(k,v)=>state.set(k,structuredClone(v))};
-  const call=async(route,body)=>{const request=new Request('https://room/hn/'+route,{method:body?'POST':'GET',...(body?{headers:{'content-type':'application/json'},body:JSON.stringify(body)}:{})});const response=await handleHannin(storage,request);return {status:response.status,...await response.json()}};
-  const users=[];
-  for(let i=0;i<4;i++)users.push(await call(i?'join':'create',{name:'Check'+i,code:'SEC123'}));
-  await call('action',{token:users[0].token,type:'start'});
-  let g=state.get('hannin'),actor=g.players[g.turn],target=g.players[(g.turn+1)%4];
-  const actorToken=users.find(u=>u.game.me.id===actor.id).token;
-  const targetToken=users.find(u=>u.game.me.id===target.id).token;
-  assert.equal((await call('state?token=invalid')).status,403);
-  assert.equal((await call('action',{token:targetToken,type:'play',cardId:target.hand[0].id})).status,400);
-  actor.hand=[{id:'witness-a',type:'witness'},{id:'citizen-a',type:'citizen'}];
-  target.hand=[{id:'secret-b',type:'alibi'},{id:'secret-c',type:'culprit'}];
-  await storage.put('hannin',g);
-  const played=await call('action',{token:actorToken,type:'play',cardId:'witness-a',targetId:target.id,revision:g.revision});
-  assert.equal(played.status,200,JSON.stringify(played));
-  assert.deepEqual(played.game.pending.peek,['alibi','culprit']);
-  const spec=await call('state?spectate=1');
-  assert.deepEqual(spec.game.pending.peek,[]);
-  assert.deepEqual(spec.game.pending.options,[]);
-  assert.equal(spec.game.me,null);
-  assert.equal((await call('action',{token:targetToken,type:'resolve'})).status,400);
-  assert.equal((await call('action',{token:actorToken,type:'resolve',revision:g.revision})).status,400);
-  const resolved=await call('action',{token:actorToken,type:'resolve',revision:played.game.revision});
-  assert.equal(resolved.status,200,JSON.stringify(resolved));
-  assert.equal(state.get('hannin').pending,null);
- }
- // Trade regression: both participants choose privately; cards exchange without loss.
- {
-  const state=new Map(),storage={get:async k=>state.get(k),put:async(k,v)=>state.set(k,structuredClone(v))};
-  const call=async(route,body)=>{const request=new Request('https://room/hn/'+route,{method:body?'POST':'GET',...(body?{headers:{'content-type':'application/json'},body:JSON.stringify(body)}:{})});const response=await handleHannin(storage,request);return {status:response.status,...await response.json()}};
-  const users=[];
-  for(let i=0;i<3;i++)users.push(await call(i?'join':'create',{name:'Trade'+i,code:'TRD123'}));
-  await call('action',{token:users[0].token,type:'start'});
-  let g=state.get('hannin'),actor=g.players[g.turn],target=g.players[(g.turn+1)%3];
-  const tokenFor=p=>users.find(u=>u.game.me.id===p.id).token;
-  const actorToken=tokenFor(actor),targetToken=tokenFor(target);
-  actor.hand=[{id:'trade-action',type:'trade'},{id:'trade-mine',type:'citizen'}];
-  target.hand=[{id:'trade-theirs',type:'alibi'}];
-  await storage.put('hannin',g);
-  const played=await call('action',{token:actorToken,type:'play',cardId:'trade-action',targetId:target.id});
-  assert.equal(played.status,200,JSON.stringify(played));
-  assert.equal(played.game.pending.actor,actor.id);
-  const chosen=await call('action',{token:actorToken,type:'resolve',cardId:'trade-mine'});
-  assert.equal(chosen.status,200,JSON.stringify(chosen));
-  assert.equal(chosen.game.pending.actor,target.id);
-  assert.deepEqual((await call('state?spectate=1')).game.pending.options,[]);
-  assert.equal((await call('action',{token:actorToken,type:'resolve',cardId:'trade-theirs'})).status,400);
-  const completed=await call('action',{token:targetToken,type:'resolve',cardId:'trade-theirs'});
-  assert.equal(completed.status,200,JSON.stringify(completed));
-  g=state.get('hannin');
-  assert.ok(g.players.find(p=>p.id===actor.id).hand.some(c=>c.id==='trade-theirs'));
-  assert.ok(g.players.find(p=>p.id===target.id).hand.some(c=>c.id==='trade-mine'));
-  assert.equal(g.pending,null);
- }
- // Win conditions and first-round detective restriction.
- {
-  const state=new Map(),storage={get:async k=>state.get(k),put:async(k,v)=>state.set(k,structuredClone(v))};
-  const call=async(route,body)=>{const request=new Request('https://room/hn/'+route,{method:body?'POST':'GET',...(body?{headers:{'content-type':'application/json'},body:JSON.stringify(body)}:{})});const response=await handleHannin(storage,request);return {status:response.status,...await response.json()}};
-  const users=[];
-  for(let i=0;i<3;i++)users.push(await call(i?'join':'create',{name:'Win'+i,code:'WIN123'}));
-  await call('action',{token:users[0].token,type:'start'});
-  let g=state.get('hannin'),actor=g.players[g.turn],target=g.players[(g.turn+1)%3];
-  const token=users.find(u=>u.game.me.id===actor.id).token;
-  actor.hand=[{id:'detective-test',type:'detective'},{id:'other-test',type:'citizen'}];
-  target.hand=[{id:'culprit-test',type:'culprit'}];
-  await storage.put('hannin',g);
-  assert.equal((await call('action',{token,type:'play',cardId:'detective-test',targetId:target.id})).status,400);
-  g.rounds=1;await storage.put('hannin',g);
-  const found=await call('action',{token,type:'play',cardId:'detective-test',targetId:target.id});
-  assert.equal(found.status,200,JSON.stringify(found));
-  assert.equal(found.game.phase,'finished');
-  assert.match(found.game.winner,/æŽ¢åµ/);
-  assert.equal((await call('action',{token,type:'play',cardId:'other-test'})).status,400);
-  const rematch=await call('action',{token:users[0].token,type:'rematch'});
-  assert.equal(rematch.status,200,JSON.stringify(rematch));
-  assert.equal(rematch.game.phase,'lobby');
-  assert.ok(state.get('hannin').players.every(p=>p.hand.length===0));
-  await call('action',{token:users[0].token,type:'start'});
-  g=state.get('hannin');actor=g.players[g.turn];const culpritToken=users.find(u=>u.game.me.id===actor.id).token;
-  actor.hand=[{id:'last-culprit',type:'culprit'},{id:'extra',type:'citizen'}];
-  await storage.put('hannin',g);
-  assert.equal((await call('action',{token:culpritToken,type:'play',cardId:'last-culprit'})).status,400);
-  g=state.get('hannin');g.players[g.turn].hand=[{id:'last-culprit',type:'culprit'}];await storage.put('hannin',g);
-  const escaped=await call('action',{token:culpritToken,type:'play',cardId:'last-culprit'});
-  assert.equal(escaped.status,200,JSON.stringify(escaped));
-  assert.equal(escaped.game.phase,'finished');
-  assert.match(escaped.game.winner,/çŠ¯äºº/);
- }
- // Full hidden-card rotations, exhausted detective pool, and accomplice ending.
- {
-  const state=new Map(),storage={get:async k=>state.get(k),put:async(k,v)=>state.set(k,structuredClone(v))};
-  const call=async(route,body)=>{const request=new Request('https://room/hn/'+route,{method:body?'POST':'GET',...(body?{headers:{'content-type':'application/json'},body:JSON.stringify(body)}:{})});const response=await handleHannin(storage,request);return {status:response.status,...await response.json()}};
-  const users=[];for(let i=0;i<3;i++)users.push(await call(i?'join':'create',{name:'Move'+i,code:'MOV123'}));await call('action',{token:users[0].token,type:'start'});
-  let g=state.get('hannin');const tokenFor=p=>users.find(u=>u.game.me.id===p.id).token;
-  g.players[0].hand=[{id:'rumor-test',type:'rumor'},{id:'rumor-a',type:'citizen'}];g.players[1].hand=[{id:'rumor-b',type:'citizen'}];g.players[2].hand=[{id:'rumor-c',type:'citizen'}];g.turn=0;g.rounds=1;g.pending=null;g.revision++;
-  await storage.put('hannin',g);const rumored=await call('action',{token:tokenFor(g.players[0]),type:'play',cardId:'rumor-test',revision:g.revision});assert.equal(rumored.status,200,JSON.stringify(rumored));
-  g=state.get('hannin');assert.deepEqual(g.players.map(p=>p.hand.map(c=>c.id)),[['rumor-c'],['rumor-a'],['rumor-b']]);
-  g.players[0].hand=[{id:'info-test',type:'information'},{id:'info-a',type:'citizen'}];g.players[1].hand=[{id:'info-b',type:'citizen'}];g.players[2].hand=[{id:'info-c',type:'citizen'}];g.turn=0;g.pending=null;g.revision++;
-  await storage.put('hannin',g);const information=await call('action',{token:tokenFor(g.players[0]),type:'play',cardId:'info-test',revision:g.revision});assert.equal(information.status,200,JSON.stringify(information));
-  for(const [i,id] of ['info-a','info-b','info-c'].entries()){const current=state.get('hannin');const pendingActor=current.players.find(p=>p.id===current.pending.actor);const result=await call('action',{token:tokenFor(pendingActor),type:'resolve',cardId:id,revision:current.revision});assert.equal(result.status,200,JSON.stringify(result));}
-  g=state.get('hannin');assert.deepEqual(g.players.map(p=>p.hand.map(c=>c.id)),[['info-c'],['info-a'],['info-b']]);
-  g.players[0].hand=[{id:'plot-test',type:'plot'}];g.players[0].plotUsed=false;g.players[1].hand=[{id:'last-culprit-plot',type:'culprit'}];g.players[2].hand=[{id:'remaining-detective',type:'detective'}];g.turn=0;g.rounds=1;g.pending=null;g.revision++;
-  await storage.put('hannin',g);const plot=await call('action',{token:tokenFor(g.players[0]),type:'play',cardId:'plot-test',revision:g.revision});assert.equal(plot.status,200,JSON.stringify(plot));
-  g=state.get('hannin');g.players[0].hand=[];g.players[1].hand=[{id:'last-culprit-plot',type:'culprit'}];g.players[2].hand=[];g.turn=1;g.players[0].plotUsed=true;g.revision++;
-  await storage.put('hannin',g);const escape=await call('action',{token:tokenFor(g.players[1]),type:'play',cardId:'last-culprit-plot',revision:g.revision});assert.equal(escape.status,200,JSON.stringify(escape));assert.match(escape.game.winner,/Move0.*ãŸãã‚‰ã¿/);
-  g=state.get('hannin');g.players[0].hand=[{id:'last-detective',type:'detective'},{id:'safe',type:'citizen'}];g.players[1].hand=[{id:'hidden-culprit',type:'culprit'}];g.players[2].hand=[{id:'other',type:'citizen'}];g.players[0].plotUsed=false;g.phase='playing';g.winner=null;g.reason='';g.turn=0;g.rounds=1;g.pending=null;g.revision++;
-  await storage.put('hannin',g);const miss=await call('action',{token:tokenFor(g.players[0]),type:'play',cardId:'last-detective',targetId:g.players[2].id,revision:g.revision});assert.equal(miss.status,200,JSON.stringify(miss));assert.equal(miss.game.phase,'finished');assert.match(miss.game.winner,/Move1.*çŠ¯äºº/);
- }
- console.log('Hannin: 3â€“8 players, secrecy, witness, dog, trade, detective and culprit wins OK');
-})().catch(e=>{console.error(e);process.exitCode=1});
+YªçŠx-®éÜj×¢ëiºÚ+Š§j[h‘éÜ¢éíçn=N‹Z–‹­¦ëeŠw¬Õ½¹ÍÐ…ÍÍ•ÉÐõÉ•ÅÕ¥É” ¹½‘”é…ÍÍ•ÉÐ½ÍÑÉ¥Ðœ¤ì)½¹ÍÐíÝ•‰ÉåÁÑ½ôõÉ•ÅÕ¥É” ¹½‘”éÉåÁÑ¼œ¤ì)¥˜ …±½‰…±Q¡¥Ì¹ÉåÁÑ¼¥±½‰…±Q¡¥Ì¹ÉåÁÑ¼õÝ•‰ÉåÁÑ¼ì(¡…Íå¹Œ ¤ôùì(½¹ÍÐí¡…¹‘±•!…¹¹¥¹ôõ…Ý…¥Ð¥µÁ½ÉÐ œ¸¸½ÍÉŒ½¡…¹¹¥¸¹µ©Ìœ¤ì(™½È¡±•Ð¸ôÌí¸ðôàí¸¬¬¥ì(€½¹ÍÐÍÑ…Ñ”õ¹•Ü5…À ¤±ÍÑ½É…”õí•Ðé…Íå¹Œ¬ôùÍÑ…Ñ”¹•Ð¡¬¤±ÁÕÐé…Íå¹Œ¡¬±Ø¤ôùÍÑ…Ñ”¹Í•Ð¡¬±ÍÑÉÕÑÕÉ•‘±½¹”¡Ø¤¥ôì(€½¹ÍÐ…±°õ…Íå¹Œ¡É½ÕÑ”±‰½‘ä¤ôùí½¹ÍÐÉ•ÅÕ•ÍÐõ¹•ÜI•ÅÕ•ÍÐ ¡ÑÑÁÌè¼½É½½´½¡¸¼œ­É½ÕÑ”±íµ•Ñ¡½é‰½‘äüA=MPœèPœ°¸¸¸¡‰½‘äýí¡•…‘•ÉÌéì½¹Ñ•¹ÐµÑåÁ”œè…ÁÁ±¥…Ñ¥½¸½©Í½¸ô±‰½‘äé)M=8¹ÍÑÉ¥¹¥™ä¡‰½‘ä¥ôéíô¥ô¤í½¹ÍÐÉ•ÍÁ½¹Í”õ…Ý…¥Ð¡…¹‘±•!…¹¹¥¸¡ÍÑ½É…”±É•ÅÕ•ÍÐ¤íÉ•ÑÕÉ¸íÍÑ…ÑÕÌéÉ•ÍÁ½¹Í”¹ÍÑ…ÑÕÌ°¸¸¹…Ý…¥ÐÉ•ÍÁ½¹Í”¹©Í½¸ ¥õôì(€½¹ÍÐÕÍ•ÉÌõmtì(€™½È¡±•Ð¤ôÀí¤ñ¸í¤¬¬¥í½¹ÍÐõ…Ý…¥Ð…±°¡¤ü©½¥¸œèÉ•…Ñ”œ±í¹…µ”èA±…å•Èœ­¤±½‘”è	ÄÈÌô¤í…ÍÍ•ÉÐ¹•ÅÕ…°¡¹ÍÑ…ÑÕÌ°ÈÀÀ¤íÕÍ•ÉÌ¹ÁÕÍ ¡¤íô(€…ÍÍ•ÉÐ¹•ÅÕ…° ¡…Ý…¥Ð…±° …Ñ¥½¸œ±íÑ½­•¸éÕÍ•ÉÍlÅt¹Ñ½­•¸±ÑåÁ”èÍÑ…ÉÐô¤¤¹ÍÑ…ÑÕÌ°ÐÀÀ¤ì(€½¹ÍÐÍÑ…ÉÑ•õ…Ý…¥Ð…±° …Ñ¥½¸œ±íÑ½­•¸éÕÍ•ÉÍlÁt¹Ñ½­•¸±ÑåÁ”èÍÑ…ÉÐô¤í…ÍÍ•ÉÐ¹•ÅÕ…°¡ÍÑ…ÉÑ•¹ÍÑ…ÑÕÌ°ÈÀÀ¤ì(€…ÍÍ•ÉÐ¹•ÅÕ…°¡ÍÑ…ÉÑ•¹…µ”¹Á¡…Í”°Á±…å¥¹œœ¤ì(€½¹ÍÐ…±°õÍÑ…Ñ”¹•Ð ¡…¹¹¥¸œ¤¹Á±…å•ÉÌ¹™±…Ñ5…À¡ÀôùÀ¹¡…¹¤¹½¹…Ð¡ÍÑ…Ñ”¹•Ð ¡…¹¹¥¸œ¤¹‘¥Í…É¤ì(€…ÍÍ•ÉÐ¹•ÅÕ…°¡…±°¹±•¹Ñ °Ð©¸¤í…ÍÍ•ÉÐ¹•ÅÕ…°¡…±°¹™¥±Ñ•È¡ŒôùŒ¹ÑåÁ”ôôôÕ±ÁÉ¥Ðœ¤¹±•¹Ñ °Ä¤ì(€…ÍÍ•ÉÐ¹•ÅÕ…°¡…±°¹™¥±Ñ•È¡ŒôùŒ¹ÑåÁ”ôôô™¥ÉÍÐœ¤¹±•¹Ñ °Ä¤ì(€…ÍÍ•ÉÐ¹•ÅÕ…°¡ÍÑ…Ñ”¹•Ð ¡…¹¹¥¸œ¤¹‘¥Í…É‘lÁt¹ÑåÁ”°™¥ÉÍÐœ¤ì(€…ÍÍ•ÉÐ¹•ÅÕ…°¡ÍÑ…Ñ”¹•Ð ¡…¹¹¥¸œ¤¹Á±…å•ÉÌ¹É•‘Õ” ¡„±À¤ôù„­À¹¡…¹¹±•¹Ñ °À¤°Ð©¸´Ä¤ì(€½¹ÍÐÍÁ•Ñ…Ñ½Èõ…Ý…¥Ð…±° ÍÑ…Ñ”ýÍÁ•Ñ…Ñ”ôÄœ¤í…ÍÍ•ÉÐ¹•ÅÕ…°¡ÍÁ•Ñ…Ñ½È¹ÍÑ…ÑÕÌ°ÈÀÀ¤í…ÍÍ•ÉÐ¹•ÅÕ…°¡ÍÁ•Ñ…Ñ½È¹…µ”¹µ”±¹Õ±°¤ì(€™½È¡½¹ÍÐÔ½˜ÕÍ•ÉÌ¥í½¹ÍÐÉ•ÍÁ½¹Í”õ…Ý…¥Ð…±° ÍÑ…Ñ”ýÑ½­•¸ôœ­Ô¹Ñ½­•¸¤í…ÍÍ•ÉÐ¹•ÅÕ…°¡É•ÍÁ½¹Í”¹ÍÑ…ÑÕÌ°ÈÀÀ¤í…ÍÍ•ÉÐ¹•ÅÕ…°¡É•ÍÁ½¹Í”¹…µ”¹µ”¹¥±Ô¹…µ”¹µ”¹¥¤í…ÍÍ•ÉÐ¹•ÅÕ…°¡)M=8¹ÍÑÉ¥¹¥™ä¡ÍÁ•Ñ…Ñ½È¤¹¥¹±Õ‘•Ì¡Ô¹Ñ½­•¸¤±™…±Í”¤íô(€½¹ÍÐ…Ñ¥Ù”õÍÑ…ÉÑ•¹…µ”¹Á±…å•ÉÍmÍÑ…ÉÑ•¹…µ”¹ÑÕÉ¹tí½¹ÍÐÕÍ•ÈõÕÍ•ÉÌ¹™¥¹¡ÔôùÔ¹…µ”¹µ”¹¥ôôõ…Ñ¥Ù”¹¥¤ì(€½¹ÍÐµ”ô¡…Ý…¥Ð…±° ÍÑ…Ñ”ýÑ½­•¸ôœ­ÕÍ•È¹Ñ½­•¸¤¤¹…µ”¹µ”ì(€½¹ÍÐÍ•±•Ñ•õµ”¹¡…¹¹™¥¹¡Œôø…lÕ±ÁÉ¥Ðœ°‘•Ñ•Ñ¥Ù”œ°…±¥‰¤œ°¥¹™½Éµ…Ñ¥½¸œ°ÑÉ…‘”œ°Ý¥Ñ¹•ÍÌœ°‘½œt¹¥¹±Õ‘•Ì¡Œ¹ÑåÁ”¤¤ì(€¥˜¡Í•±•Ñ•¥ì(€€½¹ÍÐ½Ñ¡•ÈõÍÑ…ÉÑ•¹…µ”¹Á±…å•ÉÌ¹™¥¹¡ÀôùÀ¹¥„ôõ…Ñ¥Ù”¹¥¤ì(€€½¹ÍÐÁ±…å•õ…Ý…¥Ð…±° …Ñ¥½¸œ±íÑ½­•¸éÕÍ•È¹Ñ½­•¸±ÑåÁ”èÁ±…äœ±…É‘%éÍ•±•Ñ•¹¥±Ñ…É•Ñ%é½Ñ¡•È¹¥±É•Ù¥Í¥½¸éÍÑ…ÉÑ•¹…µ”¹É•Ù¥Í¥½¹ô¤ì(€€…ÍÍ•ÉÐ¹•ÅÕ…°¡Á±…å•¹ÍÑ…ÑÕÌ°ÈÀÀ±)M=8¹ÍÑÉ¥¹¥™ä¡Á±…å•¤¤ì(€€…ÍÍ•ÉÐ¹•ÅÕ…° ¡…Ý…¥Ð…±° …Ñ¥½¸œ±íÑ½­•¸éÕÍ•È¹Ñ½­•¸±ÑåÁ”èÁ±…äœ±…É‘%éÍ•±•Ñ•¹¥±É•Ù¥Í¥½¸éÍÑ…ÉÑ•¹…µ”¹É•Ù¥Í¥½¹ô¤¤¹ÍÑ…ÑÕÌ°ÐÀÀ¤ì(€€¥˜¡Á±…å•¹…µ”¹Á•¹‘¥¹œü¹¹••‘ÍÑ¥½¸¥ì(€€€½¹ÍÐÍÁ•Œõ…Ý…¥Ð…±° ÍÑ…Ñ”ýÍÁ•Ñ…Ñ”ôÄœ¤í…ÍÍ•ÉÐ¹‘••ÁÅÕ…°¡ÍÁ•Œ¹…µ”¹Á•¹‘¥¹œ¹Á••¬±mt¤í…ÍÍ•ÉÐ¹‘••ÁÅÕ…°¡ÍÁ•Œ¹…µ”¹Á•¹‘¥¹œ¹½ÁÑ¥½¹Ì±mt¤ì(€€€½¹ÍÐÁ•¹‘¥¹œõÁ±…å•¹…µ”¹Á•¹‘¥¹œì(€€€¥˜¡Á•¹‘¥¹œ¹ÑåÁ”ôôôÁ••¬œ¥ì(€€€€½¹ÍÐÉ•Í½±Ù•õ…Ý…¥Ð…±° …Ñ¥½¸œ±íÑ½­•¸éÕÍ•È¹Ñ½­•¸±ÑåÁ”èÉ•Í½±Ù”œ±É•Ù¥Í¥½¸éÁ±…å•¹…µ”¹É•Ù¥Í¥½¹ô¤ì(€€€€…ÍÍ•ÉÐ¹•ÅÕ…°¡É•Í½±Ù•¹ÍÑ…ÑÕÌ°ÈÀÀ±)M=8¹ÍÑÉ¥¹¥™ä¡É•Í½±Ù•¤¤ì(€€€ô(€€ô(€ô(ô(€¼¼Q¡¥É•‘¥Ñ¥½¸èÑ¡”‘½œÉ•Ù•…±Ì½¹”Í•±•Ñ•…Éì„¹½¸µÕ±ÁÉ¥Ð…ÉÉ•ÑÕÉ¹ÌÑ¼¥ÑÌ½Ý¹•È¸(ì(€½¹ÍÐÍÑ…Ñ”õ¹•Ü5…À ¤±ÍÑ½É…”õí•Ðé…Íå¹Œ¬ôùÍÑ…Ñ”¹•Ð¡¬¤±ÁÕÐé…Íå¹Œ¡¬±Ø¤ôùÍÑ…Ñ”¹Í•Ð¡¬±ÍÑÉÕÑÕÉ•‘±½¹”¡Ø¤¥ôì(€½¹ÍÐ…±°õ…Íå¹Œ¡É½ÕÑ”±‰½‘ä¤ôùí½¹ÍÐÉ•ÅÕ•ÍÐõ¹•ÜI•ÅÕ•ÍÐ ¡ÑÑÁÌè¼½É½½´½¡¸¼œ­É½ÕÑ”±íµ•Ñ¡½é‰½‘äüA=MPœèPœ°¸¸¸¡‰½‘äýí¡•…‘•ÉÌéì½¹Ñ•¹ÐµÑåÁ”œè…ÁÁ±¥…Ñ¥½¸½©Í½¸ô±‰½‘äé)M=8¹ÍÑÉ¥¹¥™ä¡‰½‘ä¥ôéíô¥ô¤í½¹ÍÐÉ•ÍÁ½¹Í”õ…Ý…¥Ð¡…¹‘±•!…¹¹¥¸¡ÍÑ½É…”±É•ÅÕ•ÍÐ¤íÉ•ÑÕÉ¸íÍÑ…ÑÕÌéÉ•ÍÁ½¹Í”¹ÍÑ…ÑÕÌ°¸¸¹…Ý…¥ÐÉ•ÍÁ½¹Í”¹©Í½¸ ¥õôì(€½¹ÍÐÕÍ•ÉÌõmtì(€™½È¡±•Ð¤ôÀí¤ðÌí¤¬¬¥ÕÍ•ÉÌ¹ÁÕÍ ¡…Ý…¥Ð…±°¡¤ü©½¥¸œèÉ•…Ñ”œ±í¹…µ”è½œœ­¤±½‘”è=ÄÈÌô¤¤ì(€…Ý…¥Ð…±° …Ñ¥½¸œ±íÑ½­•¸éÕÍ•ÉÍlÁt¹Ñ½­•¸±ÑåÁ”èÍÑ…ÉÐô¤ì(€½¹ÍÐœõÍÑ…Ñ”¹•Ð ¡…¹¹¥¸œ¤±…Ñ½Èõœ¹Á±…å•ÉÍmœ¹ÑÕÉ¹t±Ñ…É•Ðõœ¹Á±…å•ÉÍl¡œ¹ÑÕÉ¸¬Ä¤”Ítì(€…Ñ½È¹¡…¹‘lÁtõí¥è‘½œµÑ•ÍÐµ…Éœ±ÑåÁ”è‘½œôì(€Ñ…É•Ð¹¡…¹‘lÁtõí¥è‘½œµÑ…É•Ðµ…Éœ±ÑåÁ”è¥Ñ¥é•¸ôì(€€¼¼Q¡”Á±…å•È¡½±‘¥¹œÑ¡”Õ±ÁÉ¥ÐµÕÍÐ¹½Ð‰”…‰±”Ñ¼Á±…ä…¸…±¥‰¤¸(€…Ñ½È¹¡…¹‘lÅtõí¥è…±¥‰¤µÑ•ÍÐµ…Éœ±ÑåÁ”è…±¥‰¤ôì(€…Ñ½È¹¡…¹‘lÉtõí¥èÕ±ÁÉ¥ÐµÑ•ÍÐµ…Éœ±ÑåÁ”èÕ±ÁÉ¥Ðôì(€…Ý…¥ÐÍÑ½É…”¹ÁÕÐ ¡…¹¹¥¸œ±œ¤ì(€½¹ÍÐÑ½­•¸õÕÍ•ÉÌ¹™¥¹¡ÔôùÔ¹…µ”¹µ”¹¥ôôõ…Ñ½È¹¥¤¹Ñ½­•¸ì(€½¹ÍÐ‰±½­•õ…Ý…¥Ð…±° …Ñ¥½¸œ±íÑ½­•¸±ÑåÁ”èÁ±…äœ±…É‘%è…±¥‰¤µÑ•ÍÐµ…Éô¤ì(€…ÍÍ•ÉÐ¹•ÅÕ…°¡‰±½­•¹ÍÑ…ÑÕÌ°ÐÀÀ¤ì(€½¹ÍÐÁ±…å•õ…Ý…¥Ð…±° …Ñ¥½¸œ±íÑ½­•¸±ÑåÁ”èÁ±…äœ±…É‘%è‘½œµÑ•ÍÐµ…Éœ±Ñ…É•Ñ%éÑ…É•Ð¹¥‘ô¤ì(€…ÍÍ•ÉÐ¹•ÅÕ…°¡Á±…å•¹ÍÑ…ÑÕÌ°ÈÀÀ±)M=8¹ÍÑÉ¥¹¥™ä¡Á±…å•¤¤ì(€½¹ÍÐÉ•Í½±Ù•õ…Ý…¥Ð…±° …Ñ¥½¸œ±íÑ½­•¸±ÑåÁ”èÉ•Í½±Ù”œ±…É‘%èœÀô¤ì(€…ÍÍ•ÉÐ¹•ÅÕ…°¡É•Í½±Ù•¹ÍÑ…ÑÕÌ°ÈÀÀ±)M=8¹ÍÑÉ¥¹¥™ä¡É•Í½±Ù•¤¤ì(€½¹ÍÐ…™Ñ•ÈõÍÑ…Ñ”¹•Ð ¡…¹¹¥¸œ¤ì(€…ÍÍ•ÉÐ¹½¬¡…™Ñ•È¹Á±…å•ÉÌ¹™¥¹¡ÀôùÀ¹¥ôôõÑ…É•Ð¹¥¤¹¡…¹¹Í½µ”¡ŒôùŒ¹¥ôôô‘½œµÑ…É•Ðµ…Éœ¤¤ì(€…ÍÍ•ÉÐ¹½¬ ……™Ñ•È¹‘¥Í…É¹Í½µ”¡ŒôùŒ¹¥ôôô‘½œµÑ…É•Ðµ…Éœ¤¤ì(€…ÍÍ•ÉÐ¹½¬¡…™Ñ•È¹‘¥Í…É¹Í½µ”¡ŒôùŒ¹¥ôôô‘½œµÑ•ÍÐµ…Éœ¤¤ì(€…ÍÍ•ÉÐ¹½¬ ……™Ñ•È¹Á±…å•ÉÌ¹™¥¹¡ÀôùÀ¹¥ôôõÑ…É•Ð¹¥¤¹¡…¹¹Í½µ”¡ŒôùŒ¹¥ôôô‘½œµÑ•ÍÐµ…Éœ¤¤ì(€…ÍÍ•ÉÐ¹•ÅÕ…°¡…™Ñ•È¹Á±…å•ÉÌ¹™±…Ñ5…À¡ÀôùÀ¹¡…¹¤¹±•¹Ñ ­…™Ñ•È¹‘¥Í…É¹±•¹Ñ °ÄÈ¤ì(€…ÍÍ•ÉÐ¹½¬¡…™Ñ•È¹±½œ¹Í½µ”¡•¹ÑÉäôø¿–Ž¯š"ïŽ_ŽûŽd¼¹Ñ•ÍÐ¡•¹ÑÉä¤¤¤ì(ô(€¼¼U$É•É•ÍÍ¥½¸èÁÉ¥Ù…Ñ”‰½äÉ•Ù•…°µÕÍÐÉ•¹‘•È„Á±…å•ÈÌ¹…µ”°¹½Ð…¸Õ¹‘•™¥¹•…É±…‰•°¸(ì(€½¹ÍÐ™ÌõÉ•ÅÕ¥É” ¹½‘”é™Ìœ¤ì(€½¹ÍÐÕ¤õ™Ì¹É•…‘¥±•Må¹Œ¡É•ÅÕ¥É” ¹½‘”éÁ…Ñ œ¤¹©½¥¸¡}}‘¥É¹…µ”°œ¸¸½ÁÕ‰±¥Œ½¡…¹¹¥¸¹©Ìœ¤°ÕÑ˜àœ¤ì(€…ÍÍ•ÉÐ¹µ…Ñ ¡Õ¤°½¹…µ•Íqmáquqñqñà¼¤ì(ô(€¼¼‘‘¥Ñ¥½¹…°Í•ÉÙ•Èµ…ÕÑ¡½É¥Ñ…Ñ¥Ù”•™™•Ð…¹…ÕÑ¡½É¥é…Ñ¥½¸É•É•ÍÍ¥½¹Ì¸(ì(€½¹ÍÐÍÑ…Ñ”õ¹•Ü5…À ¤±ÍÑ½É…”õí•Ðé…Íå¹Œ¬ôùÍÑ…Ñ”¹•Ð¡¬¤±ÁÕÐé…Íå¹Œ¡¬±Ø¤ôùÍÑ…Ñ”¹Í•Ð¡¬±ÍÑÉÕÑÕÉ•‘±½¹”¡Ø¤¥ôì(€½¹ÍÐ…±°õ…Íå¹Œ¡É½ÕÑ”±‰½‘ä¤ôùí½¹ÍÐÉ•ÅÕ•ÍÐõ¹•ÜI•ÅÕ•ÍÐ ¡ÑÑÁÌè¼½É½½´½¡¸¼œ­É½ÕÑ”±íµ•Ñ¡½é‰½‘äüA=MPœèPœ°¸¸¸¡‰½‘äýí¡•…‘•ÉÌéì½¹Ñ•¹ÐµÑåÁ”œè…ÁÁ±¥…Ñ¥½¸½©Í½¸ô±‰½‘äé)M=8¹ÍÑÉ¥¹¥™ä¡‰½‘ä¥ôéíô¥ô¤í½¹ÍÐÉ•ÍÁ½¹Í”õ…Ý…¥Ð¡…¹‘±•!…¹¹¥¸¡ÍÑ½É…”±É•ÅÕ•ÍÐ¤íÉ•ÑÕÉ¸íÍÑ…ÑÕÌéÉ•ÍÁ½¹Í”¹ÍÑ…ÑÕÌ°¸¸¹…Ý…¥ÐÉ•ÍÁ½¹Í”¹©Í½¸ ¥õôì(€½¹ÍÐÕÍ•ÉÌõmtì(€™½È¡±•Ð¤ôÀí¤ðÐí¤¬¬¥ÕÍ•ÉÌ¹ÁÕÍ ¡…Ý…¥Ð…±°¡¤ü©½¥¸œèÉ•…Ñ”œ±í¹…µ”è¡•¬œ­¤±½‘”èMÄÈÌô¤¤ì(€…Ý…¥Ð…±° …Ñ¥½¸œ±íÑ½­•¸éÕÍ•ÉÍlÁt¹Ñ½­•¸±ÑåÁ”èÍÑ…ÉÐô¤ì(€±•ÐœõÍÑ…Ñ”¹•Ð ¡…¹¹¥¸œ¤±…Ñ½Èõœ¹Á±…å•ÉÍmœ¹ÑÕÉ¹t±Ñ…É•Ðõœ¹Á±…å•ÉÍl¡œ¹ÑÕÉ¸¬Ä¤”Ñtì(€½¹ÍÐ…Ñ½ÉQ½­•¸õÕÍ•ÉÌ¹™¥¹¡ÔôùÔ¹…µ”¹µ”¹¥ôôõ…Ñ½È¹¥¤¹Ñ½­•¸ì(€½¹ÍÐÑ…É•ÑQ½­•¸õÕÍ•ÉÌ¹™¥¹¡ÔôùÔ¹…µ”¹µ”¹¥ôôõÑ…É•Ð¹¥¤¹Ñ½­•¸ì(€…ÍÍ•ÉÐ¹•ÅÕ…° ¡…Ý…¥Ð…±° ÍÑ…Ñ”ýÑ½­•¸õ¥¹Ù…±¥œ¤¤¹ÍÑ…ÑÕÌ°ÐÀÌ¤ì(€…ÍÍ•ÉÐ¹•ÅÕ…° ¡…Ý…¥Ð…±° …Ñ¥½¸œ±íÑ½­•¸éÑ…É•ÑQ½­•¸±ÑåÁ”èÁ±…äœ±…É‘%éÑ…É•Ð¹¡…¹‘lÁt¹¥‘ô¤¤¹ÍÑ…ÑÕÌ°ÐÀÀ¤ì(€…Ñ½È¹¡…¹õmí¥èÝ¥Ñ¹•ÍÌµ„œ±ÑåÁ”èÝ¥Ñ¹•ÍÌô±í¥è¥Ñ¥é•¸µ„œ±ÑåÁ”è¥Ñ¥é•¸õtì(€Ñ…É•Ð¹¡…¹õmí¥èÍ•É•Ðµˆœ±ÑåÁ”è…±¥‰¤ô±í¥èÍ•É•ÐµŒœ±ÑåÁ”èÕ±ÁÉ¥Ðõtì(€…Ý…¥ÐÍÑ½É…”¹ÁÕÐ ¡…¹¹¥¸œ±œ¤ì(€½¹ÍÐÁ±…å•õ…Ý…¥Ð…±° …Ñ¥½¸œ±íÑ½­•¸é…Ñ½ÉQ½­•¸±ÑåÁ”èÁ±…äœ±…É‘%èÝ¥Ñ¹•ÍÌµ„œ±Ñ…É•Ñ%éÑ…É•Ð¹¥±É•Ù¥Í¥½¸éœ¹É•Ù¥Í¥½¹ô¤ì(€…ÍÍ•ÉÐ¹•ÅÕ…°¡Á±…å•¹ÍÑ…ÑÕÌ°ÈÀÀ±)M=8¹ÍÑÉ¥¹¥™ä¡Á±…å•¤¤ì(€…ÍÍ•ÉÐ¹‘••ÁÅÕ…°¡Á±…å•¹…µ”¹Á•¹‘¥¹œ¹Á••¬±l…±¥‰¤œ°Õ±ÁÉ¥Ðt¤ì(€½¹ÍÐÍÁ•Œõ…Ý…¥Ð…±° ÍÑ…Ñ”ýÍÁ•Ñ…Ñ”ôÄœ¤ì(€…ÍÍ•ÉÐ¹‘••ÁÅÕ…°¡ÍÁ•Œ¹…µ”¹Á•¹‘¥¹œ¹Á••¬±mt¤ì(€…ÍÍ•ÉÐ¹‘••ÁÅÕ…°¡ÍÁ•Œ¹…µ”¹Á•¹‘¥¹œ¹½ÁÑ¥½¹Ì±mt¤ì(€…ÍÍ•ÉÐ¹•ÅÕ…°¡ÍÁ•Œ¹…µ”¹µ”±¹Õ±°¤ì(€…ÍÍ•ÉÐ¹•ÅÕ…° ¡…Ý…¥Ð…±° …Ñ¥½¸œ±íÑ½­•¸éÑ…É•ÑQ½­•¸±ÑåÁ”èÉ•Í½±Ù”ô¤¤¹ÍÑ…ÑÕÌ°ÐÀÀ¤ì(€…ÍÍ•ÉÐ¹•ÅÕ…° ¡…Ý…¥Ð…±° …Ñ¥½¸œ±íÑ½­•¸é…Ñ½ÉQ½­•¸±ÑåÁ”èÉ•Í½±Ù”œ±É•Ù¥Í¥½¸éœ¹É•Ù¥Í¥½¹ô¤¤¹ÍÑ…ÑÕÌ°ÐÀÀ¤ì(€½¹ÍÐÉ•Í½±Ù•õ…Ý…¥Ð…±° …Ñ¥½¸œ±íÑ½­•¸é…Ñ½ÉQ½­•¸±ÑåÁ”èÉ•Í½±Ù”œ±É•Ù¥Í¥½¸éÁ±…å•¹…µ”¹É•Ù¥Í¥½¹ô¤ì(€…ÍÍ•ÉÐ¹•ÅÕ…°¡É•Í½±Ù•¹ÍÑ…ÑÕÌ°ÈÀÀ±)M=8¹ÍÑÉ¥¹¥™ä¡É•Í½±Ù•¤¤ì(€…ÍÍ•ÉÐ¹•ÅÕ…°¡ÍÑ…Ñ”¹•Ð ¡…¹¹¥¸œ¤¹Á•¹‘¥¹œ±¹Õ±°¤ì(ô(€¼¼QÉ…‘”É•É•ÍÍ¥½¸è‰½Ñ Á…ÉÑ¥¥Á…¹ÑÌ¡½½Í”ÁÉ¥Ù…Ñ•±äì…É‘Ì•á¡…¹”Ý¥Ñ¡½ÕÐ±½ÍÌ¸(ì(€½¹ÍÐÍÑ…Ñ”õ¹•Ü5…À ¤±ÍÑ½É…”õí•Ðé…Íå¹Œ¬ôùÍÑ…Ñ”¹•Ð¡¬¤±ÁÕÐé…Íå¹Œ¡¬±Ø¤ôùÍÑ…Ñ”¹Í•Ð¡¬±ÍÑÉÕÑÕÉ•“n=¶‰žËkºwµçYIßKÚY‰Ý˜YK[Z[™IË\N‰ØÚ]^™[‰ßWNÂˆ\™Ù]š[™VÞÚY‰Ý˜YK]Z\œÉË\N‰Ø[XšIßWNÂˆ]ØZ]ÝÜ˜YÙKœ]
+	Ú[›š[‰ËÊNÂˆÛÛœÝ^YYX]ØZ]Ø[
+	ØXÝ[Û‰ËÝÚÙ[Ž˜XÝÜ•ÚÙ[‹\N‰Ü^IËØ\™Y‰Ý˜YKXXÝ[Û‰Ë\™Ù]Y\™Ù]šYJNÂˆ\ÜÙ\™\]X[
+^YYœÝ]\ËŒ”ÓÓ‹œÝš[™ÚYžJ^YY
+JNÂˆ\ÜÙ\™\]X[
+^YY™Ø[YKœ[™[™Ë˜XÝÜ‹XÝÜ‹šY
+NÂˆÛÛœÝÚÜÙ[X]ØZ]Ø[
+	ØXÝ[Û‰ËÝÚÙ[Ž˜XÝÜ•ÚÙ[‹\N‰Ü™\ÛÛ™IËØ\™Y‰Ý˜YK[Z[™IßJNÂˆ\ÜÙ\™\]X[
+ÚÜÙ[‹œÝ]\ËŒ”ÓÓ‹œÝš[™ÚYžJÚÜÙ[ŠJNÂˆ\ÜÙ\™\]X[
+ÚÜÙ[‹™Ø[YKœ[™[™Ë˜XÝÜ‹\™Ù]šY
+NÂˆ\ÜÙ\™Y\\]X[
+
+]ØZ]Ø[
+	ÜÝ]OÜÜXÝ]OLIÊJK™Ø[YKœ[™[™Ë›Ü[ÛœË×JNÂˆ\ÜÙ\™\]X[
+
+]ØZ]Ø[
+	ØXÝ[Û‰ËÝÚÙ[Ž˜XÝÜ•ÚÙ[‹\N‰Ü™\ÛÛ™IËØ\™Y‰Ý˜YK]Z\œÉßJJKœÝ]\Ë
+NÂˆÛÛœÝÛÛ\]YX]ØZ]Ø[
+	ØXÝ[Û‰ËÝÚÙ[Ž\™Ù]ÚÙ[‹\N‰Ü™\ÛÛ™IËØ\™Y‰Ý˜YK]Z\œÉßJNÂˆ\ÜÙ\™\]X[
+ÛÛ\]YœÝ]\ËŒ”ÓÓ‹œÝš[™ÚYžJÛÛ\]Y
+JNÂˆÏ\Ý]K™Ù]
+	Ú[›š[‰ÊNÂˆ\ÜÙ\›ÚÊËœ^Y\œË™š[™
+OœšYOOXXÝÜ‹šY
+Kš[™œÛÛYJÏO˜ËšYOOIÝ˜YK]Z\œÉÊJNÂˆ\ÜÙ\›ÚÊËœ^Y\œË™š[™
+OœšYOO]\™Ù]šY
+Kš[™œÛÛYJÏO˜ËšYOOIÝ˜YK[Z[™IÊJNÂˆ\ÜÙ\™\]X[
+Ëœ[™[™Ë[
+NÂˆBˆËÈÚ[ˆÛÛ™][ÛœÈ[™š\œÝ\›Ý[™]XÝ]™H™\ÝšXÝ[Û‹‚ˆÂˆÛÛœÝÝ]O[™]ÈX\
+
+KÝÜ˜YÙO^ÙÙ]˜\Þ[˜ÈÏOœÝ]K™Ù]
+ÊK]˜\Þ[˜ÊËŠOOœÝ]KœÙ]
+ËÝXÝ\™YÛÛ™JŠJ_NÂˆÛÛœÝØ[X\Þ[˜Ê›Ý]K›ÙJOOžØÛÛœÝ™\]Y\Ý[™]È™\]Y\Ý
+	ÚÎ‹ËÜ›ÛÛKÚ‹ÉÊÜ›Ý]KÛY]Ù˜›ÙOÉÔÔÕ	Î‰ÑÑU	Ë‹‹Š›ÙOÞÚXY\œÎžÉØÛÛ[]\IÎ‰Ø\XØ][Û‹ÚœÛÛ‰ßK›ÙN’”ÓÓ‹œÝš[™ÚYžJ›ÙJ_NžßJ_JNØÛÛœÝ™\ÜÛœÙOX]ØZ][™R[›š[ŠÝÜ˜YÙK™\]Y\Ý
+NÜ™]\›ˆÜÝ]\Îœ™\ÜÛœÙKœÝ]\Ë‹‹˜]ØZ]™\ÜÛœÙKšœÛÛŠ
+__NÂˆÛÛœÝ\Ù\œÏV×NÂˆ›ÜŠ]OLÚOÎÚJÊÊ]\Ù\œËœ\Ú
+]ØZ]Ø[
+OÉÚ›Ú[‰Î‰ØÜ™X]IËÛ˜[YN‰ÕÚ[‰ÊÚKÛÙN‰ÕÒSŒLŒÉßJJNÂˆ]ØZ]Ø[
+	ØXÝ[Û‰ËÝÚÙ[Ž\Ù\œÖÌKÚÙ[‹\N‰ÜÝ\	ßJNÂˆ]Ï\Ý]K™Ù]
+	Ú[›š[‰ÊKXÝÜYËœ^Y\œÖÙË\›—K\™Ù]YËœ^Y\œÖÊË\›ŠÌJIL×NÂˆÛÛœÝÚÙ[]\Ù\œË™š[™
+OOK™Ø[YK›YKšYOOXXÝÜ‹šY
+KÚÙ[ŽÂˆXÝÜ‹š[™VÞÚY‰Ù]XÝ]™K]\Ý	Ë\N‰Ù]XÝ]™IßKÚY‰ÛÝ\‹]\Ý	Ë\N‰ØÚ]^™[‰ßWNÂˆ\™Ù]š[™VÞÚY‰ØÝ[š]]\Ý	Ë\N‰ØÝ[š]	ßWNÂˆ]ØZ]ÝÜ˜YÙKœ]
+	Ú[›š[‰ËÊNÂˆ\ÜÙ\™\]X[
+
+]ØZ]Ø[
+	ØXÝ[Û‰ËÝÚÙ[‹\N‰Ü^IËØ\™Y‰Ù]XÝ]™K]\Ý	Ë\™Ù]Y\™Ù]šYJJKœÝ]\Ë
+NÂˆËœ›Ý[™ÏLNØ]ØZ]ÝÜ˜YÙKœ]
+	Ú[›š[‰ËÊNÂˆÛÛœÝ›Ý[™X]ØZ]Ø[
+	ØXÝ[Û‰ËÝÚÙ[‹\N‰Ü^IËØ\™Y‰Ù]XÝ]™K]\Ý	Ë\™Ù]Y\™Ù]šYJNÂˆ\ÜÙ\™\]X[
+›Ý[™œÝ]\ËŒ”ÓÓ‹œÝš[™ÚYžJ›Ý[™
+JNÂˆ\ÜÙ\™\]X[
+›Ý[™™Ø[YKœ\ÙK	Ùš[š\ÚY	ÊNÂˆ\ÜÙ\›X]Ú
+›Ý[™™Ø[YKÚ[›™\‹ù£¨¹`mKÊNÂˆ\ÜÙ\™\]X[
+
+]ØZ]Ø[
+	ØXÝ[Û‰ËÝÚÙ[‹\N‰Ü^IËØ\™Y‰ÛÝ\‹]\Ý	ßJJKœÝ]\Ë
+NÂˆÛÛœÝ™[X]ÚX]ØZ]Ø[
+	ØXÝ[Û‰ËÝÚÙ[Ž\Ù\œÖÌKÚÙ[‹\N‰Ü™[X]Ú	ßJNÂˆ\ÜÙ\™\]X[
+™[X]ÚœÝ]\ËŒ”ÓÓ‹œÝš[™ÚYžJ™[X]Ú
+JNÂˆ\ÜÙ\™\]X[
+™[X]Ú™Ø[YKœ\ÙK	ÛØ˜žIÊNÂˆ\ÜÙ\›ÚÊÝ]K™Ù]
+	Ú[›š[‰ÊKœ^Y\œË™]™\žJOœš[™›[™ÝOOL
+JNÂˆ]ØZ]Ø[
+	ØXÝ[Û‰ËÝÚÙ[Ž\Ù\œÖÌKÚÙ[‹\N‰ÜÝ\	ßJNÂˆÏ\Ý]K™Ù]
+	Ú[›š[‰ÊNØXÝÜYËœ^Y\œÖÙË\›—NØÛÛœÝÝ[š]ÚÙ[]\Ù\œË™š[™
+OOK™Ø[YK›YKšYOOXXÝÜ‹šY
+KÚÙ[ŽÂˆXÝÜ‹š[™VÞÚY‰Û\ÝXÝ[š]	Ë\N‰ØÝ[š]	ßKÚY‰Ù^˜IË\N‰ØÚ]^™[‰ßWNÂˆ]ØZ]ÝÜ˜YÙKœ]
+	Ú[›š[‰ËÊNÂˆ\ÜÙ\™\]X[
+
+]ØZ]Ø[
+	ØXÝ[Û‰ËÝÚÙ[Ž˜Ý[š]ÚÙ[‹\N‰Ü^IËØ\™Y‰Û\ÝXÝ[š]	ßJJKœÝ]\Ë
+NÂˆÏ\Ý]K™Ù]
+	Ú[›š[‰ÊNÙËœ^Y\œÖÙË\›—Kš[™VÞÚY‰Û\ÝXÝ[š]	Ë\N‰ØÝ[š]	ßWNØ]ØZ]ÝÜ˜YÙKœ]
+	Ú[›š[‰ËÊNÂˆÛÛœÝ\ØØ\YX]ØZ]Ø[
+	ØXÝ[Û‰ËÝÚÙ[Ž˜Ý[š]ÚÙ[‹\N‰Ü^IËØ\™Y‰Û\ÝXÝ[š]	ßJNÂˆ\ÜÙ\™\]X[
+\ØØ\YœÝ]\ËŒ”ÓÓ‹œÝš[™ÚYžJ\ØØ\Y
+JNÂˆ\ÜÙ\™\]X[
+\ØØ\Y™Ø[YKœ\ÙK	Ùš[š\ÚY	ÊNÂˆ\ÜÙ\›X]Ú
+\ØØ\Y™Ø[YKÚ[›™\‹ùâ«ù.®‹ÊNÂˆBˆËÈ[Y[‹XØ\™›Ý][ÛœË^]\ÝY]XÝ]™HÛÛ[™XØÛÛ\XÙH[™[™Ë‚ˆÂˆÛÛœÝÝ]O[™]ÈX\
+
+KÝÜ˜YÙO^ÙÙ]˜\Þ[˜ÈÏOœÝ]K™Ù]
+ÊK]˜\Þ[˜ÊËŠOOœÝ]KœÙ]
+ËÝXÝ\™YÛÛ™JŠJ_NÂˆÛÛœÝØ[X\Þ[˜Ê›Ý]K›ÙJOOžØÛÛœÝ™\]Y\Ý[™]È™\]Y\Ý
+	ÚÎ‹ËÜ›ÛÛKÚ‹ÉÊÜ›Ý]KÛY]Ù˜›ÙOÉÔÔÕ	Î‰ÑÑU	Ë‹‹Š›ÙOÞÚXY\œÎžÉØÛÛ[]\IÎ‰Ø\XØ][Û‹ÚœÛÛ‰ßK›ÙN’”ÓÓ‹œÝš[™ÚYžJ›ÙJ_NžßJ_JNØÛÛœÝ™\ÜÛœÙOX]ØZ][™R[›š[ŠÝÜ˜YÙK™\]Y\Ý
+NÜ™]\›ˆÜÝ]\Îœ™\ÜÛœÙKœÝ]\Ë‹‹˜]ØZ]™\ÜÛœÙKšœÛÛŠ
+__NÂˆÛÛœÝ\Ù\œÏV×NÙ›ÜŠ]OLÚOÎÚJÊÊ]\Ù\œËœ\Ú
+]ØZ]Ø[
+OÉÚ›Ú[‰Î‰ØÜ™X]IËÛ˜[YN‰Ó[Ý™IÊÚKÛÙN‰ÓSÕŒLŒÉßJJNØ]ØZ]Ø[
+	ØXÝ[Û‰ËÝÚÙ[Ž\Ù\œÖÌKÚÙ[‹\N‰ÜÝ\	ßJNÂˆ]Ï\Ý]K™Ù]
+	Ú[›š[‰ÊNØÛÛœÝÚÙ[‘›Ü\O\Ù\œË™š[™
+OOK™Ø[YK›YKšYOO\šY
+KÚÙ[ŽÂˆËœ^Y\œÖÌKš[™VÞÚY‰Ü[[Ü‹]\Ý	Ë\N‰Ü[[Ü‰ßKÚY‰Ü[[Ü‹XIË\N‰ØÚ]^™[‰ßWNÙËœ^Y\œÖÌWKš[™VÞÚY‰Ü[[Ü‹X‰Ë\N‰ØÚ]^™[‰ßWNÙËœ^Y\œÖÌ—Kš[™VÞÚY‰Ü[[Ü‹XÉË\N‰ØÚ]^™[‰ßWNÙË\›LÙËœ›Ý[™ÏLNÙËœ[™[™Ï[[ÙËœ™]š\Ú[ÛŠÊÎÂˆ]ØZ]ÝÜ˜YÙKœ]
+	Ú[›š[‰ËÊNØÛÛœÝ[[Ü™YX]ØZ]Ø[
+	ØXÝ[Û‰ËÝÚÙ[ŽÚÙ[‘›ÜŠËœ^Y\œÖÌJK\N‰Ü^IËØ\™Y‰Ü[[Ü‹]\Ý	Ë™]š\Ú[ÛŽ™Ëœ™]š\Ú[ÛŸJNØ\ÜÙ\™\]X[
+[[Ü™YœÝ]\ËŒ”ÓÓ‹œÝš[™ÚYžJ[[Ü™Y
+JNÂˆÏ\Ý]K™Ù]
+	Ú[›š[‰ÊNØ\ÜÙ\™Y\\]X[
+Ëœ^Y\œË›X\
+Oœš[™›X\
+ÏO˜ËšY
+JKÖÉÜ[[Ü‹XÉ×KÉÜ[[Ü‹XI×KÉÜ[[Ü‹X‰×WJNÂˆËœ^Y\œÖÌKš[™VÞÚY‰Ú[™›Ë]\Ý	Ë\N‰Ú[™›Ü›X][Û‰ßKÚY‰Ú[™›ËXIË\N‰ØÚ]^™[‰ßWNÙËœ^Y\œÖÌWKš[™VÞÚY‰Ú[™›ËX‰Ë\N‰ØÚ]^™[‰ßWNÙËœ^Y\œÖÌ—Kš[™VÞÚY‰Ú[™›ËXÉË\N‰ØÚ]^™[‰ßWNÙË\›LÙËœ[™[™Ï[[ÙËœ™]š\Ú[ÛŠÊÎÂˆ]ØZ]ÝÜ˜YÙKœ]
+	Ú[›š[‰ËÊNØÛÛœÝ[™›Ü›X][ÛX]ØZ]Ø[
+	ØXÝ[Û‰ËÝÚÙ[ŽÚÙ[‘›ÜŠËœ^Y\œÖÌJK\N‰Ü^IËØ\™Y‰Ú[™›Ë]\Ý	Ë™]š\Ú[ÛŽ™Ëœ™]š\Ú[ÛŸJNØ\ÜÙ\™\]X[
+[™›Ü›X][Û‹œÝ]\ËŒ”ÓÓ‹œÝš[™ÚYžJ[™›Ü›X][ÛŠJNÂˆ›ÜŠÛÛœÝÚKYHÙˆÉÚ[™›ËXIË	Ú[™›ËX‰Ë	Ú[™›ËXÉ×K™[šY\Ê
+J^ØÛÛœÝÝ\œ™[\Ý]K™Ù]
+	Ú[›š[‰ÊNØÛÛœÝ[™[™ÐXÝÜXÝ\œ™[œ^Y\œË™š[™
+OœšYOOXÝ\œ™[œ[™[™Ë˜XÝÜŠNØÛÛœÝ™\Ý[X]ØZ]Ø[
+	ØXÝ[Û‰ËÝÚÙ[ŽÚÙ[‘›ÜŠ[™[™ÐXÝÜŠK\N‰Ü™\ÛÛ™IËØ\™YšY™]š\Ú[ÛŽ˜Ý\œ™[œ™]š\Ú[ÛŸJNØ\ÜÙ\™\]X[
+™\Ý[œÝ]\ËŒ”ÓÓ‹œÝš[™ÚYžJ™\Ý[
+JNßBˆÏ\Ý]K™Ù]
+	Ú[›š[‰ÊNØ\ÜÙ\™Y\\]X[
+Ëœ^Y\œË›X\
+Oœš[™›X\
+ÏO˜ËšY
+JKÖÉÚ[™›ËXÉ×KÉÚ[™›ËXI×KÉÚ[™›ËX‰×WJNÂˆËœ^Y\œÖÌKš[™VÞÚY‰ÜÝ]\Ý	Ë\N‰ÜÝ	ßWNÙËœ^Y\œÖÌKœÝ\ÙYY˜[ÙNÙËœ^Y\œÖÌWKš[™VÞÚY‰Û\ÝXÝ[š]\Ý	Ë\N‰ØÝ[š]	ßWNÙËœ^Y\œÖÌ—Kš[™VÞÚY‰Ü™[XZ[š[™ËY]XÝ]™IË\N‰Ù]XÝ]™IßWNÙË\›LÙËœ›Ý[™ÏLNÙËœ[™[™Ï[[ÙËœ™]š\Ú[ÛŠÊÎÂˆ]ØZ]ÝÜ˜YÙKœ]
+	Ú[›š[‰ËÊNØÛÛœÝÝX]ØZ]Ø[
+	ØXÝ[Û‰ËÝÚÙ[ŽÚÙ[‘›ÜŠËœ^Y\œÖÌJK\N‰Ü^IËØ\™Y‰ÜÝ]\Ý	Ë™]š\Ú[ÛŽ™Ëœ™]š\Ú[ÛŸJNØ\ÜÙ\™\]X[
+ÝœÝ]\ËŒ”ÓÓ‹œÝš[™ÚYžJÝ
+JNÂˆÏ\Ý]K™Ù]
+	Ú[›š[‰ÊNÙËœ^Y\œÖÌKš[™V×NÙËœ^Y\œÖÌWKš[™VÞÚY‰Û\ÝXÝ[š]\Ý	Ë\N‰ØÝ[š]	ßWNÙËœ^Y\œÖÌ—Kš[™V×NÙË\›LNÙËœ^Y\œÖÌKœÝ\ÙY]YNÙËœ™]š\Ú[ÛŠÊÎÂˆ]ØZ]ÝÜ˜YÙKœ]
+	Ú[›š[‰ËÊNØÛÛœÝ\ØØ\OX]ØZ]Ø[
+	ØXÝ[Û‰ËÝÚÙ[ŽÚÙ[‘›ÜŠËœ^Y\œÖÌWJK\N‰Ü^IËØ\™Y‰Û\ÝXÝ[š]\Ý	Ë™]š\Ú[ÛŽ™Ëœ™]š\Ú[ÛŸJNØ\ÜÙ\™\]X[
+\ØØ\KœÝ]\ËŒ”ÓÓ‹œÝš[™ÚYžJ\ØØ\JJNØ\ÜÙ\›X]Ú
+\ØØ\K™Ø[YKÚ[›™\‹Ó[Ý™LŠ¸àgøàcøà¢xàoËÊNÂˆÏ\Ý]K™Ù]
+	Ú[›š[‰ÊNÙËœ^Y\œÖÌKš[™VÞÚY‰Û\ÝY]XÝ]™IË\N‰Ù]XÝ]™IßKÚY‰ÜØY™IË\N‰ØÚ]^™[‰ßWNÙËœ^Y\œÖÌWKš[™VÞÚY‰ÚY[‹XÝ[š]	Ë\N‰ØÝ[š]	ßWNÙËœ^Y\œÖÌ—Kš[™VÞÚY‰ÛÝ\‰Ë\N‰ØÚ]^™[‰ßWNÙËœ^Y\œÖÌKœÝ\ÙYY˜[ÙNÙËœ\ÙOIÜ^Z[™ÉÎÙËÚ[›™\[[ÙËœ™X\ÛÛIÉÎÙË\›LÙËœ›Ý[™ÏLNÙËœ[™[™Ï[[ÙËœ™]š\Ú[ÛŠÊÎÂˆ]ØZ]ÝÜ˜YÙKœ]
+	Ú[›š[‰ËÊNØÛÛœÝZ\ÜÏX]ØZ]Ø[
+	ØXÝ[Û‰ËÝÚÙ[ŽÚÙ[‘›ÜŠËœ^Y\œÖÌJK\N‰Ü^IËØ\™Y‰Û\ÝY]XÝ]™IË\™Ù]Y™Ëœ^Y\œÖÌ—KšY™]š\Ú[ÛŽ™Ëœ™]š\Ú[ÛŸJNØ\ÜÙ\™\]X[
+Z\ÜËœÝ]\ËŒ”ÓÓ‹œÝš[™ÚYžJZ\ÜÊJNØ\ÜÙ\™\]X[
+Z\ÜË™Ø[YKœ\ÙK	Ùš[š\ÚY	ÊNØ\ÜÙ\›X]Ú
+Z\ÜË™Ø[YKÚ[›™\‹Ó[Ý™LKŠ¹â«ù.®‹ÊNÂˆBˆÛÛœÛÛK›ÙÊ	Ò[›š[Žˆø $Î^Y\œËÙXÜ™XÞKÚ]™\ÜËÙË˜YK]XÝ]™H[™Ý[š]Ú[œÈÒÉÊNÂŸJJ
+K˜Ø]Ú
+OOžØÛÛœÛÛK™\œ›ÜŠJNÜ›ØÙ\ÜË™^]ÛÙOL_JNÂ
