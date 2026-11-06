@@ -1,3 +1,4 @@
+# Trigger deployment after configuring Cloudflare repository secrets.
 name: Deploy boardgame to Cloudflare Workers
 on:
   push:
