@@ -17,7 +17,16 @@ const allHands=g=>g.players.flatMap(p=>p.hand);
 const countDetectives=g=>allHands(g).filter(c=>c.type==='detective').length;
 const nextPlayer=(g,i)=>g.players[(i+1)%g.players.length];
 const criminal=g=>g.players.find(p=>p.hand.some(c=>c.type==='culprit'));
-function startDeck(n){const deck=Object.entries(COUNTS).flatMap(([type,k])=>Array.from({length:k},()=>({id:uid(),type})));const required=REQUIRED[n];const selected=[];for(const [type,k] of Object.entries(required)){for(let i=0;i<k;i++){const ix=deck.findIndex(c=>c.type===type);if(ix<0)throw Error('カード構成エラー');selected.push(...deck.splice(ix,1));}}return shuffle([...selected,...shuffle(deck).slice(0,n*4-selected.length)]);}
+export function dealInitialHands(deck,n,randomize=shuffle){
+ if(deck.length!==n*4)throw Error('配布カードの枚数が合いません。');
+ for(;;){
+  const shuffled=randomize(deck.slice());
+  const hands=Array.from({length:n},(_,i)=>shuffled.slice(i*4,i*4+4));
+  const hasUnplayableDetectives=hand=>{const detectives=hand.filter(c=>c.type==='detective').length;return detectives===4||(detectives===3&&hand.some(c=>c.type==='culprit'));};
+  if(!hands.some(hasUnplayableDetectives))return hands;
+ }
+}
+function startDeck(n){const deck=Object.entries(COUNTS).flatMap(([type,k])=>Array.from({length:k},()=>({id:uid(),type})));const required=REQUIRED[n];const selected=[];for(const [type,k] of Object.entries(required)){for(let i=0;i<k;i++){const ix=deck.findIndex(c=>c.type===type);if(ix<0)throw Error('カード構成エラー');selected.push(...deck.splice(ix,1));}}return dealInitialHands([...selected,...shuffle(deck).slice(0,n*4-selected.length)].flat(),n).flat();}
 function checkDetectives(g){if(g.phase==='playing'&&!countDetectives(g)){const c=criminal(g);if(c)win(g,c,'犯人');}}
 function win(g,p,role){const conspirators=g.players.filter(x=>x.plotUsed).map(x=>x.name);finish(g,p.name+'（'+role+'）'+(role==='犯人'&&conspirators.length?'＋'+conspirators.join('・')+'（たくらみ）':''),p.name+'が'+(role==='犯人'?'逃げ切りました。':'犯人を見つけました。'));}
 
