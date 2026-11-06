@@ -3,20 +3,36 @@ const {webcrypto}=require('node:crypto');
 if(!globalThis.crypto)globalThis.crypto=webcrypto;
 (async()=>{
  const {handleHannin}=await import('../src/hannin.mjs');
- const store=new Map(),storage={get:async k=>store.get(k),put:async(k,v)=>store.set(k,structuredClone(v))};
- const req=(route,body)=>new Request('https://room/hn/'+route,{method:body?'POST':'GET',...(body?{headers:{'content-type':'application/json'},body:JSON.stringify(body)}:{})});
- const call=async(route,body)=>{const res=await handleHannin(storage,req(route,body));return {status:res.status,...await res.json()}};
- const a=await call('create',{code:'ABC123',name:'Alice'});assert.equal(a.status,200);assert.equal(a.game.phase,'lobby');
- const b=await call('join',{name:'Bob'}),c=await call('join',{name:'Carol'});assert.equal(b.status,200);assert.equal(c.status,200);
- const bad=await call('action',{token:b.token,type:'start'});assert.equal(bad.status,400);
- const started=await call('action',{token:a.token,type:'start'});assert.equal(started.status,200);assert.equal(started.game.players.length,3);
- assert.ok(started.game.me.hand.length>=3&&started.game.me.hand.length<=4);
- const spectator=await call('state?spectate=1');assert.equal(spectator.game.me,null);assert.equal(JSON.stringify(spectator.game).includes(a.token),false);assert.equal(JSON.stringify(spectator.game).includes(started.game.me.hand[0].id),false);
- const other=await call('state?token='+b.token);assert.equal(other.game.me.hand.length,4);
- const card=started.game.me.hand.find(x=>!['culprit','detective'].includes(x.type))||started.game.me.hand[0];
- const active=started.game.players[started.game.turn],activeToken=active.id===a.game.me.id?a.token:active.id===b.game.me.id?b.token:c.token;const activeState=await call('state?token='+activeToken);const activeCard=activeState.game.me.hand.find(x=>!['culprit','detective'].includes(x.type))||activeState.game.me.hand[0];const target=started.game.players.find(x=>x.id!==active.id);const play=await call('action',{token:activeToken,type:'play',cardId:activeCard.id,targetId:target.id,revision:started.game.revision});
- assert.equal(play.status,200,JSON.stringify(play));
- const stale=await call('action',{token:activeToken,type:'play',cardId:activeCard.id,revision:started.game.revision});assert.equal(stale.status,400);
- if(play.game.pending){const pending=play.game.pending;assert.equal(pending.needsAction,true);const spectatorPending=await call('state?spectate=1');assert.equal(spectatorPending.game.pending.peek.length,0);assert.equal(spectatorPending.game.pending.options.length,0);const resolved=await call('action',{token:activeToken,type:'resolve',cardId:pending.options[0],revision:play.game.revision});assert.equal(resolved.status,200,JSON.stringify(resolved));}
- console.log('hannin room, authorization, spectator privacy and turn actions OK');
+ for(let n=3;n<=8;n++){
+  const state=new Map(),storage={get:async k=>state.get(k),put:async(k,v)=>state.set(k,structuredClone(v))};
+  const call=async(route,body)=>{const request=new Request('https://room/hn/'+route,{method:body?'POST':'GET',...(body?{headers:{'content-type':'application/json'},body:JSON.stringify(body)}:{})});const response=await handleHannin(storage,request);return {status:response.status,...await response.json()}};
+  const users=[];
+  for(let i=0;i<n;i++){const d=await call(i?'join':'create',{name:'Player'+i,code:'ABC123'});assert.equal(d.status,200);users.push(d);}
+  assert.equal((await call('action',{token:users[1].token,type:'start'})).status,400);
+  const started=await call('action',{token:users[0].token,type:'start'});assert.equal(started.status,200);
+  assert.equal(started.game.phase,'playing');
+  const all=state.get('hannin').players.flatMap(p=>p.hand).concat(state.get('hannin').discard);
+  assert.equal(all.length,4*n);assert.equal(all.filter(c=>c.type==='culprit').length,1);
+  assert.equal(all.filter(c=>c.type==='first').length,1);
+  assert.equal(state.get('hannin').discard[0].type,'first');
+  assert.equal(state.get('hannin').players.reduce((a,p)=>a+p.hand.length,0),4*n-1);
+  const spectator=await call('state?spectate=1');assert.equal(spectator.status,200);assert.equal(spectator.game.me,null);
+  for(const u of users){const response=await call('state?token='+u.token);assert.equal(response.status,200);assert.equal(response.game.me.id,u.game.me.id);assert.equal(JSON.stringify(spectator).includes(u.token),false);}
+  const active=started.game.players[started.game.turn];const user=users.find(u=>u.game.me.id===active.id);
+  const me=(await call('state?token='+user.token)).game.me;
+  const selected=me.hand.find(c=>!['culprit','detective'].includes(c.type));
+  if(selected){
+   const other=started.game.players.find(p=>p.id!==active.id);
+   const played=await call('action',{token:user.token,type:'play',cardId:selected.id,targetId:other.id,revision:started.game.revision});
+   assert.equal(played.status,200,JSON.stringify(played));
+   assert.equal((await call('action',{token:user.token,type:'play',cardId:selected.id,revision:started.game.revision})).status,400);
+   if(played.game.pending?.needsAction){
+    const spec=await call('state?spectate=1');assert.deepEqual(spec.game.pending.peek,[]);assert.deepEqual(spec.game.pending.options,[]);
+    const pending=played.game.pending;
+    const resolved=await call('action',{token:user.token,type:'resolve',cardId:pending.options[0],revision:played.game.revision});
+    assert.equal(resolved.status,200,JSON.stringify(resolved));
+   }
+  }
+ }
+ console.log('Hannin: 3–8 player setup, hidden information, opening turn, actions OK');
 })().catch(e=>{console.error(e);process.exitCode=1});
