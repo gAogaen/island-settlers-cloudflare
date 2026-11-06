@@ -2,8 +2,8 @@
 'use strict';
 const root=document.documentElement,cards=[...document.querySelectorAll('#gamePicker .game-choice')],buttons=[...document.querySelectorAll('[data-catalog-art]')];
 const artFiles={
- catan:'catan-photo.webp?v=20261107',timebomb:'timebomb-photo.webp',penguin:'penguin-photo.webp?v=20261108',
- reddoor:'reddoor-photo.webp',daifugo:'daifugo-photo.webp',spirit:'spirit-photo.webp',
+ catan:'catan-photo.webp?v=20261107',timebomb:'timebomb-photo.webp?v=20261108',penguin:'penguin-photo.webp?v=20261108',
+ reddoor:'reddoor-photo.webp?v=20261108',daifugo:'daifugo-photo.webp',spirit:'spirit-photo.webp?v=20261108',
  bahamut:'bahamut-photo.webp',coyote:'coyote-photo.webp',hannin:'hannin-photo.webp'
 };
 function gameKey(card){const title=card.querySelector('.game-choice-copy h2')?.textContent.trim();return ({'カタン':'catan','タイムボム':'timebomb','ペンギンパーティ':'penguin','赤い扉と殺人鬼の鍵':'reddoor','大富豪':'daifugo','スピリット・アイランド':'spirit','はらぺこバハムート':'bahamut','コヨーテ':'coyote','犯人は踊る':'hannin'})[title]||'';}
