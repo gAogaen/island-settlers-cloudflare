@@ -1,0 +1,52 @@
+name: Deploy boardgame to Cloudflare Workers
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/**'
+      - 'src/**'
+      - 'wrangler.jsonc'
+      - 'wrangler.boardgame.jsonc'
+      - 'package.json'
+      - '.github/workflows/deploy-cloudflare.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cloudflare-boardgame-production
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Cloudflare credentials
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CF_TOKEN" ] || [ -z "$CF_ACCOUNT" ]; then
+            echo "::error::Set CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID as GitHub Actions repository secrets."
+            exit 1
+          fi
+      - run: npm install --no-package-lock
+      - name: Deploy game origin and assets
+        run: npx wrangler deploy --config wrangler.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Deploy public boardgame gateway
+        run: npx wrangler deploy --config wrangler.boardgame.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Check published images
+        run: |
+          for key in bahamut coyote hannin; do
+            curl --fail --silent --show-error --location --retry 3 "https://boardgame.un0wn.workers.dev/assets/catalog/${key}-photo.webp" -o "/tmp/${key}-photo.webp"
+            test -s "/tmp/${key}-photo.webp"
+          done
+          curl --fail --silent --show-error --location --retry 3 "https://boardgame.un0wn.workers.dev/catalog-art.js" | grep -q "hannin-photo.webp"
