@@ -17,5 +17,5 @@ jobs:
         with:
           node-version: '22'
       - run: node tests/hannin.test.cjs
-      - run: npm ci
+      - run: npm install --no-package-lock
       - run: npx wrangler deploy --config wrangler.boardgame.jsonc --dry-run
