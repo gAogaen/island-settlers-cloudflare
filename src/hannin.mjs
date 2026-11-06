@@ -74,6 +74,11 @@ function resolve(g,p,a){
   if(!Number.isInteger(i)||i<0||i>=t.hand.length)throw Error('カードを選択してください。');
   const c=t.hand[i];log(g,t.name+'のカードは「'+NAMES[c.type]+'」でした。');
   if(c.type==='culprit'){win(g,p,'いぬ');return}
+  // The selected card is discarded; the played dog card moves into the target's hand.
+  t.hand.splice(i,1);g.discard.push(c);
+  const dogIndex=g.discard.findLastIndex(card=>card.type==='dog');
+  if(dogIndex<0)throw Error('いぬカードが見つかりません。');
+  t.hand.push(...g.discard.splice(dogIndex,1));
   advance(g);return;
  }
  if(pending.type==='trade'){
