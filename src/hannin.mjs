@@ -39,7 +39,7 @@ function play(g,p,a){
  if(type==='detective'&&g.rounds<1)throw Error('探偵は最初の1周目には使えません。');
  const requires=['detective','trade','witness','dog'].includes(type);
  const t=requires?requireTarget(g,p,a.targetId):null;
- if(type==='trade'&&(!t.hand.length||p.hand.length<2))throw Error('交換するカードがありません。');
+ 
  if(type==='witness'&&!t.hand.length)throw Error('相手に手札がありません。');
  if(type==='dog'&&!t.hand.length)throw Error('相手に手札がありません。');
  pop(p,c.id);g.discard.push(c);log(g,p.name+'が「'+NAMES[type]+'」を使用しました。');
@@ -54,6 +54,7 @@ function play(g,p,a){
  }else if(type==='dog'){
   g.pending={type:'dog',actor:p.id,target:t.id,description:t.name+'のカードを1枚選んで公開',options:t.hand.map((_,i)=>String(i))};return;
  }else if(type==='trade'){
+  if(!p.hand.length||!t.hand.length){log(g,'交換できる手札がないため取引は行われませんでした。');advance(g);return;}
   g.pending={type:'trade',actor:p.id,target:t.id,description:'交換する自分のカードを選択',options:p.hand.map(c=>c.id)};return;
  }else if(type==='rumor'){
   const moves=g.players.filter(x=>x.hand.length).map(x=>({from:x.id,cardId:x.hand[rnd(x.hand.length)].id}));for(const m of moves){const from=find(g,m.from),idx=g.players.findIndex(x=>x.id===from.id),to=nextPlayer(g,idx);to.hand.push(pop(from,m.cardId));}log(g,'全員が右隣からカードを1枚引きました。');
