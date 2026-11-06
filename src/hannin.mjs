@@ -78,7 +78,12 @@ function resolve(g,p,a){
  if(pending.type==='trade'){
   const t=find(g,pending.target),mine=p.hand.find(c=>c.id===a.cardId);
   if(!mine)throw Error('自分のカードを選択してください。');
-  const theirs=randomCard(t);pop(p,mine.id);p.hand.push(theirs);t.hand.push(mine);log(g,p.name+'と'+t.name+'がカードを交換しました。');advance(g);return;
+  g.pending={type:'tradeReceive',actor:t.id,target:p.id,chosen:a.cardId,description:p.name+'と交換するカードを選択',options:t.hand.map(c=>c.id)};return;
+ }
+ if(pending.type==='tradeReceive'){
+  const t=find(g,pending.target),mine=p.hand.find(c=>c.id===a.cardId),theirs=t.hand.find(c=>c.id===pending.chosen);
+  if(!mine||!theirs)throw Error('交換するカードを選択してください。');
+  pop(p,mine.id);pop(t,theirs.id);p.hand.push(theirs);t.hand.push(mine);log(g,p.name+'と'+t.name+'がカードを交換しました。');advance(g);return;
  }
  if(pending.type==='information'){
   if(!p.hand.length)throw Error('手札がありません。');
