@@ -19,6 +19,6 @@ html[data-catalog-art="photo"] #gamePicker .game-choice-art{background:none!impo
  #gamePicker .game-catalog:not([data-columns="1"]) .daifugo-art .catalog-card{flex:none;width:40px;height:58px;padding:3px 5px;border-radius:5px;font:16px Georgia!important}
  #gamePicker .game-catalog:not([data-columns="1"]) .daifugo-art .catalog-card small{font-size:22px;line-height:1.1}
  #gamePicker .game-catalog:not([data-columns="1"]) .daifugo-art .catalog-card.red{margin-right:-9px}
- #gamePicker .game-catalog:not([data-columns="1"]) .daifugo-art>img{width:35px!important;max-width:35px!important;max-height:35px!important;left:calc(50% + 14px);bottom:10px}
+ #gamePicker .game-catalog:not([data-columns="1"]) .daifugo-art>.catalog-art-original>img{width:35px!important;max-width:35px!important;max-height:35px!important;left:calc(50% + 14px);bottom:10px}
  #gamePicker .game-catalog[data-columns="3"] .game-choice-copy strong{font-size:10px;line-height:1.5;min-height:3em}
 }
