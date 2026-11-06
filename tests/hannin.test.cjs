@@ -70,5 +70,33 @@ if(!globalThis.crypto)globalThis.crypto=webcrypto;
   const ui=fs.readFileSync(require('node:path').join(__dirname,'../public/hannin.js'),'utf8');
   assert.match(ui,/names\[x\]\|\|x/);
  }
- console.log('Hannin: 3–8 player setup, hidden information, opening turn, actions OK');
+ // Additional server-authoritative effect and authorization regressions.
+ {
+  const state=new Map(),storage={get:async k=>state.get(k),put:async(k,v)=>state.set(k,structuredClone(v))};
+  const call=async(route,body)=>{const request=new Request('https://room/hn/'+route,{method:body?'POST':'GET',...(body?{headers:{'content-type':'application/json'},body:JSON.stringify(body)}:{})});const response=await handleHannin(storage,request);return {status:response.status,...await response.json()}};
+  const users=[];
+  for(let i=0;i<4;i++)users.push(await call(i?'join':'create',{name:'Check'+i,code:'SEC123'}));
+  await call('action',{token:users[0].token,type:'start'});
+  let g=state.get('hannin'),actor=g.players[g.turn],target=g.players[(g.turn+1)%4];
+  const actorToken=users.find(u=>u.game.me.id===actor.id).token;
+  const targetToken=users.find(u=>u.game.me.id===target.id).token;
+  assert.equal((await call('state?token=invalid')).status,403);
+  assert.equal((await call('action',{token:targetToken,type:'play',cardId:target.hand[0].id})).status,400);
+  actor.hand=[{id:'witness-a',type:'witness'},{id:'citizen-a',type:'citizen'}];
+  target.hand=[{id:'secret-b',type:'alibi'},{id:'secret-c',type:'culprit'}];
+  await storage.put('hannin',g);
+  const played=await call('action',{token:actorToken,type:'play',cardId:'witness-a',targetId:target.id,revision:g.revision});
+  assert.equal(played.status,200,JSON.stringify(played));
+  assert.deepEqual(played.game.pending.peek,['alibi','culprit']);
+  const spec=await call('state?spectate=1');
+  assert.deepEqual(spec.game.pending.peek,[]);
+  assert.deepEqual(spec.game.pending.options,[]);
+  assert.equal(spec.game.me,null);
+  assert.equal((await call('action',{token:targetToken,type:'resolve'})).status,400);
+  assert.equal((await call('action',{token:actorToken,type:'resolve',revision:g.revision})).status,400);
+  const resolved=await call('action',{token:actorToken,type:'resolve',revision:played.game.revision});
+  assert.equal(resolved.status,200,JSON.stringify(resolved));
+  assert.equal(state.get('hannin').pending,null);
+ }
+ console.log('Hannin: 3–8 players, hidden information, authorization, witness effect and actions OK');
 })().catch(e=>{console.error(e);process.exitCode=1});
