@@ -22,3 +22,17 @@ html[data-catalog-art="photo"] #gamePicker .game-choice-art{background:none!impo
  #gamePicker .game-catalog:not([data-columns="1"]) .daifugo-art>.catalog-art-original>img{width:35px!important;max-width:35px!important;max-height:35px!important;left:calc(50% + 14px);bottom:10px}
  #gamePicker .game-catalog[data-columns="3"] .game-choice-copy strong{font-size:10px;line-height:1.5;min-height:3em}
 }
+
+/* Compact catalog controls on mobile while keeping their full accessible names. */
+@media(max-width:650px){
+ .catalog-toolbar{justify-content:space-between;flex-wrap:nowrap;gap:6px;margin-bottom:14px}
+ .catalog-toolbar>#catalogLayoutLabel,.catalog-art-switch>span{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+ .catalog-layout-options,.catalog-art-switch{gap:2px;padding:2px;border-radius:10px;flex:0 0 auto}
+ .catalog-layout-options button{min-width:38px;min-height:34px;padding:6px 8px;border-radius:7px;font-size:12px}
+ .catalog-art-switch button{min-width:48px;min-height:34px;padding:6px 7px;border-radius:7px;font-size:12px}
+}
+@media(max-width:360px){
+ .catalog-toolbar{gap:3px}
+ .catalog-layout-options button{min-width:31px;padding:5px}
+ .catalog-art-switch button{min-width:40px;padding:5px}
+}
