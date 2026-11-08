@@ -328,7 +328,7 @@ function renderActions(g, me, isMyTurn) {
     notice = isMyTurn ? (selectedRobberHex ? "盗賊を移動するタイルを確認し、相手を選んでください。" : "盤面の別の地形タイルを選び、盗賊を移動します。") : `${g.players[g.activeIndex]?.name}が盗賊を移動しています。`;
     if(isMyTurn)main.push(`<button class="action-btn primary" data-action="robberGuide">${selectedRobberHex?"盗賊の移動先を確認":"盗賊の移動方法を見る"}</button>`);
   } else if (g.phase === "play") {
-    notice = isMyTurn ? "サイコロを振って資源を受け取ります。" : `${g.players[g.activeIndex]?.name}の手番です。`;
+    notice = isMyTurn ? "発展カードを使うか、サイコロを振って資源を受け取ります。" : `${g.players[g.activeIndex]?.name}の手番です。`;
     if (isMyTurn) main.push(`<button class="action-btn primary" data-action="roll">🎲 サイコロを振る</button>`);
   } else if (g.phase === "main") {
     notice = isMyTurn ? "建設、交換、発展カードを使えます。" : `${g.players[g.activeIndex]?.name}が行動中です。`;
@@ -336,11 +336,6 @@ function renderActions(g, me, isMyTurn) {
       main.push(`<button class="action-btn" data-action="bankToggle">⇄ 銀行交換</button><button class="action-btn" data-action="playerTradeToggle">⇄ 交渉</button><button class="action-btn" data-action="endTurn" style="grid-column:1/-1">ターン終了 →</button>`);
       build.push(`<button class="action-btn ${mode === "road" ? "active-mode" : ""}" data-mode="road">道を建設</button><button class="action-btn ${mode === "settlement" ? "active-mode" : ""}" data-mode="settlement">開拓地を建設</button><button class="action-btn ${mode === "city" ? "active-mode" : ""}" data-mode="city">都市にする</button><button class="action-btn" data-action="buyDevelopment">発展カードを購入</button>`);
 
-      if (me.devCards?.length) {
-        const labels = { knight: "騎士", victory: "勝利点", road: "街道建設", plenty: "豊作", monopoly: "独占" };
-
-        for (const type of ["knight", "plenty", "monopoly", "road"]) if (me.devCards.some(c => c.type === type && c.boughtTurn < g.turnNumber)) dev.push(`<button class="action-btn" data-card="${type}" ${me.usedDevCard ? "disabled" : ""}>${labels[type]}を使う</button>`);
-      }
     }
   } else if (g.phase === "special") {
     notice = isMyTurn ? "5〜6人戦の特別建設です。資源を使って建設できます。" : `${g.players.find(p => p.id === g.specialPlayerId)?.name}の特別建設を待っています。`;
@@ -348,6 +343,10 @@ function renderActions(g, me, isMyTurn) {
       main.push(`<button class="action-btn primary" data-action="endSpecial" style="grid-column:1/-1">建設を終えて次へ →</button>`);
       build.push(`<button class="action-btn ${mode === "road" ? "active-mode" : ""}" data-mode="road">道を建設</button><button class="action-btn ${mode === "settlement" ? "active-mode" : ""}" data-mode="settlement">開拓地を建設</button><button class="action-btn ${mode === "city" ? "active-mode" : ""}" data-mode="city">都市にする</button><button class="action-btn" data-action="buyDevelopment">発展カードを購入</button>`);
     }
+  }
+  if (isMyTurn && ["play", "main"].includes(g.phase) && me.devCards?.length) {
+    const labels = { knight: "騎士", victory: "勝利点", road: "街道建設", plenty: "豊作", monopoly: "独占" };
+    for (const type of ["knight", "plenty", "monopoly", "road"]) if (me.devCards.some(c => c.type === type && c.boughtTurn < g.turnNumber)) dev.push(`<button class="action-btn" data-card="${type}" ${me.usedDevCard ? "disabled" : ""}>${labels[type]}を使う</button>`);
   }
   if (g.phase === "main" && !isMyTurn && (g.tradeOffers || []).some(o => o.status === "pending" && o.toId === playerId)) main.push(`<button class="action-btn" data-action="playerTradeToggle">交換の提示を見る</button>`);
 

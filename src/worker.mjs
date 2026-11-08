@@ -285,7 +285,10 @@ function applyAction(game, player, action) {
     game.tradeOffers = (game.tradeOffers || []).filter(o => o.status !== "pending");
     return;
   }
-  if (game.phase === "play") throw Error("先にサイコロを振ってください。");
+  if (game.phase === "play") {
+    if (action.type === "playCard") return playCard(game, player, action);
+    throw Error("まずサイコロを振るか、発展カードを使ってください。");
+  }
   if (action.type === "buildRoad") return buildRoad(game, player, action.edgeId, false);
   if (action.type === "buildSettlement") return buildSettlement(game, player, action.vertexId, false);
   if (action.type === "buildCity") return buildCity(game, player, action.vertexId);
@@ -368,7 +371,7 @@ function robberAction(game, player, action) {
   const targets = game.players.filter(p => p.id !== player.id && [...p.settlements, ...p.cities].some(v => hex.corners.includes(v)) && totalCards(p.hand) > 0);
   const victim = targets.find(p => p.id === action.victimId) || targets[0];
   if (victim) { const pool = RESOURCES.flatMap(r => Array(victim.hand[r]).fill(r)); const resource = pool[crypto.getRandomValues(new Uint32Array(1))[0] % pool.length]; victim.hand[resource]--; player.hand[resource]++; }
-  game.phase = "main";
+  game.phase = game.rolled ? "main" : "play";
   if (game.pendingDevKnight) { game.players[game.activeIndex].playedKnights++; game.pendingDevKnight = false; refreshAwards(game); checkWinner(game); }
 }
 
