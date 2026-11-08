@@ -347,8 +347,13 @@ function distribute(game, number) {
     for (const vId of h.corners) game.players.forEach((p, pi) => { if (p.settlements.includes(vId)) payouts[pi][res]++; if (p.cities.includes(vId)) payouts[pi][res] += 2; });
   }
   for (const r of RESOURCES) {
-    let requested = payouts.reduce((sum, hand) => sum + hand[r], 0), available = bankAvailable(game, r);
-    if (requested > available) {shortages.push(r);payouts.forEach(hand=>hand[r]=0);continue;}
+    const requested = payouts.reduce((sum, hand) => sum + hand[r], 0), available = bankAvailable(game, r);
+    if (requested > available) {
+      shortages.push(r);
+      const affected = payouts.map((hand, i) => hand[r] > 0 ? i : -1).filter(i => i >= 0);
+      if (affected.length === 1) payouts[affected[0]][r] = Math.max(0, available);
+      else payouts.forEach(hand => hand[r] = 0);
+    }
     game.players.forEach((p, i) => p.hand[r] += payouts[i][r]);
   }
   game.lastProduction={id:game.lastRoll?.id||crypto.randomUUID(),number,tiles:game.map.hexes.filter(h=>h.number===number&&h.id!==game.map.robber).map(h=>h.id),blockedTiles:game.map.hexes.filter(h=>h.number===number&&h.id===game.map.robber).map(h=>h.id),payouts:game.players.map((p,i)=>({playerId:p.id,resources:payouts[i]})),shortages};
@@ -424,7 +429,10 @@ function playCard(game, player, action) {
     let gained = 0; for (const other of game.players) if (other.id !== player.id) { gained += other.hand[action.resource]; other.hand[action.resource] = 0; } player.hand[action.resource] += gained;
   } else if (type === "road") {
     if (!Array.isArray(action.edgeIds) || action.edgeIds.length < 1 || action.edgeIds.length > Math.min(2, 15 - player.roads.length)) throw Error("道を1〜2本選んでください。");
-    for (const edgeId of action.edgeIds) buildRoad(game, player, edgeId, true);
+    for (const edgeId of action.edgeIds) {
+      if (game.winner) break;
+      buildRoad(game, player, edgeId, true);
+    }
   }
   refreshAwards(game); checkWinner(game);
 }
