@@ -490,8 +490,13 @@ const DEVELOPMENT_INFO={
   monopoly:{name:"独占",effect:"選んだ資源を、他の全プレイヤーからすべて受け取ります。",instructions:"独占する資源を1種類選んでください。"},
   road:{name:"街道建設",effect:"資源を払わずに道を最大2本建設します。通常の道の接続ルールが適用されます。",instructions:"盤面に戻ったら光っている辺を1〜2本選び、「道を確定」を押してください。確定前ならキャンセルできます。"}
 };
+function canUseDevelopment(g,type=null) {
+  const me=g?.players?.find(p=>p.id===playerId);
+  if(!g||spectating||g.status!=="playing"||g.winner||!["play","main"].includes(g.phase)||g.players[g.activeIndex]?.id!==playerId||!me||me.usedDevCard)return false;
+  return type?!!me.devCards?.some(c=>c.type===type&&c.boughtTurn<g.turnNumber):true;
+}
 function useDevelopment(type) {
-  if(!DEVELOPMENT_INFO[type]||spectating)return;
+  if(!DEVELOPMENT_INFO[type]||!canUseDevelopment(currentGame,type))return;
   developmentDraft={type,cards:Object.fromEntries(RESOURCES.map(r=>[r,0])),resource:null};
   $("developmentDialogTitle").textContent=DEVELOPMENT_INFO[type].name+"を使う";
   $("developmentEffect").textContent=DEVELOPMENT_INFO[type].effect;
@@ -501,6 +506,7 @@ function useDevelopment(type) {
 }
 function updateDevelopmentDialog() {
   if(!developmentDraft)return;
+  if(!canUseDevelopment(currentGame,developmentDraft.type)){developmentDraft=null;if($("developmentDialog").open)$("developmentDialog").close();return;}
   const {type,cards,resource}=developmentDraft, total=RESOURCES.reduce((n,r)=>n+cards[r],0), bank=currentGame?.bankResources;
   const selecting=type==="plenty"||type==="monopoly";
   $("developmentChoices").innerHTML=selecting?RESOURCES.map(r=>{
@@ -522,7 +528,7 @@ $("closeDevelopment").onclick=()=>$("developmentDialog").close();
 $("cancelDevelopment").onclick=()=>$("developmentDialog").close();
 $("developmentDialog").addEventListener("close",()=>{developmentDraft=null;if(currentGame)syncGuidedDialogs(currentGame);});
 $("confirmDevelopment").onclick=async()=>{
-  if(!developmentDraft||developmentSubmitting||$("confirmDevelopment").disabled)return;
+  if(!developmentDraft||!canUseDevelopment(currentGame,developmentDraft.type)||developmentSubmitting||$("confirmDevelopment").disabled)return;
   const {type,cards,resource}=developmentDraft;
   if(type==="road"){$("developmentDialog").close();mode="roadCard";pendingRoadCard=[];render();showToast("光っている道を1〜2本選び、確定してください。");return;}
   developmentSubmitting=true;updateDevelopmentDialog();
