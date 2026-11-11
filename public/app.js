@@ -976,6 +976,7 @@ function syncDevelopmentScenes(g){
 function closeDevelopmentScene(){clearTimeout(developmentSceneTimer);const el=$("developmentScene");try{el.hidePopover?.();}catch{}el.hidden=true;if(el.parentElement?.tagName==='DIALOG')document.body.append(el);developmentSceneActive=false;showNextDevelopmentScene();}
 function showNextDevelopmentScene(){
  if(developmentSceneActive||!developmentSceneQueue.length)return;
+ if(document.querySelector("dialog[open]"))return;
  const effect=developmentSceneQueue.shift(),el=$("developmentScene"),cards={monopoly:['独占','資源をひとり占め！','✦'],plenty:['豊作','島に恵みがもたらされた！','❧'],knight:['騎士','騎士が出動！ 盗賊の移動先に注目！','♞'],road:['街道建設','新たな道が島をつなぐ！','━']},info=cards[effect.card];
  if(!info)return;developmentSceneActive=true;el.dataset.card=effect.card;
  $("developmentSceneActor").textContent=effect.playerName+' が発展カードを使用';
@@ -990,8 +991,14 @@ function showNextDevelopmentScene(){
 function playDevelopmentSceneSound(card){if(!soundOn||!audioContext||audioContext.state!=='running')return;try{const notes=card==='monopoly'?[196,247,294,392]:card==='knight'?[262,392,523,784]:card==='plenty'?[330,440,554,660]:[294,370,440,587];notes.forEach((f,i)=>{const at=audioContext.currentTime+i*.12,osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.type='triangle';osc.frequency.setValueAtTime(f,at);gain.gain.setValueAtTime(.0001,at);gain.gain.exponentialRampToValueAtTime(.055,at+.025);gain.gain.exponentialRampToValueAtTime(.0001,at+.65);osc.connect(gain);gain.connect(audioContext.destination);osc.start(at);osc.stop(at+.67);osc.onended=()=>{osc.disconnect();gain.disconnect();};});}catch{}}
 $("closeDevelopmentScene").onclick=closeDevelopmentScene;
 
-function mountDevelopmentScene(){if(!developmentSceneActive)return;const el=$("developmentScene"),modal=document.querySelector("dialog[open]"),parent=modal||document.body;if(el.showPopover&&el.parentElement!==parent){try{el.hidePopover();}catch{}parent.append(el);}el.hidden=false;try{el.showPopover?.();}catch{}}
-document.querySelectorAll("dialog").forEach(d=>d.addEventListener("close",()=>{if(developmentSceneActive)mountDevelopmentScene();}));
+function mountDevelopmentScene(){
+ if(!developmentSceneActive)return;
+ const el=$("developmentScene"),modal=document.querySelector("dialog[open]");
+ if(modal){try{el.hidePopover?.();}catch{}el.hidden=true;if(el.parentElement?.tagName==="DIALOG")document.body.append(el);return;}
+ if(el.parentElement!==document.body){try{el.hidePopover?.();}catch{}document.body.append(el);}
+ el.hidden=false;try{el.showPopover?.();}catch{}
+}
+document.querySelectorAll("dialog").forEach(d=>d.addEventListener("close",()=>{if(developmentSceneActive)mountDevelopmentScene();else showNextDevelopmentScene();}));
 
 
 
