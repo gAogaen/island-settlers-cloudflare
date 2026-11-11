@@ -2,7 +2,7 @@
 'use strict';
 const root=document.documentElement,cards=[...document.querySelectorAll('#gamePicker .game-choice')],buttons=[...document.querySelectorAll('[data-catalog-art]')];
 const artFiles={
- catan:'catan-photo.webp?v=20261107',timebomb:'timebomb-photo.webp?v=20261109',penguin:'penguin-photo.webp?v=20261109',
+ catan:'catan-photo.webp?v=20261111-closeup',timebomb:'timebomb-photo.webp?v=20261109',penguin:'penguin-photo.webp?v=20261109',
  reddoor:'reddoor-photo.webp?v=20261109',daifugo:'daifugo-photo.webp',spirit:'spirit-photo.webp?v=20261109',
  bahamut:'bahamut-photo.webp?v=b2b64e55',coyote:'coyote-photo.webp?v=fba5d0be',hannin:'hannin-photo.webp?v=7fb98a82',chao:'chao-photo.webp?v=20261111-closeup'
 };
