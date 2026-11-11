@@ -998,7 +998,8 @@ function mountDevelopmentScene(){
  if(el.parentElement!==document.body){try{el.hidePopover?.();}catch{}document.body.append(el);}
  el.hidden=false;try{el.showPopover?.();}catch{}
 }
-document.querySelectorAll("dialog").forEach(d=>d.addEventListener("close",()=>{if(developmentSceneActive)mountDevelopmentScene();else showNextDevelopmentScene();}));
+const developmentSceneDialogObserver=new MutationObserver(()=>{if(!developmentSceneActive||!document.querySelector("dialog[open]"))return;const el=$("developmentScene");if(!el)return;try{el.hidePopover?.()}catch{}el.hidden=true;if(el.parentElement?.tagName==="DIALOG")document.body.append(el);});
+document.querySelectorAll("dialog").forEach(d=>{developmentSceneDialogObserver.observe(d,{attributes:true,attributeFilter:["open"]});d.addEventListener("close",()=>{if(developmentSceneActive)mountDevelopmentScene();else showNextDevelopmentScene();});});
 
 
 
