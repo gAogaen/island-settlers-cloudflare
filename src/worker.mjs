@@ -1,4 +1,5 @@
 import { handleHannin } from './hannin.mjs';
+import { handleChao } from './chao.mjs';
 const RESOURCES = ["wood", "brick", "sheep", "wheat", "ore"];
 const COST = {
   road: { wood: 1, brick: 1 },
@@ -25,6 +26,8 @@ export default {
         const room=env.ROOMS.get(env.ROOMS.idFromName('coyote:'+code));
         return room.fetch('https://room/cy/'+route+url.search,request.method==='POST'?{method:'POST',body:JSON.stringify({...await request.json(),code})}:undefined);
       }
+      const cc=url.pathname.match(/^\/api\/chao(?:\/([A-Z0-9]{6})(?:\/(join|action))?)?$/i);
+      if(cc){const code=cc[1]?.toUpperCase()||randomCode(),route=cc[1]?(cc[2]||"state"):"create";if((route==="state"&&request.method!=="GET")||(route!=="state"&&request.method!=="POST"))return json({error:"操作が正しくありません。"},405);const room=env.ROOMS.get(env.ROOMS.idFromName("chao:"+code));return room.fetch(`https://room/chao/${route}${url.search}`,request.method==="POST"?{method:"POST",body:JSON.stringify({...await request.json(),code})}:undefined);}
       const bh=url.pathname.match(/^\/api\/bahamut(?:\/([A-Z0-9]{6})(?:\/(join|action))?)?$/i);
       if(bh){const code=bh[1]?.toUpperCase()||randomCode(),route=bh[1]?(bh[2]||'state'):'create';if((route==='state'&&request.method!=='GET')||(route!=='state'&&request.method!=='POST'))return json({error:'不正な操作です。'},405);const room=env.ROOMS.get(env.ROOMS.idFromName('bahamut:'+code));return room.fetch('https://room/bh/'+route+url.search,request.method==='POST'?{method:'POST',body:JSON.stringify({...await request.json(),code})}:undefined);}
       const df=url.pathname.match(/^\/api\/daifugo(?:\/([A-Z0-9]{6})(?:\/(join|action))?)?$/i);
@@ -78,6 +81,7 @@ export class GameRoom {
   async handleRequest(request) {
     if(new URL(request.url).pathname.startsWith('/hn/'))return handleHannin(this.storage,request);
     if(new URL(request.url).pathname.startsWith('/cy/'))return handleCoyote(this.storage,request);
+    if(new URL(request.url).pathname.startsWith('/chao/'))return handleChao(this.storage,request);
     if(new URL(request.url).pathname.startsWith("/bh/"))return handleBahamut(this.storage,request);
     if(new URL(request.url).pathname.startsWith("/df/"))return handleDaifugo(this.storage,request);
     if(new URL(request.url).pathname.startsWith("/rd/"))return handleReddoor(this.storage,request);
