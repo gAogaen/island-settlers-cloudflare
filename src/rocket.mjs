@@ -37,27 +37,18 @@ const cardDef=id=>{
 };
 const cardAmount=(id,fallback=0)=>Number(cardDef(id)?.effect?.amount??fallback);
 
-function deck(){
- const actions = createPrintedDeck(uid)
-  .filter(card => card.kind === 'attack' || card.kind === 'dodge')
-  .map(card => ({...card, type:card.kind, effectId:card.kind}));
- const remaining = ROCKET_PLAY_CARDS
-  .filter(def => def.kind !== 'attack' && def.kind !== 'dodge' && !['potion','item'].includes(def.action))
-  .flatMap(def => Array.from({length:def.copies},()=>({
-   id:uid(),cardId:def.id,type:def.action||def.effect.id,kind:def.kind,
-   name:def.name,effectId:def.effect.id,weather:def.weather||null,
-  })));
- const heldEffects = {'たべのこし':'leftovers', 'おんみつマント':'covert-cloak', 'かえんだま':'flame-orb', 'おうじゃのしるし':'kings-rock', 'どくバリ':'poison-barb','ゴツゴツメット':'rocky-helmet','でんきだま':'light-ball','いのちのたま':'life-orb'};
- const held = createPrintedDeck(uid)
-  .filter(card => Object.hasOwn(heldEffects, card.name))
-  .map(card => ({...card, type:'held', effectId:heldEffects[card.name]}));
- const tools = createPrintedDeck(uid).flatMap(card => {
-  const effect = printedToolEffect(card.name);
-  return effect ? [{...card,type:effect.type,effectId:effect.id}] : [];
- });
- const events=createPrintedDeck(uid).filter(card=>card.kind==='event'&&(card.name==='バリヤードのトリック'||EVENTS.has(card.name)))
-  .map(card=>({...card,type:card.name==='バリヤードのトリック'?'mime-trick':'printed-event',effectId:'event'}));
- return shuffle([...actions,...remaining,...held,...tools,...events]);
+export function deck(){
+ const heldEffects={'たべのこし':'leftovers','おんみつマント':'covert-cloak','かえんだま':'flame-orb','おうじゃのしるし':'kings-rock','どくバリ':'poison-barb','ゴツゴツメット':'rocky-helmet','でんきだま':'light-ball','いのちのたま':'life-orb','せんせいのツメ':'quick-claw','ちからのハチマキ':'muscle-band','からぶりほけん':'blunder-policy'};
+ return shuffle(createPrintedDeck(uid).map(card=>{
+  if(card.kind==='attack'||card.kind==='dodge')return {...card,type:card.kind,effectId:card.kind};
+  if(card.kind==='held')return {...card,type:'held',effectId:heldEffects[card.name]};
+  if(card.kind==='tool'){
+   const effect=printedToolEffect(card.name);
+   return {...card,type:effect.type,effectId:effect.id};
+  }
+  const type=card.name==='バリヤードのトリック'?'mime-trick':EVENTS.has(card.name)?'printed-event':'weather-only';
+  return {...card,type,effectId:type};
+ }));
 }
 function makeRoles(n){return shuffle(['leader','trainer',...Array(n-3).fill('challenger'),'rocket']);}
 function cloneMon(card,level,mode='basic'){
@@ -327,7 +318,7 @@ function apply(g,p,a){if(a.revision!=null&&a.revision!==g.revision)throw Error('
  if(a.type==='weather-attack'){requireTurn(g,p);attack(g,p,{...a,weatherAbility:true,justified:false});g.revision++;return}
  if(a.type==='move'){requireTurn(g,p);useWeatherMove(g,p,a);g.revision++;return}
  if(a.type==='respond'){resolve(g,p,a);g.revision++;return}if(a.type==='ack'){p.secretInfo=null;g.revision++;return}
- if(a.type==='play'){requireTurn(g,p);const c=p.hand.find(x=>x.id===a.cardId);if(!c)throw Error('そのカードは手札にありません。');if(c.type!=='attack')validateTargetRange(g,p,[player(g,a.targetId)]);if(c.type==='printed-event')playPrintedEvent(g,p,c,a);else if(c.type==='mime-trick'){
+ if(a.type==='play'){requireTurn(g,p);const c=p.hand.find(x=>x.id===a.cardId);if(!c)throw Error('そのカードは手札にありません。');if(c.type==='weather-only')throw Error('このカードのイベント効果は未実装です。おてんきカードとして使用できます。');if(c.type!=='attack')validateTargetRange(g,p,[player(g,a.targetId)]);if(c.type==='printed-event')playPrintedEvent(g,p,c,a);else if(c.type==='mime-trick'){
  const target=player(g,a.targetId);
  if(!target?.alive||target===p||!target.hand.length||ability(g,target,'はやおき'))throw Error('手札を引ける相手を選んでください。');
  trash(g,p,[c.id]);
