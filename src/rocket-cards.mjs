@@ -1,6 +1,6 @@
 // Data registry for the Rocket game. Current records are provisional playtest placeholders.
 // Replace these rows with verified card data when the user supplies the card list/images.
-export const ROCKET_CARD_DATA_VERSION = 8;
+export const ROCKET_CARD_DATA_VERSION = 9;
 
 export const ROCKET_ROLE_CARDS = [
   { id: 'leader', role: 'leader', name: 'ジムリーダー', copies: 1, public: true, image: '/assets/rocket/cards/card_055.webp', provisional: false },
@@ -72,9 +72,25 @@ export const ROCKET_ROLE_LABELS = Object.fromEntries(ROCKET_ROLE_CARDS.map(card=
 export const ROCKET_CARD_IMAGE_ASSETS = [
   ...Array.from({length:58},(_,index)=>{
     const n=String(index+1).padStart(3,'0');
+    const weatherVariants = {
+      32: ['どくバリ', 'thunderstorm'],
+      33: ['いのちのたま', 'thunderstorm'],
+      34: ['おんみつマント', 'thunderstorm'],
+      38: ['からぶりほけん', 'thunderstorm'],
+      39: ['ゴツゴツメット', 'thunderstorm'],
+      40: ['おうじゃのしるし', 'thunderstorm'],
+      42: ['ちからのハチマキ', 'thunderstorm'],
+      43: ['せんせいのツメ', 'thunderstorm'],
+      50: ['かえんだま', 'sunny'],
+      52: ['でんきだま', 'sunny'],
+      53: ['たべのこし', 'partly-cloudy']
+    };
+    const variant = weatherVariants[index + 1];
     const known={3:'ゲンガー',10:'スターミー',12:'ギャラドス',14:'プテラ',15:'カビゴン',17:'リザードン',20:'ライチュウ'};
-    return {id:`card_${n}`,name:known[index+1]||null,level:index<30?3:null,category:index<30?'pokemon':index<54?'play': 'role',image:`/assets/rocket/cards/card_${n}.webp`};
+    return {id:`card_${n}`,name:variant?.[0]||known[index+1]||null,weather:variant?.[1]||null,level:index<30?3:null,category:index<30?'pokemon':index<54?'play': 'role',image:`/assets/rocket/cards/card_${n}.webp`};
   }),
+  {id:'covert-cloak-rain',name:'おんみつマント',weather:'rain',category:'play',image:'/assets/rocket/cards/weather/covert-cloak-rain.webp'},
+  {id:'quick-claw-rain',name:'せんせいのツメ',weather:'rain',category:'play',image:'/assets/rocket/cards/weather/quick-claw-rain.webp'},
   {id:'card_kurae',category:'play',image:'/assets/rocket/cards/card_kurae.webp'},
   {id:'card_yokete',category:'play',image:'/assets/rocket/cards/card_yokete.webp'},
   {id:'card_mew',category:'special',image:'/assets/rocket/cards/card_mew.webp'},
