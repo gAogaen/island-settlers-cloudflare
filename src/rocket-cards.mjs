@@ -1,6 +1,6 @@
 // Data registry for the Rocket game. Current records are provisional playtest placeholders.
 // Replace these rows with verified card data when the user supplies the card list/images.
-export const ROCKET_CARD_DATA_VERSION = 1;
+export const ROCKET_CARD_DATA_VERSION = 2;
 
 export const ROCKET_ROLE_CARDS = [
   { id: 'leader', role: 'leader', name: 'ジムリーダー', copies: 1, public: true, image: '/assets/rocket/cards/card_055.webp', provisional: false },
@@ -49,3 +49,16 @@ ROCKET_POKEMON_CARDS.push({
 });
 
 export const ROCKET_ROLE_LABELS = Object.fromEntries(ROCKET_ROLE_CARDS.map(card=>[card.role,card.name]));
+
+// Every official-site image from the supplied ZIP is registered here. Names and
+// gameplay effects are kept in their card records and are not inferred from IDs.
+export const ROCKET_CARD_IMAGE_ASSETS = [
+  ...Array.from({length:58},(_,index)=>{
+    const n=String(index+1).padStart(3,'0');
+    return {id:`card_${n}`,category:index<30?'pokemon':index<54?'play': 'role',image:`/assets/rocket/cards/card_${n}.webp`};
+  }),
+  {id:'card_kurae',category:'play',image:'/assets/rocket/cards/card_kurae.webp'},
+  {id:'card_yokete',category:'play',image:'/assets/rocket/cards/card_yokete.webp'},
+  {id:'card_mew',category:'special',image:'/assets/rocket/cards/card_mew.webp'},
+  {id:'card_mewtwo',category:'special',image:'/assets/rocket/cards/card_mewtwo.webp'}
+];

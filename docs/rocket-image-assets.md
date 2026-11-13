@@ -2,18 +2,17 @@
 
 ## 添付ZIPから反映した公式カード画像
 
-`omaroke_cards_original.zip` 内の画像を無加工で `public/assets/rocket/cards/` に配置しています。
+`omaroke_cards_original.zip` に収録されていた画像62枚を無加工で `public/assets/rocket/cards/` に配置し、`ROCKET_CARD_IMAGE_ASSETS`（`src/rocket-cards.mjs`）へ全件登録しています。
 
-| ファイル | 表示用途 | 取得元 |
-| --- | --- | --- |
-| `card_055.webp` | ジムリーダー役カード | `https://www.pokemon.co.jp/ex/omaroke/assets/img/cards/card_055.webp` |
-| `card_056.webp` | ジムトレーナー役カード | `https://www.pokemon.co.jp/ex/omaroke/assets/img/cards/card_056.webp` |
-| `card_057.webp` | 挑戦者役カード | `https://www.pokemon.co.jp/ex/omaroke/assets/img/cards/card_057.webp` |
-| `card_058.webp` | ロケット団員役カード | `https://www.pokemon.co.jp/ex/omaroke/assets/img/cards/card_058.webp` |
-| `card_kurae.webp` | 「くらえ！」カード | `https://www.pokemon.co.jp/ex/omaroke/assets/img/cards/card_kurae.webp` |
-| `card_yokete.webp` | 「よけて！」カード | `https://www.pokemon.co.jp/ex/omaroke/assets/img/cards/card_yokete.webp` |
+| ファイル | 枚数 | 画像用途 |
+| --- | ---: | --- |
+| `card_001.webp`〜`card_030.webp` | 30 | Lv.3ポケモンカード |
+| `card_031.webp`〜`card_054.webp` | 24 | プレイカード |
+| `card_055.webp`〜`card_058.webp` | 4 | 役割カードの各絵柄 |
+| `card_kurae.webp`, `card_yokete.webp` | 2 | 「くらえ！」「よけて！」 |
+| `card_mew.webp`, `card_mewtwo.webp` | 2 | ミュウ／ミュウツーの特別画像 |
 
-元ファイル、画像寸法、SHA-256、取得時のメモは添付ZIP内の `manifest.json` と `README.txt` を参照してください。
+ゲームのポケモン選択・盤面・手札で使う画像は、カードレコードの `cardImage` / `image` に正しいカードIDを紐づけてください。番号だけからポケモン名や効果を推測して登録しないでください。元ファイル、画像寸法、SHA-256、取得時のメモは添付ZIP内の `manifest.json` と `README.txt` を参照してください。
 
 ## ポケモン選択画像
 
