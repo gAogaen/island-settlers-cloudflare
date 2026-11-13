@@ -1,6 +1,6 @@
 // Data registry for the Rocket game. Current records are provisional playtest placeholders.
 // Replace these rows with verified card data when the user supplies the card list/images.
-export const ROCKET_CARD_DATA_VERSION = 9;
+export const ROCKET_CARD_DATA_VERSION = 10;
 
 export const ROCKET_ROLE_CARDS = [
   { id: 'leader', role: 'leader', name: 'ジムリーダー', copies: 1, public: true, image: '/assets/rocket/cards/card_055.webp', provisional: false },
@@ -73,6 +73,20 @@ export const ROCKET_CARD_IMAGE_ASSETS = [
   ...Array.from({length:58},(_,index)=>{
     const n=String(index+1).padStart(3,'0');
     const weatherVariants = {
+      31: ['ライバルからの挑戦', 'thunderstorm'],
+      35: ['バリヤードのトリック', 'thunderstorm'],
+      36: ['カモネギのいたずら', 'thunderstorm'],
+      37: ['プラスパワー／スピーダー', 'thunderstorm'],
+      41: ['フリーザーの守り', 'thunderstorm'],
+      44: ['きのみ大豊作', 'partly-cloudy'],
+      45: ['キズぐすり／げんきのかけら', 'partly-cloudy'],
+      46: ['キズぐすり／なんでもなおし', 'partly-cloudy'],
+      47: ['プリンのライブ', 'partly-cloudy'],
+      48: ['ふしぎなアメ／きんのたま', 'partly-cloudy'],
+      49: ['ディフェンダー／スピーダー', 'rain'],
+      51: ['ファイヤーからの試練', 'sunny'],
+      54: ['サンダーのペナルティ', 'thunderstorm'],
+
       32: ['どくバリ', 'thunderstorm'],
       33: ['いのちのたま', 'thunderstorm'],
       34: ['おんみつマント', 'thunderstorm'],
@@ -91,10 +105,19 @@ export const ROCKET_CARD_IMAGE_ASSETS = [
   }),
   {id:'covert-cloak-rain',name:'おんみつマント',weather:'rain',category:'play',image:'/assets/rocket/cards/weather/covert-cloak-rain.webp'},
   {id:'quick-claw-rain',name:'せんせいのツメ',weather:'rain',category:'play',image:'/assets/rocket/cards/weather/quick-claw-rain.webp'},
+  {"id": "farfetchd-partly-cloudy", "name": "カモネギのいたずら", "weather": "partly-cloudy", "category": "play", "image": "/assets/rocket/cards/weather/farfetchd-partly-cloudy.webp", "observedCopies": 1, "sourcePhoto": "IMG_1614.jpeg"},
+  {"id": "farfetchd-rain", "name": "カモネギのいたずら", "weather": "rain", "category": "play", "image": "/assets/rocket/cards/weather/farfetchd-rain.webp", "observedCopies": 2, "sourcePhoto": "IMG_1614.jpeg"},
+  {"id": "mr-mime-sunny", "name": "バリヤードのトリック", "weather": "sunny", "category": "play", "image": "/assets/rocket/cards/weather/mr-mime-sunny.webp", "observedCopies": 2, "sourcePhoto": "IMG_1615.jpeg"},
+  {"id": "articuno-rain", "name": "フリーザーの守り", "weather": "rain", "category": "play", "image": "/assets/rocket/cards/weather/articuno-rain.webp", "observedCopies": 3, "sourcePhoto": "IMG_1616.jpeg"},
+  {"id": "jigglypuff-rain", "name": "プリンのライブ", "weather": "rain", "category": "play", "image": "/assets/rocket/cards/weather/jigglypuff-rain.webp", "observedCopies": 1, "sourcePhoto": "IMG_1617.jpeg"},
+  {"id": "rival-rain", "name": "ライバルからの挑戦", "weather": "rain", "category": "play", "image": "/assets/rocket/cards/weather/rival-rain.webp", "observedCopies": 2, "sourcePhoto": "IMG_1618.jpeg"},
+  {"id": "plus-power-partly-cloudy", "name": "プラスパワー／スピーダー", "weather": "partly-cloudy", "category": "play", "image": "/assets/rocket/cards/weather/plus-power-partly-cloudy.webp", "observedCopies": 2, "sourcePhoto": "IMG_1619.jpeg"},
+  {"id": "plus-power-rain", "name": "プラスパワー／スピーダー", "weather": "rain", "category": "play", "image": "/assets/rocket/cards/weather/plus-power-rain.webp", "observedCopies": 1, "sourcePhoto": "IMG_1619.jpeg"},
+  {"id": "potion-full-heal-sunny", "name": "キズぐすり／なんでもなおし", "weather": "sunny", "category": "play", "image": "/assets/rocket/cards/weather/potion-full-heal-sunny.webp", "observedCopies": 2, "sourcePhoto": "IMG_1621.jpeg"},
   {id:'card_kurae',category:'play',image:'/assets/rocket/cards/card_kurae.webp'},
   {id:'card_yokete',category:'play',image:'/assets/rocket/cards/card_yokete.webp'},
-  {id:'card_mew',category:'special',image:'/assets/rocket/cards/card_mew.webp'},
-  {id:'card_mewtwo',category:'special',image:'/assets/rocket/cards/card_mewtwo.webp'},
+  {id:'card_mew',weather:'partly-cloudy',category:'special',image:'/assets/rocket/cards/card_mew.webp'},
+  {id:'card_mewtwo',weather:'partly-cloudy',category:'special',image:'/assets/rocket/cards/card_mewtwo.webp'},
   {id:'bulbasaur-lv1',name:'フシギダネ',level:1,category:'pokemon',image:'/assets/rocket/cards/evolution/bulbasaur-lv1-q2.webp'},
   {id:'pikachu-lv1',name:'ピカチュウ',level:1,category:'pokemon',image:'/assets/rocket/cards/evolution/pikachu-lv1-q2.webp'},
   {id:'meowth-lv1',name:'ニャース',level:1,category:'pokemon',image:'/assets/rocket/cards/evolution/meowth-lv1-q2.webp'},
