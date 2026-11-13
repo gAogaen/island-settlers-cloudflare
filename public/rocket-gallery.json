@@ -5,7 +5,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_001.webp"
+    "image": "/assets/rocket/cards/card_001.webp",
+    "dexNumber": 89
   },
   {
     "id": "card_002",
@@ -13,7 +14,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_002.webp"
+    "image": "/assets/rocket/cards/card_002.webp",
+    "dexNumber": 91
   },
   {
     "id": "card_003",
@@ -21,7 +23,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_003.webp"
+    "image": "/assets/rocket/cards/card_003.webp",
+    "dexNumber": 94
   },
   {
     "id": "card_004",
@@ -29,7 +32,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_004.webp"
+    "image": "/assets/rocket/cards/card_004.webp",
+    "dexNumber": 103
   },
   {
     "id": "card_005",
@@ -37,7 +41,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_005.webp"
+    "image": "/assets/rocket/cards/card_005.webp",
+    "dexNumber": 105
   },
   {
     "id": "card_006",
@@ -45,7 +50,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_006.webp"
+    "image": "/assets/rocket/cards/card_006.webp",
+    "dexNumber": 110
   },
   {
     "id": "card_007",
@@ -53,7 +59,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_007.webp"
+    "image": "/assets/rocket/cards/card_007.webp",
+    "dexNumber": 112
   },
   {
     "id": "card_008",
@@ -61,7 +68,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_008.webp"
+    "image": "/assets/rocket/cards/card_008.webp",
+    "dexNumber": 113
   },
   {
     "id": "card_009",
@@ -69,7 +77,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_009.webp"
+    "image": "/assets/rocket/cards/card_009.webp",
+    "dexNumber": 115
   },
   {
     "id": "card_010",
@@ -77,7 +86,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_010.webp"
+    "image": "/assets/rocket/cards/card_010.webp",
+    "dexNumber": 121
   },
   {
     "id": "card_011",
@@ -85,7 +95,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_011.webp"
+    "image": "/assets/rocket/cards/card_011.webp",
+    "dexNumber": 125
   },
   {
     "id": "card_012",
@@ -93,7 +104,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_012.webp"
+    "image": "/assets/rocket/cards/card_012.webp",
+    "dexNumber": 130
   },
   {
     "id": "card_013",
@@ -101,7 +113,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_013.webp"
+    "image": "/assets/rocket/cards/card_013.webp",
+    "dexNumber": 137
   },
   {
     "id": "card_014",
@@ -109,7 +122,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_014.webp"
+    "image": "/assets/rocket/cards/card_014.webp",
+    "dexNumber": 142
   },
   {
     "id": "card_015",
@@ -117,7 +131,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_015.webp"
+    "image": "/assets/rocket/cards/card_015.webp",
+    "dexNumber": 143
   },
   {
     "id": "card_016",
@@ -125,7 +140,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_016.webp"
+    "image": "/assets/rocket/cards/card_016.webp",
+    "dexNumber": 3
   },
   {
     "id": "card_017",
@@ -133,7 +149,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_017.webp"
+    "image": "/assets/rocket/cards/card_017.webp",
+    "dexNumber": 6
   },
   {
     "id": "card_018",
@@ -141,7 +158,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_018.webp"
+    "image": "/assets/rocket/cards/card_018.webp",
+    "dexNumber": 9
   },
   {
     "id": "card_019",
@@ -149,7 +167,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_019.webp"
+    "image": "/assets/rocket/cards/card_019.webp",
+    "dexNumber": 18
   },
   {
     "id": "card_020",
@@ -157,7 +176,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_020.webp"
+    "image": "/assets/rocket/cards/card_020.webp",
+    "dexNumber": 26
   },
   {
     "id": "card_021",
@@ -165,7 +185,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_021.webp"
+    "image": "/assets/rocket/cards/card_021.webp",
+    "dexNumber": 28
   },
   {
     "id": "card_022",
@@ -173,7 +194,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_022.webp"
+    "image": "/assets/rocket/cards/card_022.webp",
+    "dexNumber": 34
   },
   {
     "id": "card_023",
@@ -181,7 +203,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_023.webp"
+    "image": "/assets/rocket/cards/card_023.webp",
+    "dexNumber": 38
   },
   {
     "id": "card_024",
@@ -189,7 +212,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_024.webp"
+    "image": "/assets/rocket/cards/card_024.webp",
+    "dexNumber": 53
   },
   {
     "id": "card_025",
@@ -197,7 +221,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_025.webp"
+    "image": "/assets/rocket/cards/card_025.webp",
+    "dexNumber": 57
   },
   {
     "id": "card_026",
@@ -205,7 +230,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_026.webp"
+    "image": "/assets/rocket/cards/card_026.webp",
+    "dexNumber": 55
   },
   {
     "id": "card_027",
@@ -213,7 +239,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_027.webp"
+    "image": "/assets/rocket/cards/card_027.webp",
+    "dexNumber": 59
   },
   {
     "id": "card_028",
@@ -221,7 +248,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_028.webp"
+    "image": "/assets/rocket/cards/card_028.webp",
+    "dexNumber": 68
   },
   {
     "id": "card_029",
@@ -229,7 +257,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_029.webp"
+    "image": "/assets/rocket/cards/card_029.webp",
+    "dexNumber": 80
   },
   {
     "id": "card_030",
@@ -237,7 +266,8 @@
     "weather": null,
     "level": 3,
     "category": "pokemon",
-    "image": "/assets/rocket/cards/card_030.webp"
+    "image": "/assets/rocket/cards/card_030.webp",
+    "dexNumber": 82
   },
   {
     "id": "card_031",
@@ -537,7 +567,8 @@
     "sourcePhoto": "IMG_1624.jpeg",
     "effectStatus": "partial",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 1
   },
   {
     "id": "pikachu-lv1",
@@ -565,7 +596,8 @@
     "sourcePhoto": "IMG_1624.jpeg",
     "effectStatus": "partial",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 25
   },
   {
     "id": "meowth-lv1",
@@ -597,7 +629,8 @@
     "sourcePhoto": "IMG_1625.jpeg",
     "effectStatus": "implemented",
     "abilityText": "ドローステップ以外で山札から引くとき、追加で1枚引く（各トレーナーの番に1回）。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 52
   },
   {
     "id": "slowpoke-lv1",
@@ -625,7 +658,8 @@
     "sourcePhoto": "IMG_1626.jpeg",
     "effectStatus": "implemented",
     "abilityText": "自分の番以外にダメージを受けた後、その番は追加のダメージを受けない。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 79
   },
   {
     "id": "aerodactyl-lv2",
@@ -653,7 +687,8 @@
     "sourcePhoto": "IMG_1633(1).jpeg",
     "effectStatus": "partial",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 142
   },
   {
     "id": "gyarados-lv2",
@@ -681,7 +716,8 @@
     "sourcePhoto": "IMG_1633(1).jpeg",
     "effectStatus": "partial",
     "abilityText": "自分が「くらえ！」の効果を選んだ後、山札から1枚引く。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 130
   },
   {
     "id": "haunter-lv2",
@@ -709,7 +745,8 @@
     "sourcePhoto": "IMG_1631(1).jpeg",
     "effectStatus": "partial",
     "abilityText": "雨・雷雨の手札を「よけて！」の代わりに使える。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 93
   },
   {
     "id": "pikachu-lv2",
@@ -737,28 +774,32 @@
     "sourcePhoto": "IMG_1629(1).jpeg",
     "effectStatus": "partial",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 25
   },
   {
     "id": "promo-dragonite-lv1",
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/dratini-q2.webp",
     "name": "ミニリュウ",
-    "level": 1
+    "level": 1,
+    "dexNumber": 147
   },
   {
     "id": "promo-dragonite-lv2",
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/dragonair-q2.webp",
     "name": "ハクリュー",
-    "level": 2
+    "level": 2,
+    "dexNumber": 148
   },
   {
     "id": "promo-dragonite-lv3",
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/dragonite-q2.webp",
     "name": "カイリュー",
-    "level": 3
+    "level": 3,
+    "dexNumber": 149
   },
   {
     "id": "farfetchd-partly-cloudy",
@@ -919,7 +960,8 @@
     "sourcePhoto": "IMG_1624.jpeg",
     "effectStatus": "implemented",
     "abilityText": "HPが半分以下なら、技のダメージを2増やす。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 4
   },
   {
     "id": "squirtle-lv1",
@@ -947,7 +989,8 @@
     "sourcePhoto": "IMG_1624.jpeg",
     "effectStatus": "partial",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 7
   },
   {
     "id": "pidgey-lv1",
@@ -975,7 +1018,8 @@
     "sourcePhoto": "IMG_1624.jpeg",
     "effectStatus": "implemented",
     "abilityText": "技はよけられない。相手が「よけて！」を使った場合、ダメージを1減らす。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 16
   },
   {
     "id": "nidoran-m-lv1",
@@ -1003,7 +1047,8 @@
     "sourcePhoto": "IMG_1624.jpeg",
     "effectStatus": "partial",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 32
   },
   {
     "id": "mankey-lv1",
@@ -1031,7 +1076,8 @@
     "sourcePhoto": "IMG_1625.jpeg",
     "effectStatus": "partial",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 56
   },
   {
     "id": "psyduck-lv1",
@@ -1063,7 +1109,8 @@
     "sourcePhoto": "IMG_1625.jpeg",
     "effectStatus": "partial",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 54
   },
   {
     "id": "growlithe-lv1",
@@ -1091,7 +1138,8 @@
     "sourcePhoto": "IMG_1625.jpeg",
     "effectStatus": "partial",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 58
   },
   {
     "id": "sandshrew-lv1",
@@ -1119,7 +1167,8 @@
     "sourcePhoto": "IMG_1625.jpeg",
     "effectStatus": "partial",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 27
   },
   {
     "id": "machop-lv1",
@@ -1147,7 +1196,8 @@
     "sourcePhoto": "IMG_1625.jpeg",
     "effectStatus": "implemented",
     "abilityText": "やけどによるダメージ減少を受けず、特殊状態なら技のダメージを1増やす。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 66
   },
   {
     "id": "magnemite-lv1",
@@ -1175,7 +1225,8 @@
     "sourcePhoto": "IMG_1626.jpeg",
     "effectStatus": "partial",
     "abilityText": "自分の番に1回、残りHP以下の枚数の手札を捨て、同じ枚数を引く。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 81
   },
   {
     "id": "shellder-lv1",
@@ -1203,7 +1254,8 @@
     "sourcePhoto": "IMG_1626.jpeg",
     "effectStatus": "implemented",
     "abilityText": "自分の番に「くらえ！」とこのポケモンの技を何度でも使える。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 90
   },
   {
     "id": "gastly-lv1",
@@ -1231,7 +1283,8 @@
     "sourcePhoto": "IMG_1626.jpeg",
     "effectStatus": "partial",
     "abilityText": "雨・雷雨の手札を「よけて！」の代わりに使える。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 92
   },
   {
     "id": "exeggcute-lv1",
@@ -1260,7 +1313,8 @@
     "sourcePhoto": "IMG_1626.jpeg",
     "effectStatus": "implemented",
     "abilityText": "番の終了時、山札から1枚引くことができる。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 102
   },
   {
     "id": "cubone-lv1",
@@ -1288,7 +1342,8 @@
     "sourcePhoto": "IMG_1626.jpeg",
     "effectStatus": "partial",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 104
   },
   {
     "id": "koffing-lv1",
@@ -1316,7 +1371,8 @@
     "sourcePhoto": "IMG_1627.jpeg",
     "effectStatus": "partial",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 109
   },
   {
     "id": "rhyhorn-lv1",
@@ -1344,7 +1400,8 @@
     "sourcePhoto": "IMG_1627.jpeg",
     "effectStatus": "implemented",
     "abilityText": "自分の番に1回、HPを減らし、同じ枚数を引く。HPが0になる場合は引けない。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 111
   },
   {
     "id": "chansey-lv1",
@@ -1376,7 +1433,8 @@
     "sourcePhoto": "IMG_1627.jpeg",
     "effectStatus": "partial",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 113
   },
   {
     "id": "kangaskhan-lv1",
@@ -1404,7 +1462,8 @@
     "sourcePhoto": "IMG_1627.jpeg",
     "effectStatus": "partial",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 115
   },
   {
     "id": "staryu-lv1",
@@ -1432,7 +1491,8 @@
     "sourcePhoto": "IMG_1627.jpeg",
     "effectStatus": "implemented",
     "abilityText": "ドローステップで山札から引くとき、追加で1枚引くことができる。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 120
   },
   {
     "id": "electabuzz-lv1",
@@ -1460,7 +1520,8 @@
     "sourcePhoto": "IMG_1627.jpeg",
     "effectStatus": "partial",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 125
   },
   {
     "id": "vulpix-lv1",
@@ -1492,7 +1553,8 @@
     "sourcePhoto": "IMG_1628.jpeg",
     "effectStatus": "partial",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 37
   },
   {
     "id": "magikarp-lv1",
@@ -1520,7 +1582,8 @@
     "sourcePhoto": "IMG_1628.jpeg",
     "effectStatus": "implemented",
     "abilityText": "自分の番のトラッシュステップをスキップする。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 129
   },
   {
     "id": "grimer-lv1",
@@ -1548,7 +1611,8 @@
     "sourcePhoto": "IMG_1628.jpeg",
     "effectStatus": "partial",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 88
   },
   {
     "id": "porygon-lv1",
@@ -1576,7 +1640,8 @@
     "sourcePhoto": "IMG_1628.jpeg",
     "effectStatus": "partial",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 137
   },
   {
     "id": "snorlax-lv1",
@@ -1604,7 +1669,8 @@
     "sourcePhoto": "IMG_1628.jpeg",
     "effectStatus": "implemented",
     "abilityText": "もちものの効果が、番の終了時にHPが満タンでなければ1回復する効果になる。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 143
   },
   {
     "id": "aerodactyl-lv1",
@@ -1632,7 +1698,8 @@
     "sourcePhoto": "IMG_1628.jpeg",
     "effectStatus": "partial",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 142
   },
   {
     "id": "ivysaur-lv2",
@@ -1661,7 +1728,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/ivysaur-lv2.webp",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 2
   },
   {
     "id": "charmeleon-lv2",
@@ -1693,7 +1761,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/charmeleon-lv2.webp",
     "abilityText": "HPが半分以下なら、技のダメージを2増やす。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 5
   },
   {
     "id": "wartortle-lv2",
@@ -1721,7 +1790,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/wartortle-lv2.webp",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 8
   },
   {
     "id": "pidgeotto-lv2",
@@ -1749,7 +1819,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/pidgeotto-lv2.webp",
     "abilityText": "技はよけられない。相手が「よけて！」を使った場合、ダメージを1減らす。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 17
   },
   {
     "id": "nidorino-lv2",
@@ -1777,7 +1848,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/nidorino-lv2.webp",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 33
   },
   {
     "id": "meowth-lv2",
@@ -1805,7 +1877,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/meowth-lv2.webp",
     "abilityText": "ドローステップ以外で山札から引くとき、追加で1枚引く（各トレーナーの番に1回）。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 52
   },
   {
     "id": "mankey-lv2",
@@ -1833,7 +1906,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/mankey-lv2.webp",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 56
   },
   {
     "id": "psyduck-lv2",
@@ -1879,7 +1953,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/psyduck-lv2.webp",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 54
   },
   {
     "id": "growlithe-lv2",
@@ -1911,7 +1986,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/growlithe-lv2.webp",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 58
   },
   {
     "id": "sandshrew-lv2",
@@ -1939,7 +2015,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/sandshrew-lv2.webp",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 27
   },
   {
     "id": "machoke-lv2",
@@ -1967,7 +2044,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/machoke-lv2.webp",
     "abilityText": "やけどによるダメージ減少を受けず、特殊状態なら技のダメージを1増やす。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 67
   },
   {
     "id": "slowpoke-lv2",
@@ -1995,7 +2073,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/slowpoke-lv2.webp",
     "abilityText": "自分の番以外にダメージを受けた後、その番は追加のダメージを受けない。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 79
   },
   {
     "id": "magnemite-lv2",
@@ -2033,7 +2112,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/magnemite-lv2.webp",
     "abilityText": "自分の番に1回、残りHP以下の枚数の手札を捨て、同じ枚数を引く。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 81
   },
   {
     "id": "shellder-lv2",
@@ -2061,7 +2141,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/shellder-lv2.webp",
     "abilityText": "自分の番に「くらえ！」とこのポケモンの技を何度でも使える。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 90
   },
   {
     "id": "exeggcute-lv2",
@@ -2089,7 +2170,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/exeggcute-lv2.webp",
     "abilityText": "番の終了時、山札から1枚引くことができる。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 102
   },
   {
     "id": "cubone-lv2",
@@ -2117,7 +2199,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/cubone-lv2.webp",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 104
   },
   {
     "id": "koffing-lv2",
@@ -2145,7 +2228,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/koffing-lv2.webp",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 109
   },
   {
     "id": "rhyhorn-lv2",
@@ -2173,7 +2257,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/rhyhorn-lv2.webp",
     "abilityText": "自分の番に1回、HPを減らし、同じ枚数を引く。HPが0になる場合は引けない。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 111
   },
   {
     "id": "chansey-lv2",
@@ -2219,7 +2304,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/chansey-lv2.webp",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 113
   },
   {
     "id": "kangaskhan-lv2",
@@ -2247,7 +2333,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/kangaskhan-lv2.webp",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 115
   },
   {
     "id": "staryu-lv2",
@@ -2275,7 +2362,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/staryu-lv2.webp",
     "abilityText": "ドローステップで山札から引くとき、追加で1枚引くことができる。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 120
   },
   {
     "id": "electabuzz-lv2",
@@ -2303,7 +2391,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/electabuzz-lv2.webp",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 125
   },
   {
     "id": "vulpix-lv2",
@@ -2345,7 +2434,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/vulpix-lv2.webp",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 37
   },
   {
     "id": "grimer-lv2",
@@ -2373,7 +2463,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/grimer-lv2.webp",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 88
   },
   {
     "id": "porygon-lv2",
@@ -2401,7 +2492,8 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/porygon-lv2.webp",
     "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
-    "abilityStatus": "pending"
+    "abilityStatus": "pending",
+    "dexNumber": 137
   },
   {
     "id": "snorlax-lv2",
@@ -2429,6 +2521,7 @@
     "category": "pokemon",
     "image": "/assets/rocket/cards/evolution/snorlax-lv2.webp",
     "abilityText": "もちものの効果が、番の終了時にHPが満タンでなければ1回復する効果になる。",
-    "abilityStatus": "implemented"
+    "abilityStatus": "implemented",
+    "dexNumber": 143
   }
 ]

@@ -12,6 +12,7 @@
     const category = get('galleryCategory').value;
     const matches = cards.filter(card => normalize(card.name).includes(normalize(query)) && (!category || card.category === category));
     matches.sort((a,b) => rank.indexOf(a.category)-rank.indexOf(b.category)
+      || (a.category === 'pokemon' && b.category === 'pokemon' ? a.dexNumber - b.dexNumber : 0)
       || collator.compare(normalize(readings[a.name] || a.name), normalize(readings[b.name] || b.name))
       || (a.level || 0)-(b.level || 0));
     let lastCategory;
@@ -50,7 +51,7 @@
     if (!cards) {
       get('galleryCount').textContent = '読み込み中…';
       try {
-        const response = await fetch('/rocket-gallery.json?v=20261113-names');
+        const response = await fetch('/rocket-gallery.json?v=20261113-dex');
         if (!response.ok) throw new Error('load failed');
         cards = await response.json();
       } catch {
