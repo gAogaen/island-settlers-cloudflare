@@ -203,3 +203,5 @@ button{border-color:#c9b990;background:#eee5d2;color:#352f28}
 
 #decisionDialog { width: min(32rem, 92vw); max-height: 85dvh; overflow: auto; }
 #decisionControls .actions { align-items: stretch; }
+
+.board-held-item { display: block; max-width: 100%; padding: 2px 5px; font-size: .72rem; overflow-wrap: anywhere; }
