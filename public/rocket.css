@@ -24,3 +24,26 @@
 @media(max-width:380px){.arena{min-height:570px}.trainer{width:45%;padding:6px;gap:5px}.trainer .mon{width:30px;height:30px}.trainer-copy small{font-size:.54rem}}
 .rules-video{position:relative;width:100%;aspect-ratio:16/9;margin:12px 0 18px;overflow:hidden;border:1px solid #e8c77566;border-radius:12px;background:#171015;box-shadow:0 8px 24px #0004}
 .rules-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.pokemon-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:12px}
+.pokemon-options>p{grid-column:1/-1}
+.pokemon-choice{display:grid;grid-template-columns:112px minmax(0,1fr);grid-auto-rows:min-content;align-content:center;align-items:center;gap:5px 11px;width:100%;min-width:0;min-height:154px;padding:12px;text-align:left;overflow:hidden}
+.pokemon-choice>*:not(.pokemon-token){grid-column:2}
+.pokemon-choice .pokemon-token{position:static;grid-column:1;grid-row:1/6;transform:none;width:100%;height:130px;object-fit:contain;padding:5px;border:1px solid #d7be7d;border-radius:12px!important;background:radial-gradient(ellipse at 50% 42%,#fff9e5,#d5c28a 90%)}
+.pokemon-choice span,.pokemon-choice small{white-space:normal;line-height:1.4}
+@media(max-width:700px){
+ .arena{height:clamp(340px,calc(100vw - 20px),520px);min-height:0;padding:0}
+ .trainer{width:42%;padding:6px 8px;gap:5px}
+ .trainer.seat-left{left:2%;transform:translate(0,-50%)}
+ .trainer.seat-right{left:98%;transform:translate(-100%,-50%)}
+ #players[data-count="6"] .trainer.seat-left,#players[data-count="6"] .trainer.seat-right{width:42%}
+ #players[data-count="6"] .trainer:not(.seat-left):not(.seat-right){width:32%}
+ .trainer .mon img{width:100%;height:100%;object-fit:contain;padding:1px}
+ .pokemon-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}
+ .pokemon-options>p{grid-column:1/-1}
+ .pokemon-choice{display:grid;grid-template-columns:104px minmax(0,1fr);grid-auto-rows:min-content;align-content:center;align-items:center;gap:4px 10px;width:100%;min-width:0;min-height:148px;padding:11px;text-align:left;overflow:hidden}
+ .pokemon-choice>*:not(.pokemon-token){grid-column:2}
+ .pokemon-choice .pokemon-token{position:static;grid-column:1;grid-row:1/6;transform:none;width:100%;height:124px;object-fit:contain;padding:5px;border:1px solid #d7be7d;border-radius:12px!important;background:radial-gradient(ellipse at 50% 42%,#fff9e5,#d5c28a 90%)}
+ .pokemon-choice strong{font-size:1.05rem}
+ .pokemon-choice span,.pokemon-choice small{font-size:.75rem;line-height:1.35;white-space:normal}
+}
+@media(max-width:380px){.pokemon-choice{grid-template-columns:88px minmax(0,1fr);min-height:134px}.pokemon-choice .pokemon-token{height:112px}#players[data-count="6"] .trainer:not(.seat-left):not(.seat-right){width:30%}}
