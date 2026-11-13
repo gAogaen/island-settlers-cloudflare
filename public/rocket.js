@@ -23,7 +23,21 @@ async function api(path,body){const r=await fetch('/api/rocket'+path,{method:bod
 function enter(d,t,s=false){game=d.game;code=game.code;token=t;watch=s;chosen=null;setupSelected=[];if(t)localStorage.setItem('rocket-token-'+code,t);localStorage.setItem('rocket-last-room',code);$('entry').hidden=true;$('room').hidden=false;history.replaceState({},'','/rocket.html?room='+code+(s?'&spectate=1':''));clearInterval(interval);interval=setInterval(refresh,2200);render();if(!watch&&!localStorage.getItem('rocket-rules-seen'))$('rulesDialog').showModal()}
 async function refresh(){if(!code||busy)return;try{const d=await api('/'+code+'?'+(watch?'spectate=1':'token='+encodeURIComponent(token)));if(d.game.revision!==game.revision){game=d.game;chosen=null;setupSelected=[];render()}}catch{$('status').textContent='再接続中…'}}
 async function action(type,extra={}){if(busy||watch)return;busy=true;try{const d=await api('/'+code+'/action',{token,type,revision:game.revision,...extra});game=d.game;chosen=null;discardSet.clear();discarding=false;setupSelected=[];render()}catch(e){toast(e.message)}finally{busy=false}}
-function render(){if(!game)return;const me=game.me,turn=game.players.find(p=>p.id===game.turnId),pendingPlayer=game.pending&&game.players.find(p=>p.id===game.pending.targetId),expert=game.mode==='expert';$('roomCode').textContent=game.code;
+const turnSteps = ['準備','ドロー','プレイ','トラッシュ','エンド'];
+function renderTurnSteps() {
+ const list = $('turnSteps');
+ list.hidden = game.phase !== 'playing';
+ if (list.hidden) return;
+ const current = game.pending?.type === 'drawChoice' ? 1
+   : discarding && !game.pending && game.turnId === game.me?.id ? 3 : 2;
+ list.replaceChildren(...turnSteps.map((name, index) => {
+   const step = document.createElement('li');
+   step.textContent = name;
+   if (index === current) step.setAttribute('aria-current','step');
+   return step;
+ }));
+}
+function render(){if(!game)return;renderTurnSteps();const me=game.me,turn=game.players.find(p=>p.id===game.turnId),pendingPlayer=game.pending&&game.players.find(p=>p.id===game.pending.targetId),expert=game.mode==='expert';$('roomCode').textContent=game.code;
  $('status').textContent=(expert?'玄人ルール · ':'基本ルール · ')+(game.phase==='lobby'?'参加待ち：'+game.players.length+'人（開始には4人必要）':game.phase==='setup'?'相棒ポケモンを選んでいます':game.phase==='finished'?'ゲーム終了：'+game.winner:game.pending?'対応待ち：'+(pendingPlayer?.name||''):turn?.id===me?.id?'あなたの番です':'手番：'+(turn?.name||''));
  $('arenaInfo').textContent=game.phase==='lobby'?'トレーナーを待っています':game.phase==='setup'?'相棒を選ぼう':game.phase==='finished'?game.winner+'の勝利':game.pending?'攻撃が飛んできた！':(turn?.name||'')+' の番';$('deckCount').textContent='山札 '+game.deckCount+' 枚';
  const seatPlayers=[...game.players],seatCount=seatPlayers.length,mySeat=seatPlayers.findIndex(p=>p.id===me?.id),bottomSeat=Math.floor(seatCount/2),mobileSeats=matchMedia('(max-width:700px)').matches;if(mySeat>=0){const offset=(mySeat-bottomSeat+seatCount)%seatCount;seatPlayers.push(...seatPlayers.splice(0,offset))}const seatRadiusX=seatCount<=4?38:40,seatRadiusY=mobileSeats?33:40,mobileSix=[[50,17],[98,37],[98,63],[50,83],[2,63],[2,37]];
