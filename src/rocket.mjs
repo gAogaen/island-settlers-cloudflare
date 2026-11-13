@@ -333,7 +333,7 @@ function apply(g,p,a){if(a.revision!=null&&a.revision!==g.revision)throw Error('
  delete mon.status;
  trash(g,p,[c.id]);
  log(g,p.name+'がげんきのかけらを使いました。');
- }else if(c.type==='held')equipHeld(p,c);else if(c.type==='attack')attack(g,p,{...a,weatherAbility:false,justified:false});else if(c.type==='marker'||(c.name==='キズぐすり／なんでもなおし'&&a.toolChoice==='cure'))applyPrintedTool(g,p,c,a);else if(c.type==='potion'){const t=a.targetId?player(g,a.targetId):p;if(!t?.alive)throw Error('回復するトレーナーを選んでください。');const mon=activePokemon(t);if(mon.hp>=mon.maxHp)throw Error('HPが満タンです。');p.hand=p.hand.filter(x=>x.id!==c.id);g.discard.push(c);mon.hp=Math.min(mon.maxHp,mon.hp+cardAmount(c.cardId,3));log(g,p.name+'が'+t.name+'に'+c.name+'を使いました。')}else if(c.type==='item'&&c.name==='ふしぎなアメ／きんのたま'&&a.toolChoice==='candy'){
+ }else if(c.type==='held')equipHeld(g,p,c);else if(c.type==='attack')attack(g,p,{...a,weatherAbility:false,justified:false});else if(c.type==='marker'||(c.name==='キズぐすり／なんでもなおし'&&a.toolChoice==='cure'))applyPrintedTool(g,p,c,a);else if(c.type==='potion'){const t=a.targetId?player(g,a.targetId):p;if(!t?.alive)throw Error('回復するトレーナーを選んでください。');const mon=activePokemon(t);if(mon.hp>=mon.maxHp)throw Error('HPが満タンです。');p.hand=p.hand.filter(x=>x.id!==c.id);g.discard.push(c);mon.hp=Math.min(mon.maxHp,mon.hp+cardAmount(c.cardId,3));log(g,p.name+'が'+t.name+'に'+c.name+'を使いました。')}else if(c.type==='item'&&c.name==='ふしぎなアメ／きんのたま'&&a.toolChoice==='candy'){
  const target=player(g,a.targetId);
  if(g.mode!=='expert'||!target?.alive||!levelUp(target))throw Error('レベルアップできるバトルポケモンを選んでください。');
  trash(g,p,[c.id]);
@@ -554,11 +554,16 @@ function useWeatherMove(g,p,a){if(p.noMoveTurn===g.turnNumber)throw Error('こ�
  pumpEffects(g);
 }
 
-function equipHeld(p,card){
+function equipHeld(g,p,card){
  const mon=activePokemon(p);
- if(mon.heldItem)throw Error('すでにもちものを持っています。');
+ const previous=mon.heldItem;
+ if(previous)g.discard.push(previous);
  mon.heldItem=card;
  p.hand=p.hand.filter(candidate=>candidate.id!==card.id);
+ if(previous&&ability(g,p,'まけんき')){
+  (g.effectQueue??=[]).push({type:'competitive',actorId:p.id,targetId:p.id});
+  pumpEffects(g);
+ }
 }
 
 function applyPrintedTool(g,actor,card,action){
