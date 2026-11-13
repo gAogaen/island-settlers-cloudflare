@@ -559,6 +559,7 @@ function equipHeld(g,p,card){
  const previous=mon.heldItem;
  if(previous)g.discard.push(previous);
  mon.heldItem=card;
+ log(g,p.name+'は'+card.name+'を装備しました。'+(previous?'（'+previous.name+'をトラッシュ）':''));
  p.hand=p.hand.filter(candidate=>candidate.id!==card.id);
  if(previous&&ability(g,p,'まけんき')){
   (g.effectQueue??=[]).push({type:'competitive',actorId:p.id,targetId:p.id});
