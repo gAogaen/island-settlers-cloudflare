@@ -111,3 +111,11 @@ button{border-color:#c9b990;background:#eee5d2;color:#352f28}
  .players{inset:120px 0}
  .arena:has(#players[data-count="5"]),.arena:has(#players[data-count="6"]){height:1000px;min-height:1000px}
 }
+
+/* Preserve the full printed face instead of cropping it into an icon. */
+.play-card.has-hand-scan{height:auto;min-height:0;padding:7px;gap:6px;justify-content:flex-start}
+.play-card.has-hand-scan::before{display:none}
+.play-card.has-hand-scan .card-art{display:block;width:100%;height:auto;aspect-ratio:745/1040;border:0;border-radius:6px;background:#f5efdf;overflow:hidden}
+.play-card.has-hand-scan .card-art>img{position:static;display:block;width:100%;height:100%;object-fit:contain}
+.play-card.has-hand-scan>b{font-size:1rem}
+.play-card.has-hand-scan>span:last-child{font-size:.72rem}

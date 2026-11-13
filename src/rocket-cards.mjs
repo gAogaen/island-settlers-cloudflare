@@ -1,6 +1,6 @@
 // Data registry for the Rocket game. Current records are provisional playtest placeholders.
 // Replace these rows with verified card data when the user supplies the card list/images.
-export const ROCKET_CARD_DATA_VERSION = 7;
+export const ROCKET_CARD_DATA_VERSION = 8;
 
 export const ROCKET_ROLE_CARDS = [
   { id: 'leader', role: 'leader', name: 'ジムリーダー', copies: 1, public: true, image: '/assets/rocket/cards/card_055.webp', provisional: false },
@@ -14,7 +14,7 @@ export const ROCKET_ROLE_CARDS = [
 export const ROCKET_PLAY_CARDS = [
   { id: 'placeholder-attack', name: 'くらえ！', kind: 'attack', action: 'attack', copies: 30, text: '相手に攻撃する。', effect: { id: 'attack', damage: 2 }, weather: null, timing: '自分の番', target: '相手1人', targetMode: 'opponent', image: '/assets/rocket/cards/card_kurae.webp', provisional: true },
   { id: 'placeholder-dodge', name: 'よけて！', kind: 'dodge', action: 'dodge', copies: 20, text: '攻撃を回避する。', effect: { id: 'dodge' }, weather: null, timing: '攻撃されたとき', target: '自分', targetMode: 'self', image: '/assets/rocket/cards/card_yokete.webp', provisional: true },
-  { id: 'placeholder-potion', name: 'キズぐすり', kind: 'tool', action: 'potion', copies: 18, text: '選んだトレーナーのHPを3回復。', effect: { id: 'heal', amount: 3 }, weather: null, timing: '仮設定', target: '生存中のトレーナー', targetMode: 'any-trainer', image: null, provisional: true },
+  { id: 'placeholder-potion', name: 'キズぐすり', kind: 'tool', action: 'potion', copies: 18, text: '選んだトレーナーのHPを3回復。', effect: { id: 'heal', amount: 3 }, weather: null, timing: '仮設定', target: '生存中のトレーナー', targetMode: 'any-trainer', image: '/assets/rocket/cards/card_045.webp', provisional: true },
   { id: 'placeholder-item', name: 'どうぐ', kind: 'tool', action: 'item', copies: 14, text: 'カードを1枚引く。', effect: { id: 'draw', amount: 1 }, weather: null, timing: '自分の番', target: '自分', targetMode: 'self', image: null, provisional: true },
   { id: 'placeholder-scout', name: 'さぐる', kind: 'event', action: 'scout', copies: 10, text: '選んだ相手の役割を自分だけ確認。', effect: { id: 'revealRole' }, weather: null, timing: '自分の番', target: '相手1人', targetMode: 'opponent', image: null, provisional: true },
   { id: 'placeholder-boost', name: 'きあい', kind: 'tool', action: 'boost', copies: 10, text: '自分のHPを1回復。', effect: { id: 'heal', amount: 1 }, weather: null, timing: '自分の番', target: '自分', targetMode: 'self', image: null, provisional: true }
