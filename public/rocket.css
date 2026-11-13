@@ -138,3 +138,6 @@ button{border-color:#c9b990;background:#eee5d2;color:#352f28}
 .turn-steps[hidden] {display:none;}
 .turn-steps li {border:1px solid currentColor;border-radius:8px;padding:8px 1px;text-align:center;font-size:clamp(10px,2.6vw,14px);opacity:.64;}
 .turn-steps li[aria-current="step"] {background:#ffe66a;color:#231e12;opacity:1;font-weight:800;border-color:#ffe66a;box-shadow:0 0 12px #ffc84d55;}
+
+.play-steps {margin-top:-6px;padding-inline-start:12px;border-inline-start:2px solid #ffc84d88;}
+.play-steps li {padding-block:6px;}

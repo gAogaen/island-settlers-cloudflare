@@ -22,14 +22,40 @@ function toast(s){$('toast').textContent=s;$('toast').classList.add('show');setT
 async function api(path,body){const r=await fetch('/api/rocket'+path,{method:body?'POST':'GET',headers:{'content-type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});const d=await r.json();if(!r.ok)throw Error(d.error||'通信エラー');return d}
 function enter(d,t,s=false){game=d.game;code=game.code;token=t;watch=s;chosen=null;setupSelected=[];if(t)localStorage.setItem('rocket-token-'+code,t);localStorage.setItem('rocket-last-room',code);$('entry').hidden=true;$('room').hidden=false;history.replaceState({},'','/rocket.html?room='+code+(s?'&spectate=1':''));clearInterval(interval);interval=setInterval(refresh,2200);render();if(!watch&&!localStorage.getItem('rocket-rules-seen'))$('rulesDialog').showModal()}
 async function refresh(){if(!code||busy)return;try{const d=await api('/'+code+'?'+(watch?'spectate=1':'token='+encodeURIComponent(token)));if(d.game.revision!==game.revision){game=d.game;chosen=null;setupSelected=[];render()}}catch{$('status').textContent='再接続中…'}}
-async function action(type,extra={}){if(busy||watch)return;busy=true;try{const d=await api('/'+code+'/action',{token,type,revision:game.revision,...extra});game=d.game;chosen=null;discardSet.clear();discarding=false;setupSelected=[];render()}catch(e){toast(e.message)}finally{busy=false}}
+async function action(type,extra={}){
+ if (!$('playSteps').hidden && (type === 'ability' || type === 'move')) renderPlaySteps(type === 'ability' ? '特性' : 'わざ', true);if(busy||watch)return;busy=true;try{const d=await api('/'+code+'/action',{token,type,revision:game.revision,...extra});game=d.game;chosen=null;discardSet.clear();discarding=false;setupSelected=[];render()}catch(e){toast(e.message)}finally{busy=false}}
 const turnSteps = ['準備','ドロー','プレイ','トラッシュ','エンド'];
+const playSteps = ['イベント','もちもの','どうぐ','わざ','特性'];
+function currentPlayAction() {
+ const pending = game.pending?.type;
+ if (['attackResponse','rescue','cycle','gift'].includes(pending)) return 'わざ';
+ const card = game.me?.hand.find(card => card.id === chosen);
+ if (!card) return null;
+ const kind = cardDefinition(card)?.kind;
+ if (kind === 'event') return 'イベント';
+ if (kind === 'held' || kind === 'equipment') return 'もちもの';
+ if (card.type === 'attack' || card.type === 'dodge') return 'わざ';
+ if (kind === 'tool') return 'どうぐ';
+ return null;
+}
+function renderPlaySteps(active, visible) {
+ const list = $('playSteps');
+ list.hidden = !visible;
+ if (!visible) return;
+ list.replaceChildren(...playSteps.map(name => {
+   const step = document.createElement('li');
+   step.textContent = name;
+   if (name === active) step.setAttribute('aria-current','step');
+   return step;
+ }));
+}
 function renderTurnSteps() {
  const list = $('turnSteps');
  list.hidden = game.phase !== 'playing';
- if (list.hidden) return;
+ if (list.hidden) { renderPlaySteps(null, false); return; }
  const current = game.pending?.type === 'drawChoice' ? 1
    : discarding && !game.pending && game.turnId === game.me?.id ? 3 : 2;
+ renderPlaySteps(currentPlayAction(), current === 2);
  list.replaceChildren(...turnSteps.map((name, index) => {
    const step = document.createElement('li');
    step.textContent = name;
