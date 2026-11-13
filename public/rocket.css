@@ -47,3 +47,23 @@
  .pokemon-choice span,.pokemon-choice small{font-size:.75rem;line-height:1.35;white-space:normal}
 }
 @media(max-width:380px){.pokemon-choice{grid-template-columns:88px minmax(0,1fr);min-height:134px}.pokemon-choice .pokemon-token{height:112px}#players[data-count="6"] .trainer:not(.seat-left):not(.seat-right){width:30%}}
+:root{--red:#894b4b;--gold:#c4a96d;--ink:#29241f;--panel:#f1e8d6}
+body{background:radial-gradient(ellipse at 50% 10%,#514333,#282522 58%,#191a18);color:#f4ecdd}
+.site-header{background:#211f1be8;border-bottom-color:#c4a96d55}
+.site-brand{color:#e7d7b7}
+.site-tools button{color:#eadfc8;background:#36332b;border-color:#b8a16a66}
+.panel{border-color:#d2b97845;background:linear-gradient(145deg,#39342bbf,#242321e8)}
+.entry{background:linear-gradient(145deg,#514334,#302c27 68%,#292524);border-color:#c7aa6b88}
+.rocket-key-visual{display:block;width:100%;aspect-ratio:1200/630;object-fit:cover;margin:14px 0 18px;border:1px solid #ddc986;border-radius:13px;box-shadow:0 9px 24px #17120f66}
+.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.entry p{color:#e2d7c4}
+.primary{background:linear-gradient(135deg,#d4bf84,#b78c5b);color:#30251e}
+button{border-color:#c9b990;background:#eee5d2;color:#352f28}
+.arena{background:radial-gradient(ellipse,#4a503e,#35392f 61%,#292b26);box-shadow:inset 0 0 0 6px #332b28,inset 0 0 0 8px #c7a9674d,0 12px 30px #0004}
+.trainer{border-color:#d7c9a8;background:linear-gradient(145deg,#f4ecdc,#dfd1b4);color:#342c27}
+.trainer.active{outline-color:#c6a45b;box-shadow:0 0 0 6px #c6a45b38,0 5px 10px #1114}
+.play-card{border-color:#e8d9bb;background:linear-gradient(155deg,#995352,#583638 74%)}
+.play-card.dodge{background:linear-gradient(155deg,#537880,#334a50 74%)}
+.play-card.potion,.play-card.boost{background:linear-gradient(155deg,#718a68,#465b45 74%)}
+.play-card.item{background:linear-gradient(155deg,#aa8950,#625235 74%)}
+.play-card.scout{background:linear-gradient(155deg,#89728e,#50465b 74%)}
