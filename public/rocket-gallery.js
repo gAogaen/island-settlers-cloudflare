@@ -5,16 +5,16 @@
   function renderGallery() {
     const query = get('gallerySearch').value.trim();
     const category = get('galleryCategory').value;
-    const matches = cards.filter(card => card.name.includes(query) && (!category || card.category === category));
+    const matches = cards.filter(card => (card.name || card.id).includes(query) && (!category || card.category === category));
     get('galleryGrid').replaceChildren(...matches.map(card => {
       const button = document.createElement('button');
       button.className = 'gallery-card';
       const image = document.createElement('img');
       image.src = card.image;
-      image.alt = card.name;
+      image.alt = card.name || card.id;
       image.loading = 'lazy';
       const caption = document.createElement('span');
-      caption.textContent = (card.copies ? card.copies + '枚 · ' : '') + card.name + (card.level ? ' Lv.' + card.level : '') + (card.weather ? ' · ' + (weatherNames[card.weather] || card.weather) : '');
+      caption.textContent = (card.copies ? card.copies + '枚 · ' : '') + (card.name || card.id) + (card.level ? ' Lv.' + card.level : '') + (card.weather ? ' · ' + (weatherNames[card.weather] || card.weather) : '');
       button.append(image, caption);
       if (card.redHp != null) {
         const details = document.createElement('small');
