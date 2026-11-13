@@ -43,3 +43,14 @@ function render(){if(!game)return;const me=game.me,turn=game.players.find(p=>p.i
  $('selection').textContent=discarding?'選択中：'+discardSet.size+'枚':chosen?'選択中：'+(selected?.name||''):'';$('log').innerHTML=game.log.slice().reverse().map(s=>'<p>'+esc(s)+'</p>').join('');$('winner').hidden=game.phase!=='finished';$('winner').textContent=game.reason||''}
 async function join(s=false){try{const c=$('code').value.trim().toUpperCase();if(!/^[A-Z0-9]{6}$/.test(c))throw Error('6文字の部屋コードを入力してください。');if(s){enter(await api('/'+c+'?spectate=1'),null,true);return}const saved=localStorage.getItem('rocket-token-'+c);if(saved){try{enter(await api('/'+c+'?token='+encodeURIComponent(saved)),saved);return}catch{}}const name=$('name').value.trim();if(!name)throw Error('名前を入力してください。');const d=await api('/'+c+'/join',{name});enter(d,d.token)}catch(e){toast(e.message)}}
 $('create').onclick=async()=>{try{const name=$('name').value.trim();if(!name)throw Error('名前を入力してください。');localStorage.setItem('island-last-name',name);const d=await api('',{name,mode:$('gameMode').value});enter(d,d.token)}catch(e){toast(e.message)}};$('join').onclick=()=>join();$('watch').onclick=()=>join(true);$('copy').onclick=async()=>{try{await navigator.clipboard.writeText(location.origin+'/rocket.html?room='+code);toast('招待URLをコピーしました')}catch{toast('部屋コード：'+code)}};$('leave').onclick=()=>{clearInterval(interval);game=null;code=null;token=null;$('room').hidden=true;$('entry').hidden=false;history.replaceState({},'','/rocket.html')};$('rules').onclick=()=>$('rulesDialog').showModal();$('rulesClose').onclick=()=>{$('rulesDialog').close();localStorage.setItem('rocket-rules-seen','1')};$('name').value=localStorage.getItem('island-last-name')||'';const params=new URLSearchParams(location.search),room=params.get('room');if(room){$('code').value=room.toUpperCase();if(params.get('spectate')==='1')join(true);else if(localStorage.getItem('rocket-token-'+room.toUpperCase()))join()}
+
+// Dismiss only clicks that both start and finish outside the dialog bounds.
+document.querySelectorAll('dialog').forEach(dialog=>{
+ const outside=e=>{const r=dialog.getBoundingClientRect();return e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom};
+ let backdropPress=false;
+ dialog.addEventListener('pointerdown',e=>{backdropPress=e.target===dialog&&outside(e)});
+ dialog.addEventListener('pointercancel',()=>{backdropPress=false});
+ dialog.addEventListener('click',e=>{if(backdropPress&&e.target===dialog&&outside(e))dialog.close();backdropPress=false});
+ dialog.addEventListener('close',()=>{backdropPress=false});
+});
+$('rulesDialog').addEventListener('close',()=>localStorage.setItem('rocket-rules-seen','1'));
