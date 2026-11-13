@@ -40,7 +40,16 @@ function render(){if(!game)return;const me=game.me,turn=game.players.find(p=>p.i
  if(game.pending?.type==='attackResponse'&&game.pending.targetId===me?.id){const dodge=me.hand.filter(c=>c.type==='dodge');controls='<p><b>'+esc(game.players.find(p=>p.id===game.pending.actorId)?.name||'相手')+'の攻撃！</b> ダメージ '+game.pending.damage+'</p>'+(dodge.map(c=>'<button data-dodge="'+esc(c.id)+'" class="primary">'+esc(c.name)+'で回避</button>').join('')||'<p>「よけて！」カードがありません。</p>')+'<button id="take">攻撃を受ける</button>'}else if(game.pending?.type==='rescue'&&game.pending.actorId===me?.id){const potions=me.hand.filter(c=>c.type==='potion'),victim=game.players.find(p=>p.id===game.pending.victimId);controls='<p><b>'+esc(victim?.name||'トレーナー')+'がひんし！</b> キズぐすりで退場を防げます。</p>'+(potions.map(c=>'<button data-rescue="'+esc(c.id)+'" class="primary">'+esc(c.name)+'を使う</button>').join('')||'<p>キズぐすりがありません。</p>')+'<button id="passRescue">使わずに見送る</button>'}else if(game.pending&&game.pending.actorId!==me?.id)controls='<p>攻撃への対応を待っています。</p>';
  if(game.phase==='finished'&&me?.id===game.hostId)controls='<button id="rematch" class="primary">もう一度遊ぶ</button>';$('controls').innerHTML=controls;
  if($('start'))$('start').onclick=()=>action('start');if($('play'))$('play').onclick=()=>action('play',{cardId:chosen,targetId:$('target')?.value||''});if($('clear'))$('clear').onclick=()=>{chosen=null;render()};if($('end'))$('end').onclick=()=>action('end');if($('levelEnd'))$('levelEnd').onclick=()=>action('end',{levelUp:true});if($('startDiscard'))$('startDiscard').onclick=()=>{discarding=true;discardSet.clear();render()};if($('discard'))$('discard').onclick=()=>action('discard',{cardIds:[...discardSet]});if($('cancelDiscard'))$('cancelDiscard').onclick=()=>{discarding=false;discardSet.clear();render()};if($('take'))$('take').onclick=()=>action('respond',{choice:'take'});if($('passRescue'))$('passRescue').onclick=()=>action('respond',{choice:'pass'});document.querySelectorAll('[data-rescue]').forEach(b=>b.onclick=()=>action('respond',{choice:'heal',cardId:b.dataset.rescue}));document.querySelectorAll('[data-dodge]').forEach(b=>b.onclick=()=>action('respond',{choice:'dodge',cardId:b.dataset.dodge}));if($('rematch'))$('rematch').onclick=()=>action('rematch');
- $('hand').innerHTML=(me?.hand||[]).map(c=>'<button class="play-card '+(handImage(c)?'has-hand-scan ':'')+esc(c.type)+' '+(chosen===c.id?'selected ':'')+(discardSet.has(c.id)?'discard-selected':'')+'" data-card="'+esc(c.id)+'"><small>'+(cardDefinition(c)?.provisional?'仮カード':'プレイカード')+'</small><span class="card-art">'+(handImage(c)?'<img src="'+esc(handImage(c))+'" alt="'+esc(cardDefinition(c)?.imageAlt||c.name)+'" onerror="this.hidden=true">':'<i aria-hidden="true">'+esc(cardSymbol(c))+'</i>')+'</span><b>'+esc(c.name)+'</b><span>'+esc(cardText(c))+'</span></button>').join('')||'<p>'+(watch?'手札は非公開です':'手札はありません')+'</p>'; $('hand').querySelectorAll('[data-card]').forEach(b=>b.onclick=()=>{if(discarding){const id=b.dataset.card;discardSet.has(id)?discardSet.delete(id):discardSet.add(id)}else chosen=b.dataset.card;render()});
+ const handMarkup=(me?.hand||[]).map(c=>'<button class="play-card '+(handImage(c)?'has-hand-scan ':'')+esc(c.type)+'" data-card="'+esc(c.id)+'"><small>'+(cardDefinition(c)?.provisional?'仮カード':'プレイカード')+'</small><span class="card-art">'+(handImage(c)?'<img src="'+esc(handImage(c))+'" alt="'+esc(cardDefinition(c)?.imageAlt||c.name)+'" onerror="this.hidden=true">':'<i aria-hidden="true">'+esc(cardSymbol(c))+'</i>')+'</span><b>'+esc(c.name)+'</b><span>'+esc(cardText(c))+'</span></button>').join('')||'<p>'+(watch?'手札は非公開です':'手札はありません')+'</p>';
+ const hand = $('hand');
+ if (handMarkup !== renderedHand) {
+   hand.innerHTML = handMarkup;
+   renderedHand = handMarkup;
+ }
+ hand.querySelectorAll('[data-card]').forEach(button => {
+   button.classList.toggle('selected', chosen === button.dataset.card);
+   button.classList.toggle('discard-selected', discardSet.has(button.dataset.card));
+ });
  $('selection').textContent=discarding?'選択中：'+discardSet.size+'枚':chosen?'選択中：'+(selected?.name||''):'';$('log').innerHTML=game.log.slice().reverse().map(s=>'<p>'+esc(s)+'</p>').join('');$('winner').hidden=game.phase!=='finished';$('winner').textContent=game.reason||''}
 async function join(s=false){try{const c=$('code').value.trim().toUpperCase();if(!/^[A-Z0-9]{6}$/.test(c))throw Error('6文字の部屋コードを入力してください。');if(s){enter(await api('/'+c+'?spectate=1'),null,true);return}const saved=localStorage.getItem('rocket-token-'+c);if(saved){try{enter(await api('/'+c+'?token='+encodeURIComponent(saved)),saved);return}catch{}}const name=$('name').value.trim();if(!name)throw Error('名前を入力してください。');const d=await api('/'+c+'/join',{name});enter(d,d.token)}catch(e){toast(e.message)}}
 $('create').onclick=async()=>{try{const name=$('name').value.trim();if(!name)throw Error('名前を入力してください。');localStorage.setItem('island-last-name',name);const d=await api('',{name,mode:$('gameMode').value});enter(d,d.token)}catch(e){toast(e.message)}};$('join').onclick=()=>join();$('watch').onclick=()=>join(true);$('copy').onclick=async()=>{try{await navigator.clipboard.writeText(location.origin+'/rocket.html?room='+code);toast('招待URLをコピーしました')}catch{toast('部屋コード：'+code)}};$('leave').onclick=()=>{clearInterval(interval);game=null;code=null;token=null;$('room').hidden=true;$('entry').hidden=false;history.replaceState({},'','/rocket.html')};$('rules').onclick=()=>$('rulesDialog').showModal();$('rulesClose').onclick=()=>{$('rulesDialog').close();localStorage.setItem('rocket-rules-seen','1')};$('name').value=localStorage.getItem('island-last-name')||'';const params=new URLSearchParams(location.search),room=params.get('room');if(room){$('code').value=room.toUpperCase();if(params.get('spectate')==='1')join(true);else if(localStorage.getItem('rocket-token-'+room.toUpperCase()))join()}
@@ -55,3 +64,36 @@ document.querySelectorAll('dialog').forEach(dialog=>{
  dialog.addEventListener('close',()=>{backdropPress=false});
 });
 $('rulesDialog').addEventListener('close',()=>localStorage.setItem('rocket-rules-seen','1'));
+
+// Keep hand buttons mounted across selection and polling so a double click
+// reaches the same card button after the first click.
+let renderedHand;
+const hand = $('hand');
+function clickedHandCard(event) {
+ const button = event.target.closest('button[data-card]');
+ return button && game?.me?.hand?.find(card => card.id === button.dataset.card);
+}
+hand.addEventListener('click', event => {
+ const card = clickedHandCard(event);
+ if (!card) return;
+ if (discarding) {
+   if (discardSet.has(card.id)) discardSet.delete(card.id);
+   else discardSet.add(card.id);
+ } else {
+   chosen = card.id;
+ }
+ render();
+});
+function previewHandCard(event) {
+ const card = clickedHandCard(event);
+ if (!card) return;
+ event.preventDefault();
+ const dialog = $('cardPreviewDialog');
+ const image = $('cardPreviewImage');
+ image.src = handImage(card);
+ image.alt = card.name + 'のカード画像';
+ $('cardPreviewTitle').textContent = card.name + (safeImage(cardDefinition(card)?.image) ? '' : '（カード裏面）');
+ if (!dialog.open) dialog.showModal();
+}
+hand.addEventListener('contextmenu', previewHandCard);
+hand.addEventListener('dblclick', previewHandCard);
