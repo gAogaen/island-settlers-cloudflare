@@ -119,3 +119,7 @@ button{border-color:#c9b990;background:#eee5d2;color:#352f28}
 .play-card.has-hand-scan .card-art>img{position:static;display:block;width:100%;height:100%;object-fit:contain}
 .play-card.has-hand-scan>b{font-size:1rem}
 .play-card.has-hand-scan>span:last-child{font-size:.72rem}
+
+.board-card.role-back{padding:0;border:1px solid #927953;background:#f3ead7}.board-card.role-back>img{display:block;width:100%;height:100%;object-fit:contain}
+
+.board-card.role-back{padding:0;border:1px solid #927953;background:#f3ead7}.board-card.role-back>img{display:block;width:100%;height:100%;object-fit:contain}
