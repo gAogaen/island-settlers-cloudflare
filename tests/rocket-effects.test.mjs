@@ -33,3 +33,14 @@ test('Magikarp skips discard step',async()=>{const {g,act}=setup('コイキン�
 test('Illuminate is optional and only owner can choose draw',async()=>{const {act,store}=setup();store.value.turn=3;await act('d',{type:'end'});assert.equal(store.value.pending.type,'drawChoice');assert.equal((await act('a',{type:'respond',choice:'yes'})).status,400);await act('c',{type:'respond',choice:'yes'});assert.equal(store.value.players[2].hand.length,6);});
 test('Pay Day requires two gifts, conceals card ids from spectators',async()=>{const {g,act,store}=setup('ニャース','ゼニガメ',2);await act('a',attack(g));await act('b',{type:'respond',choice:'take'});assert.equal(store.value.pending.type,'gift');const ids=[...store.value.pending.cardIds];const response=await handleRocket(store,new Request('https://test/state?spectate=1'));assert.equal((await response.json()).game.pending.cardIds,undefined);for(const id of ids)await act('a',{type:'respond',choice:'give',cardId:id,targetId:'c'});assert.equal(store.value.pending,null);assert.equal(store.value.players[2].hand.length,5);});
 test('existing match without effect metadata remains playable',async()=>{const {g,act}=setup();delete g.players[0].team[0].abilityStatus;g.players[0].team[0].attacks=[{name:'legacy',damage:2}];assert.equal((await act('a',attack(g))).status,200);});
+
+test('Covert Cloak blocks burn without preventing move damage',async()=>{
+ const {g,act,store}=setup();
+ g.players[1].team[0].heldItem={effectId:'covert-cloak',name:'おんみつマント'};
+ assert.equal((await act('a',attack(g))).status,200);
+ assert.equal((await act('b',{type:'respond',choice:'take'})).status,200);
+ const target=store.value.players[1].team[0];
+ assert.equal(target.hp,2);
+ assert.equal(target.status??null,null);
+ assert.ok(store.value.log.some(line=>line.includes('おんみつマントで特殊状態を防ぎました')));
+});

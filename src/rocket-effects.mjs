@@ -43,8 +43,14 @@ export function enrichPrinted(row){
   else if(n==='アクアテール'){m.effect={id:'ignore-held'};m.text='この技の使用中、相手のもちものの効果を受けない。';m.effectStatus='partial';}
   else if(['いわおとし','いわなだれ'].includes(n)){m.effect={id:'self-rescue-only'};m.text='この技でHPが0になったポケモンには、そのトレーナーだけがキズぐすりを使える。';}
   else if(['ひのこ','かえんほうしゃ'].includes(n)){m.effect={id:'weather-status',weather:['sunny'],status:'やけど'};m.text='ダメージ後のおてんきチェックが晴れなら、やけど。';}
+  else if(n==='おにび'){
+   m.costWeather=sun;
+   m.effect={id:'weather-status',weather:['sunny','partly-cloudy','thunderstorm'],status:'やけど'};
+   m.text='おてんきチェックが雨以外なら、対象をやけどにする。';
+   m.effectStatus='partial'; // Global weather replacement is pending.
+  }
   else if(n==='はねる'){m.text='はねるだけで、何も起こらない。';}
-  else if(['でんきショック','１０まんボルト','どくばり','したでなめる','ヘドロばくだん','ねんりき','かみつく','たきのぼり','しねんのずつき','ねこだまし','トライアタック','シャドーボール','おにび','でんじは'].includes(n)){
+  else if(['でんきショック','１０まんボルト','どくばり','したでなめる','ヘドロばくだん','ねんりき','かみつく','たきのぼり','しねんのずつき','ねこだまし','トライアタック','シャドーボール','でんじは'].includes(n)){
    m.effect={id:'pending'};m.effectStatus='pending';m.text='追加効果は自動処理未対応です。カード画像で確認してください。';
   }
   else m.text='記載されたダメージを与える。';

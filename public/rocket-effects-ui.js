@@ -27,5 +27,5 @@ function renderEffectControls(){
  const end=(levelUp=false)=>action('end',{levelUp,harvest:!!$('effectHarvest')?.checked});
  if($('end'))$('end').onclick=()=>end();if($('levelEnd'))$('levelEnd').onclick=()=>end(true);
  if($('discard'))$('discard').onclick=()=>action('discard',{cardIds:[...discardSet],harvest:!!$('effectHarvest')?.checked});
- if($('play'))$('play').onclick=()=>action('play',{cardId:chosen,targetId:$('target')?.value||'',marker:$('effectMarker')?.value,recoil:!!$('effectRecoil')?.checked});
+ if($('play'))$('play').onclick=()=>action('play',{cardId:chosen,toolChoice:$('toolChoice')?.value,targetId:$('target')?.value||'',marker:$('effectMarker')?.value,recoil:!!$('effectRecoil')?.checked});
 }

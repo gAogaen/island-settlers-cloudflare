@@ -276,7 +276,8 @@
     "level": null,
     "category": "play",
     "image": "/assets/rocket/cards/card_031.webp",
-    "observedCopies": 1
+    "observedCopies": 1,
+    "copies": 1
   },
   {
     "id": "card_032",
@@ -284,7 +285,8 @@
     "weather": "thunderstorm",
     "level": null,
     "category": "play",
-    "image": "/assets/rocket/cards/card_032.webp"
+    "image": "/assets/rocket/cards/card_032.webp",
+    "copies": 1
   },
   {
     "id": "card_033",
@@ -292,7 +294,8 @@
     "weather": "thunderstorm",
     "level": null,
     "category": "play",
-    "image": "/assets/rocket/cards/card_033.webp"
+    "image": "/assets/rocket/cards/card_033.webp",
+    "copies": 1
   },
   {
     "id": "card_034",
@@ -300,7 +303,8 @@
     "weather": "thunderstorm",
     "level": null,
     "category": "play",
-    "image": "/assets/rocket/cards/card_034.webp"
+    "image": "/assets/rocket/cards/card_034.webp",
+    "copies": 1
   },
   {
     "id": "card_035",
@@ -309,7 +313,8 @@
     "level": null,
     "category": "play",
     "image": "/assets/rocket/cards/card_035.webp",
-    "observedCopies": 3
+    "observedCopies": 3,
+    "copies": 3
   },
   {
     "id": "card_036",
@@ -318,7 +323,8 @@
     "level": null,
     "category": "play",
     "image": "/assets/rocket/cards/card_036.webp",
-    "observedCopies": 3
+    "observedCopies": 3,
+    "copies": 3
   },
   {
     "id": "card_037",
@@ -327,7 +333,8 @@
     "level": null,
     "category": "play",
     "image": "/assets/rocket/cards/card_037.webp",
-    "observedCopies": 3
+    "observedCopies": 3,
+    "copies": 3
   },
   {
     "id": "card_038",
@@ -335,7 +342,8 @@
     "weather": "thunderstorm",
     "level": null,
     "category": "play",
-    "image": "/assets/rocket/cards/card_038.webp"
+    "image": "/assets/rocket/cards/card_038.webp",
+    "copies": 1
   },
   {
     "id": "card_039",
@@ -343,7 +351,8 @@
     "weather": "thunderstorm",
     "level": null,
     "category": "play",
-    "image": "/assets/rocket/cards/card_039.webp"
+    "image": "/assets/rocket/cards/card_039.webp",
+    "copies": 1
   },
   {
     "id": "card_040",
@@ -351,7 +360,8 @@
     "weather": "thunderstorm",
     "level": null,
     "category": "play",
-    "image": "/assets/rocket/cards/card_040.webp"
+    "image": "/assets/rocket/cards/card_040.webp",
+    "copies": 1
   },
   {
     "id": "card_041",
@@ -360,7 +370,8 @@
     "level": null,
     "category": "play",
     "image": "/assets/rocket/cards/card_041.webp",
-    "observedCopies": 1
+    "observedCopies": 1,
+    "copies": 1
   },
   {
     "id": "card_042",
@@ -368,7 +379,8 @@
     "weather": "thunderstorm",
     "level": null,
     "category": "play",
-    "image": "/assets/rocket/cards/card_042.webp"
+    "image": "/assets/rocket/cards/card_042.webp",
+    "copies": 1
   },
   {
     "id": "card_043",
@@ -376,7 +388,8 @@
     "weather": "thunderstorm",
     "level": null,
     "category": "play",
-    "image": "/assets/rocket/cards/card_043.webp"
+    "image": "/assets/rocket/cards/card_043.webp",
+    "copies": 1
   },
   {
     "id": "card_044",
@@ -385,7 +398,8 @@
     "level": null,
     "category": "play",
     "image": "/assets/rocket/cards/card_044.webp",
-    "observedCopies": 2
+    "observedCopies": 2,
+    "copies": 2
   },
   {
     "id": "card_045",
@@ -394,7 +408,8 @@
     "level": null,
     "category": "play",
     "image": "/assets/rocket/cards/card_045.webp",
-    "observedCopies": 2
+    "observedCopies": 2,
+    "copies": 2
   },
   {
     "id": "card_046",
@@ -403,7 +418,8 @@
     "level": null,
     "category": "play",
     "image": "/assets/rocket/cards/card_046.webp",
-    "observedCopies": 6
+    "observedCopies": 6,
+    "copies": 6
   },
   {
     "id": "card_047",
@@ -412,7 +428,8 @@
     "level": null,
     "category": "play",
     "image": "/assets/rocket/cards/card_047.webp",
-    "observedCopies": 1
+    "observedCopies": 1,
+    "copies": 1
   },
   {
     "id": "card_048",
@@ -421,7 +438,8 @@
     "level": null,
     "category": "play",
     "image": "/assets/rocket/cards/card_048.webp",
-    "observedCopies": 4
+    "observedCopies": 4,
+    "copies": 4
   },
   {
     "id": "card_049",
@@ -430,7 +448,8 @@
     "level": null,
     "category": "play",
     "image": "/assets/rocket/cards/card_049.webp",
-    "observedCopies": 2
+    "observedCopies": 2,
+    "copies": 2
   },
   {
     "id": "card_050",
@@ -438,7 +457,8 @@
     "weather": "sunny",
     "level": null,
     "category": "play",
-    "image": "/assets/rocket/cards/card_050.webp"
+    "image": "/assets/rocket/cards/card_050.webp",
+    "copies": 1
   },
   {
     "id": "card_051",
@@ -447,7 +467,8 @@
     "level": null,
     "category": "play",
     "image": "/assets/rocket/cards/card_051.webp",
-    "observedCopies": 3
+    "observedCopies": 3,
+    "copies": 3
   },
   {
     "id": "card_052",
@@ -455,7 +476,8 @@
     "weather": "sunny",
     "level": null,
     "category": "play",
-    "image": "/assets/rocket/cards/card_052.webp"
+    "image": "/assets/rocket/cards/card_052.webp",
+    "copies": 1
   },
   {
     "id": "card_053",
@@ -463,7 +485,8 @@
     "weather": "partly-cloudy",
     "level": null,
     "category": "play",
-    "image": "/assets/rocket/cards/card_053.webp"
+    "image": "/assets/rocket/cards/card_053.webp",
+    "copies": 1
   },
   {
     "id": "card_054",
@@ -472,7 +495,8 @@
     "level": null,
     "category": "play",
     "image": "/assets/rocket/cards/card_054.webp",
-    "observedCopies": 1
+    "observedCopies": 1,
+    "copies": 1
   },
   {
     "id": "card_055",
@@ -480,7 +504,8 @@
     "weather": null,
     "level": null,
     "category": "role",
-    "image": "/assets/rocket/cards/card_055.webp"
+    "image": "/assets/rocket/cards/card_055.webp",
+    "copies": 1
   },
   {
     "id": "card_056",
@@ -488,7 +513,8 @@
     "weather": null,
     "level": null,
     "category": "role",
-    "image": "/assets/rocket/cards/card_056.webp"
+    "image": "/assets/rocket/cards/card_056.webp",
+    "copies": 1
   },
   {
     "id": "card_057",
@@ -496,7 +522,8 @@
     "weather": null,
     "level": null,
     "category": "role",
-    "image": "/assets/rocket/cards/card_057.webp"
+    "image": "/assets/rocket/cards/card_057.webp",
+    "copies": 3
   },
   {
     "id": "card_058",
@@ -504,7 +531,8 @@
     "weather": null,
     "level": null,
     "category": "role",
-    "image": "/assets/rocket/cards/card_058.webp"
+    "image": "/assets/rocket/cards/card_058.webp",
+    "copies": 1
   },
   {
     "id": "covert-cloak-rain",
@@ -512,7 +540,8 @@
     "weather": "rain",
     "category": "play",
     "image": "/assets/rocket/cards/weather/covert-cloak-rain.webp",
-    "level": null
+    "level": null,
+    "copies": 1
   },
   {
     "id": "quick-claw-rain",
@@ -520,25 +549,28 @@
     "weather": "rain",
     "category": "play",
     "image": "/assets/rocket/cards/weather/quick-claw-rain.webp",
-    "level": null
+    "level": null,
+    "copies": 1
   },
   {
     "id": "card_mew",
-    "category": "special",
+    "category": "play",
     "image": "/assets/rocket/cards/card_mew.webp",
     "name": "ミュウの祝福",
     "level": null,
     "weather": "partly-cloudy",
-    "observedCopies": 1
+    "observedCopies": 1,
+    "copies": 1
   },
   {
     "id": "card_mewtwo",
-    "category": "special",
+    "category": "play",
     "image": "/assets/rocket/cards/card_mewtwo.webp",
     "name": "ミュウツーのプレッシャー",
     "level": null,
     "weather": "partly-cloudy",
-    "observedCopies": 1
+    "observedCopies": 1,
+    "copies": 1
   },
   {
     "id": "bulbasaur-lv1",
@@ -808,7 +840,8 @@
     "category": "play",
     "image": "/assets/rocket/cards/weather/farfetchd-partly-cloudy.webp",
     "observedCopies": 1,
-    "sourcePhoto": "IMG_1614.jpeg"
+    "sourcePhoto": "IMG_1614.jpeg",
+    "copies": 1
   },
   {
     "id": "farfetchd-rain",
@@ -817,7 +850,8 @@
     "category": "play",
     "image": "/assets/rocket/cards/weather/farfetchd-rain.webp",
     "observedCopies": 2,
-    "sourcePhoto": "IMG_1614.jpeg"
+    "sourcePhoto": "IMG_1614.jpeg",
+    "copies": 2
   },
   {
     "id": "mr-mime-sunny",
@@ -826,7 +860,8 @@
     "category": "play",
     "image": "/assets/rocket/cards/weather/mr-mime-sunny.webp",
     "observedCopies": 2,
-    "sourcePhoto": "IMG_1615.jpeg"
+    "sourcePhoto": "IMG_1615.jpeg",
+    "copies": 2
   },
   {
     "id": "articuno-rain",
@@ -835,7 +870,8 @@
     "category": "play",
     "image": "/assets/rocket/cards/weather/articuno-rain.webp",
     "observedCopies": 3,
-    "sourcePhoto": "IMG_1616.jpeg"
+    "sourcePhoto": "IMG_1616.jpeg",
+    "copies": 3
   },
   {
     "id": "jigglypuff-rain",
@@ -844,7 +880,8 @@
     "category": "play",
     "image": "/assets/rocket/cards/weather/jigglypuff-rain.webp",
     "observedCopies": 1,
-    "sourcePhoto": "IMG_1617.jpeg"
+    "sourcePhoto": "IMG_1617.jpeg",
+    "copies": 1
   },
   {
     "id": "rival-rain",
@@ -853,7 +890,8 @@
     "category": "play",
     "image": "/assets/rocket/cards/weather/rival-rain.webp",
     "observedCopies": 2,
-    "sourcePhoto": "IMG_1618.jpeg"
+    "sourcePhoto": "IMG_1618.jpeg",
+    "copies": 2
   },
   {
     "id": "plus-power-partly-cloudy",
@@ -862,7 +900,8 @@
     "category": "play",
     "image": "/assets/rocket/cards/weather/plus-power-partly-cloudy.webp",
     "observedCopies": 2,
-    "sourcePhoto": "IMG_1619.jpeg"
+    "sourcePhoto": "IMG_1619.jpeg",
+    "copies": 2
   },
   {
     "id": "plus-power-rain",
@@ -871,7 +910,8 @@
     "category": "play",
     "image": "/assets/rocket/cards/weather/plus-power-rain.webp",
     "observedCopies": 1,
-    "sourcePhoto": "IMG_1619.jpeg"
+    "sourcePhoto": "IMG_1619.jpeg",
+    "copies": 1
   },
   {
     "id": "potion-full-heal-sunny",
@@ -880,7 +920,8 @@
     "category": "play",
     "image": "/assets/rocket/cards/weather/potion-full-heal-sunny.webp",
     "observedCopies": 2,
-    "sourcePhoto": "IMG_1621.jpeg"
+    "sourcePhoto": "IMG_1621.jpeg",
+    "copies": 2
   },
   {
     "id": "attack-sunny",
