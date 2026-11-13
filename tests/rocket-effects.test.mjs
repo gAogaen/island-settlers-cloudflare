@@ -13,7 +13,7 @@ function setup(a='ヒトカゲ',b='ゼニガメ',al=1,bl=1){
  return {store,act,g};
 }
 const attack=(g,extra={})=>({type:'play',cardId:g.players[0].hand.find(c=>c.type==='attack').id,targetId:'b',...extra});
-test('all 30 expert families have verified images at both levels; no invented Lv3',()=>{assert.equal(roster.length,30);for(const f of roster){assert.deepEqual(f.levels.map(x=>x.level),[1,2]);for(const s of f.levels){assert.ok(fs.existsSync(new URL('../public'+s.cardImage,import.meta.url)));assert.equal(ROCKET_CARD_IMAGE_ASSETS.filter(x=>x.id===s.id).length,1);}}});
+test('all 30 expert families have verified images at all three levels',()=>{assert.equal(roster.length,30);for(const f of roster){assert.deepEqual(f.levels.map(x=>x.level),[1,2,3]);for(const s of f.levels){assert.ok(fs.existsSync(new URL('../public'+s.cardImage,import.meta.url)));assert.equal(ROCKET_CARD_IMAGE_ASSETS.filter(x=>x.id===s.id).length,1);}}});
 test('Blaze applies floor-half HP and burn after sunny check',async()=>{const {g,act,store}=setup();g.players[0].team[0].hp=1;await act('a',attack(g));assert.equal(store.value.pending.damage,3);await act('b',{type:'respond',choice:'take'});assert.equal(store.value.pending.type,'rescue');});
 test('burn is fixed to one damage and guts bypasses burn',async()=>{for(const [name,expected]of [['ヒトカゲ',1],['ワンリキー',2]]){const {g,act,store}=setup(name);g.players[0].team[0].status='やけど';g.players[0].team[0].hp=1;await act('a',attack(g));assert.equal(store.value.pending.damage,expected);}});
 test('Keen Eye reduces by one rather than fully dodging',async()=>{const {g,act,store}=setup('ピジョン','ゼニガメ',2);await act('a',attack(g));await act('b',{type:'respond',choice:'dodge',cardId:g.players[1].hand[1].id});assert.equal(store.value.players[1].team[0].hp,2);});
@@ -43,4 +43,14 @@ test('Covert Cloak blocks burn without preventing move damage',async()=>{
  assert.equal(target.hp,2);
  assert.equal(target.status??null,null);
  assert.ok(store.value.log.some(line=>line.includes('おんみつマントで特殊状態を防ぎました')));
+});
+
+test('Flame Orb burns after a hit on partly cloudy weather, even through Covert Cloak',async()=>{
+ const {g,act,store}=setup('フシギダネ');
+ g.deck.at(-1).weather='partly-cloudy';
+ g.players[0].team[0].heldItem={effectId:'flame-orb'};
+ g.players[1].team[0].heldItem={effectId:'covert-cloak'};
+ assert.equal((await act('a',attack(g))).status,200);
+ assert.equal((await act('b',{type:'respond',choice:'take'})).status,200);
+ assert.equal(store.value.players[1].team[0].status,'やけど');
 });

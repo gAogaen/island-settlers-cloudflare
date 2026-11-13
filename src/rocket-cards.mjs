@@ -1,3 +1,4 @@
+import { ROCKET_LV3_DATA } from './rocket-lv3-data.mjs';
 import { enrichPrinted } from './rocket-effects.mjs';
 import { ROCKET_LV2_DATA } from './rocket-lv2-data.mjs';
 import { ROCKET_LV1_DATA } from './rocket-lv1-data.mjs';
@@ -196,14 +197,15 @@ for (const card of ROCKET_POKEMON_CARDS) {
  Object.assign(stage, {name:printed.name,hp:printed.redHp,redHp:printed.redHp,greenHp:null,cardType:printed.cardType,cardImage:printed.cardImage,ability:printed.ability,effectStatus:printed.effectStatus,attacks:printed.attacks.map(move => ({...move,text:'追加効果はカード画像を確認してください。'}))});
 }
 
-// All supplied expert-mode families. Lv.3 is not fabricated from Lv.1/2 data.
+// Attach the matching printed Lv.3 face to each expert family.
 const NEXT_SPECIES = {フシギダネ:'フシギソウ',ヒトカゲ:'リザード',ゼニガメ:'カメール',ポッポ:'ピジョン','ニドラン♂':'ニドリーノ',ワンリキー:'ゴーリキー',ゴース:'ゴースト',コイキング:'ギャラドス'};
 export const ROCKET_EXPERT_POKEMON_CARDS = ROCKET_LV1_DATA.map(first => {
  const second = ROCKET_LV2_DATA.find(row => row.name === (NEXT_SPECIES[first.name] || first.name));
- const stages = [first,second].filter(Boolean).map(row => ({...enrichPrinted(row), hp:row.redHp}));
+ const third = ROCKET_LV3_DATA.find(row => row.family === first.name);
+ const stages = [first,second,third].filter(Boolean).map(row => ({...enrichPrinted(row), hp:row.redHp, basicHp:row.greenHp}));
  return {...stages[0],id:'expert-'+first.id,familyId:first.id.replace('-lv1',''),species:first.name,type:'',level:1,hp:first.redHp,levels:stages,provisional:true};
 });
 for (const image of ROCKET_CARD_IMAGE_ASSETS) {
- const row = [...ROCKET_LV1_DATA,...ROCKET_LV2_DATA].find(row => row.id === image.id);
+ const row = [...ROCKET_LV1_DATA,...ROCKET_LV2_DATA,...ROCKET_LV3_DATA].find(row => row.id === image.id);
  if (row) Object.assign(image, enrichPrinted(row));
 }

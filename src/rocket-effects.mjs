@@ -1,8 +1,13 @@
 // Rules transcribed from the supplied Lv.1/Lv.2 card faces.
 // No TCG status rules are assumed here. Pending effects are surfaced in the UI.
-export const SUPPORTED_ABILITIES = new Set(['もうか','するどいめ','どんかん','スキルリンク','ふゆう','こんじょう','びびり','じしんかじょう','アナライズ','すてみ','しゅうかく','はっこう','ものひろい','くいしんぼう']);
+export const SUPPORTED_ABILITIES = new Set(['じゅうなん','はやおき','あめうけざら','せいでんき','どくのトゲ','もうか','するどいめ','どんかん','スキルリンク','ふゆう','こんじょう','びびり','じしんかじょう','アナライズ','すてみ','しゅうかく','はっこう','ものひろい','くいしんぼう']);
 export const OPTIONAL_ABILITIES = new Set(['アナライズ','すてみ']);
 export const ABILITY_TEXT = {
+ じゅうなん:'まひにならない。各わざを自分の番に1回ずつ使える。',
+ はやおき:'プリンのライブとバリヤードのトリックの対象にならない。',
+ あめうけざら:'番の終了時におてんきチェック。雨・雷雨ならHPを1回復し、特殊状態を回復する。',
+ せいでんき:'ダメージを受けたとき、晴れ以外なら攻撃したポケモンをまひにする。',
+ どくのトゲ:'ダメージを受けたとき、晴れ以外なら攻撃したポケモンをどくにする。',
  もうか:'HPが半分以下なら、技のダメージを2増やす。',
  するどいめ:'技はよけられない。相手が「よけて！」を使った場合、ダメージを1減らす。',
  どんかん:'自分の番以外にダメージを受けた後、その番は追加のダメージを受けない。',
@@ -30,7 +35,7 @@ export function enrichPrinted(row){
   else if(n==='にどげり'){m.effect={id:'double-hit'};m.text='同じポケモンに2回攻撃。回避は各攻撃に1枚必要。';}
   else if(['いわくだき','かわらわり'].includes(n)){m.effect={id:'remove-marker-before'};m.text='先に相手の強化マーカーを1つ取り除いてから攻撃。';}
   else if(n==='あわ'){m.effect={id:'remove-marker-after',markers:['plusPower','speeder']};m.text='ダメージ後、相手のプラスパワーまたはスピーダーを1つ取り除く。';}
-  else if(n==='つのでつく'){m.effect={id:'full-hp-bonus'};m.text='自分のHPが満タンならダメージを1増やす。';}
+  else if(['つのでつく','メガホーン'].includes(n)){m.effect={id:'full-hp-bonus'};m.text='自分のHPが満タンならダメージを1増やす。';}
   else if(n==='すてみタックル'){m.effect={id:'optional-recoil'};m.text='ダメージを1増やせる。その場合、自分のHPを1減らす。';}
   else if(n==='ボーンラッシュ'){m.effect={id:'repeat-lock'};m.text='何度でも使用できる。使用後、この番はこの技だけを使用できる。';}
   else if(n==='はたきおとす'){m.effect={id:'discard-random'};m.text='ダメージを与えたとき、相手の手札を裏のまま1枚捨てる。';}
@@ -41,17 +46,78 @@ export function enrichPrinted(row){
   else if(n==='かなしばり'){m.costWeather=rain;m.effect={id:'lock-two'};m.text='相手の手札を裏のまま2枚、相手の次の番まで除外する。';}
   else if(n==='いのちのしずく'){m.costWeather=sun;m.effect={id:'heal-many'};m.text='好きな数のバトルポケモンを選び、HPを1回復する。';}
   else if(n==='アクアテール'){m.effect={id:'ignore-held'};m.text='この技の使用中、相手のもちものの効果を受けない。';m.effectStatus='partial';}
-  else if(['いわおとし','いわなだれ'].includes(n)){m.effect={id:'self-rescue-only'};m.text='この技でHPが0になったポケモンには、そのトレーナーだけがキズぐすりを使える。';}
-  else if(['ひのこ','かえんほうしゃ'].includes(n)){m.effect={id:'weather-status',weather:['sunny'],status:'やけど'};m.text='ダメージ後のおてんきチェックが晴れなら、やけど。';}
+  else if(['いわおとし','いわなだれ','ストーンエッジ'].includes(n)){m.effect={id:'self-rescue-only'};m.text='この技でHPが0になったポケモンには、そのトレーナーだけがキズぐすりを使える。';}
+  else if(['ひのこ','かえんほうしゃ','だいもんじ'].includes(n)){m.effect={id:'weather-status',weather:['sunny'],status:'やけど'};m.text='ダメージ後のおてんきチェックが晴れなら、やけど。';}
   else if(n==='おにび'){
    m.costWeather=sun;
    m.effect={id:'weather-status',weather:['sunny','partly-cloudy','thunderstorm'],status:'やけど'};
    m.text='おてんきチェックが雨以外なら、対象をやけどにする。';
    m.effectStatus='partial'; // Global weather replacement is pending.
   }
-  else if(n==='はねる'){m.text='はねるだけで、何も起こらない。';}
-  else if(['でんきショック','１０まんボルト','どくばり','したでなめる','ヘドロばくだん','ねんりき','かみつく','たきのぼり','しねんのずつき','ねこだまし','トライアタック','シャドーボール','でんじは'].includes(n)){
-   m.effect={id:'pending'};m.effectStatus='pending';m.text='追加効果は自動処理未対応です。カード画像で確認してください。';
+  else if(n==='トライアタック'){
+   m.effect={id:'weather-status',weather:['sunny','thunderstorm'],status:'やけど',statusByWeather:{thunderstorm:'まひ'}};
+   m.text='ダメージ後、晴れならやけど、雷雨ならまひ。';
+  }
+  else if(n==='シャドーボール'){
+   m.effect={id:'weather-discard',weather:['rain']};
+   m.text='ダメージ後、雨なら相手の手札を裏のまま1枚捨てる。';
+  }
+  else if(['ねんりき','たきのぼり','１０まんボルト'].includes(n)){
+   const effects={
+    ねんりき:{weather:['sunny'],status:'こんらん'},
+    たきのぼり:{weather:['thunderstorm'],status:'ひるみ'},
+    '１０まんボルト':{weather:['thunderstorm'],status:'まひ'},
+   };
+   m.effect={id:'weather-status',...effects[n]};
+   m.text='ダメージ後、'+(n==='ねんりき'?'晴れ':'雷雨')+'なら'+m.effect.status+'。';
+  }
+  else if(n==='でんじは'){
+   m.costWeather=rain;
+   m.effect={id:'weather-status',weather:['partly-cloudy',...rain],status:'まひ'};
+   m.text='おてんきチェックが晴れ以外なら対象をまひにする。';
+  }
+  else if(n==='かみつく'||n==='しねんのずつき'){
+   m.effect={id:'weather-status',weather:n==='かみつく'?rain:['thunderstorm'],status:'ひるみ'};
+   m.text='ダメージ後、'+(n==='かみつく'?'雨・雷雨':'雷雨')+'ならひるみ。';
+  }
+  else if(['どくどく','サイコキネシス','エアスラッシュ','かみなり','のしかかり','みずのはどう'].includes(n)){
+   const effects={
+    どくどく:[rain,'どく'],サイコキネシス:[['sunny'],'こんらん'],
+    エアスラッシュ:[['thunderstorm'],'ひるみ'],かみなり:[['thunderstorm'],'まひ'],
+    のしかかり:[sun,'まひ'],みずのはどう:[rain,'こんらん'],
+   };
+   const [weather,status]=effects[n];
+   m.effect={id:'weather-status',weather,status};
+  }
+  else if(n==='ばくれつパンチ')m.effect={id:'apply-status',status:'こんらん'};
+  else if(n==='ギガドレイン')m.effect={id:'drain',draw:1};
+  else if(n==='どろぼう')m.effect={id:'steal-random'};
+  else if(n==='つららばり')m.effect={id:'weather-draw',weather:rain};
+  else if(n==='たたりめ')m.effect={id:'target-status-bonus'};
+  else if(n==='きしかいせい')m.effect={id:'target-hp-bonus'};
+  else if(['ヘドロウェーブ','サイケこうせん','エレキネット','ねっぷう'].includes(n)){
+   const effects={
+    ヘドロウェーブ:[['rain'],'どく'],サイケこうせん:[['sunny'],'こんらん'],
+    エレキネット:[['thunderstorm'],'まひ'],ねっぷう:[['sunny'],'やけど'],
+   };
+   const [weather,status]=effects[n];
+   m.maxTargets=2;
+   m.effect={id:'weather-status',weather,status};
+  }
+  else if(n==='なみのり'||n==='インファイト'){
+   m.maxTargets=2;
+   m.effect={id:n==='なみのり'?'ignore-held':'remove-marker-before'};
+   if(n==='なみのり')m.effectStatus='partial';
+  }
+  else if(n==='はかいこうせん')m.effect={id:'paid-bonus'};
+  else if(n==='ホネブーメラン')m.effect={id:'paid-second-hit'};
+  else if(n==='ロックオン'){
+   m.costWeather=sun;
+   m.effect={id:'lock-on'};
+  }
+  else if(n==='みらいよち'){
+   m.effect={id:'pending'};m.effectStatus='pending';
+   m.text='山札の並べ替えは未実装です。';
   }
   else m.text='記載されたダメージを与える。';
   return m;
@@ -61,10 +127,12 @@ export function enrichPrinted(row){
 }
 export const active=p=>p.team?.[p.activeIndex||0]||p.pokemon;
 export const ability=(g,p,name)=>active(p)?.ability===name&&active(p)?.abilityStatus==='implemented'&&p.abilitySuppressedTurn!==g.turnNumber;
-export function attackDamage(g,p,move,{recoil=false}={}){
+export function attackDamage(g,p,move,{recoil=false,target=null}={}){
  const mon=active(p);let n=move.damage||0;if(n===0)return 0;
  if(ability(g,p,'もうか')&&mon.hp<=Math.floor(mon.maxHp/2))n+=2;
  if(ability(g,p,'こんじょう')&&mon.status)n++;
+ if(move.effect?.id==='target-status-bonus'&&target?.status)n++;
+ if(move.effect?.id==='target-hp-bonus'&&target?.hp>mon.hp)n++;
  if(move.effect?.id==='full-hp-bonus'&&mon.hp===mon.maxHp)n++;
  if(move.effect?.id==='optional-recoil'&&recoil)n++;
  if(mon.markers?.plusPower&&mon.status!=='まひ')n++;
