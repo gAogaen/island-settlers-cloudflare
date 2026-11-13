@@ -31,7 +31,7 @@ test('rock move restricts rescue to victim; victim can use potion',async()=>{con
 test('Harvest runs after hand limit and does not immediately discard fifth card',async()=>{const {g,act,store}=setup('タマタマ');g.players[0].hand.push(card());await act('a',{type:'end',harvest:true});assert.equal(store.value.players[0].hand.length,5);});
 test('Magikarp skips discard step',async()=>{const {g,act}=setup('コイキング');g.players[0].hand.push(card(),card());assert.equal((await act('a',{type:'end'})).status,200);});
 test('Illuminate is optional and only owner can choose draw',async()=>{const {act,store}=setup();store.value.turn=3;await act('d',{type:'end'});assert.equal(store.value.pending.type,'drawChoice');assert.equal((await act('a',{type:'respond',choice:'yes'})).status,400);await act('c',{type:'respond',choice:'yes'});assert.equal(store.value.players[2].hand.length,6);});
-test('Pay Day requires two gifts, conceals card ids from spectators',async()=>{const {g,act,store}=setup('ニャース','ゼニガメ',2);await act('a',attack(g));await act('b',{type:'respond',choice:'take'});assert.equal(store.value.pending.type,'gift');const ids=[...store.value.pending.cardIds];const response=await handleRocket(store,new Request('https://test/state?spectate=1'));assert.equal((await response.json()).game.pending.cardIds,undefined);for(const id of ids)await act('a',{type:'respond',choice:'give',cardId:id,targetId:'c'});assert.equal(store.value.pending,null);assert.equal(store.value.players[2].hand.length,5);});
+test('Pay Day requires two gifts, conceals card ids from spectators',async()=>{const {g,act,store}=setup('ニャース','ゼニガメ',2);await act('a',attack(g));await act('b',{type:'respond',choice:'take'});assert.equal(store.value.pending.type,'gift');const ids=[...store.value.pending.cardIds];const response=await handleRocket(store,new Request('https://test/state?spectate=1'));assert.equal((await response.json()).game.pending.cardIds,undefined);assert.equal((await act('a',{type:'respond',choice:'give',cardId:ids[0],targetId:'c'})).status,400);for(const id of ids)assert.equal((await act('a',{type:'respond',choice:'give',cardId:id,targetId:'d'})).status,200);assert.equal(store.value.pending,null);assert.equal(store.value.players[3].hand.length,5);});
 test('existing match without effect metadata remains playable',async()=>{const {g,act}=setup();delete g.players[0].team[0].abilityStatus;g.players[0].team[0].attacks=[{name:'legacy',damage:2}];assert.equal((await act('a',attack(g))).status,200);});
 
 test('Covert Cloak blocks burn without preventing move damage',async()=>{
@@ -53,4 +53,43 @@ test('Flame Orb burns after a hit on partly cloudy weather, even through Covert 
  assert.equal((await act('a',attack(g))).status,200);
  assert.equal((await act('b',{type:'respond',choice:'take'})).status,200);
  assert.equal(store.value.players[1].team[0].status,'やけど');
+});
+
+test('Future Sight privately reorders the top three before the defender responds', async () => {
+ const {g, store, act} = setup('ヤドラン', 'ゼニガメ', 3);
+ const top = g.deck.slice(-3).reverse();
+ const attack = await act('a', {type:'play', cardId:g.players[0].hand[0].id, targetId:'b'});
+ assert.equal(attack.status, 200);
+ assert.equal(attack.game.pending.type, 'futureSight');
+ assert.deepEqual(attack.game.pending.cards.map(card => card.id), top.map(card => card.id));
+ const state = await handleRocket(store, new Request('https://test/state?token=b'));
+ assert.equal((await state.json()).game.pending.cards, undefined);
+ const reordered = [top[2], top[0], top[1]].map(card => card.id);
+ const response = await act('a', {type:'respond', cardIds:reordered});
+ assert.equal(response.game.pending.type, 'attackResponse');
+ assert.deepEqual(store.value.deck.slice(-3).reverse().map(card => card.id), reordered);
+});
+
+test('Dragon Rage ignores Speeder and Plus Power, and Quick Claw extends its range', async () => {
+ const {g, act, store}=setup('ハクリュー','ゼニガメ',2);
+ const dragon=g.players[0].team[0];
+ dragon.markers={speeder:true,plusPower:true};
+ assert.equal((await act('a',{...attack(g),targetId:'c'})).status,400);
+ dragon.heldItem={effectId:'quick-claw'};
+ assert.equal((await act('a',{...attack(g),targetId:'c'})).status,200);
+ assert.equal(store.value.pending.damage,2);
+ assert.equal(store.value.players[0].team[0].markers.plusPower,true);
+ assert.equal((await act('c',{type:'respond',choice:'dodge',cardId:g.players[2].hand[1].id})).status,400);
+});
+
+test('Dragonite reduces damage at full health and Dragonair can opt in while affected', async () => {
+ for(const [name,level] of [['カイリュー',3],['ハクリュー',2]]){
+  const {g,act,store}=setup('ヒトカゲ',name,1,level);
+  const defender=g.players[1].team[0];
+  if(level===2)defender.status='どく';
+  g.players[0].team[0].attacks=[{name:'test',damage:2}];
+  await act('a',attack(g));
+  assert.equal((await act('b',{type:'respond',choice:'take',reactiveAbility:level===2})).status,200);
+  assert.equal(store.value.players[1].team[0].hp,defender.hp-1);
+ }
 });

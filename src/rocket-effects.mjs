@@ -1,8 +1,22 @@
 // Rules transcribed from the supplied Lv.1/Lv.2 card faces.
 // No TCG status rules are assumed here. Pending effects are surfaced in the UI.
-export const SUPPORTED_ABILITIES = new Set(['じゅうなん','はやおき','あめうけざら','せいでんき','どくのトゲ','もうか','するどいめ','どんかん','スキルリンク','ふゆう','こんじょう','びびり','じしんかじょう','アナライズ','すてみ','しゅうかく','はっこう','ものひろい','くいしんぼう']);
+export const SUPPORTED_ABILITIES = new Set(['ひでり','どくしゅ','せいぎのこころ','かがくへんかガス','いやしのこころ','プレッシャー','やるき','のろわれボディ','ようりょくそ','すいすい','すながくれ','カブトアーマー','まけんき','ダウンロード','じゅうなん','はやおき','あめうけざら','せいでんき','どくのトゲ','もうか','するどいめ','どんかん','スキルリンク','ふゆう','こんじょう','びびり','じしんかじょう','アナライズ','すてみ','しゅうかく','はっこう','ものひろい','くいしんぼう']);
 export const OPTIONAL_ABILITIES = new Set(['アナライズ','すてみ']);
 export const ABILITY_TEXT = {
+ ひでり:'おてんきチェックで、手札の晴れ・晴れのち曇りを捨てて天気を入れ替え、山札からめくったカードを手札に加えられる。',
+ どくしゅ:'バトルポケモンが特殊状態になるとき、どくに変更できる。どくのダメージを2にすることもできる。',
+ せいぎのこころ:'自分の番に1回、手札を他のトレーナーに渡せる。手札がなくなった場合は「くらえ！」を捨てずに使う。',
+ かがくへんかガス:'トレーナーの番が始まるとき、手札を1枚捨てて、この番だけ選んだトレーナーの特性を無効にできる。',
+ いやしのこころ:'バトルポケモンがひんしになったとき、晴れ・晴れのち曇りの手札をキズぐすりとして使える。',
+ プレッシャー:'「くらえ！」の対象になったとき、手札を1枚捨てると、相手は追加で手札を1枚捨てなければわざが無効になる。',
+ やるき:'ねむりにならない。ドローステップで山札の上3枚から2枚を選んで引くことができる。',
+ のろわれボディ:'ダメージを受けたとき、攻撃したトレーナーの手札をウラのまま1枚引くことができる。',
+ ようりょくそ:'自分の番に1回、晴れ・晴れのち曇りなら「くらえ！」なしでわざを使える。',
+ すいすい:'自分の番に1回、雨・雷雨なら「くらえ！」なしでわざを使える。',
+ すながくれ:'もちものがないとき、晴れ・晴れのち曇りなら手札を使わずによけられる。',
+ カブトアーマー:'ダメージを受けたあと、手札を1枚捨ててディフェンダーを置くことができる。',
+ ダウンロード:'ドローステップで山札から引く代わりに、選んだトレーナー2人までの手札を1枚ずつ引く。',
+ まけんき:'もちものがトラッシュされたとき、山札から2枚引くことができる。',
  じゅうなん:'まひにならない。各わざを自分の番に1回ずつ使える。',
  はやおき:'プリンのライブとバリヤードのトリックの対象にならない。',
  あめうけざら:'番の終了時におてんきチェック。雨・雷雨ならHPを1回復し、特殊状態を回復する。',
@@ -45,14 +59,13 @@ export function enrichPrinted(row){
   else if(n==='あまえる'){m.costWeather=rain;m.effect={id:'discard-random'};m.text='選んだトレーナーの手札を裏のまま1枚捨てる。';}
   else if(n==='かなしばり'){m.costWeather=rain;m.effect={id:'lock-two'};m.text='相手の手札を裏のまま2枚、相手の次の番まで除外する。';}
   else if(n==='いのちのしずく'){m.costWeather=sun;m.effect={id:'heal-many'};m.text='好きな数のバトルポケモンを選び、HPを1回復する。';}
-  else if(n==='アクアテール'){m.effect={id:'ignore-held'};m.text='この技の使用中、相手のもちものの効果を受けない。';m.effectStatus='partial';}
+  else if(n==='アクアテール'){m.effect={id:'ignore-held'};m.text='この技の使用中、相手のもちものの効果を受けない。';}
   else if(['いわおとし','いわなだれ','ストーンエッジ'].includes(n)){m.effect={id:'self-rescue-only'};m.text='この技でHPが0になったポケモンには、そのトレーナーだけがキズぐすりを使える。';}
   else if(['ひのこ','かえんほうしゃ','だいもんじ'].includes(n)){m.effect={id:'weather-status',weather:['sunny'],status:'やけど'};m.text='ダメージ後のおてんきチェックが晴れなら、やけど。';}
   else if(n==='おにび'){
    m.costWeather=sun;
    m.effect={id:'weather-status',weather:['sunny','partly-cloudy','thunderstorm'],status:'やけど'};
    m.text='おてんきチェックが雨以外なら、対象をやけどにする。';
-   m.effectStatus='partial'; // Global weather replacement is pending.
   }
   else if(n==='トライアタック'){
    m.effect={id:'weather-status',weather:['sunny','thunderstorm'],status:'やけど',statusByWeather:{thunderstorm:'まひ'}};
@@ -107,7 +120,6 @@ export function enrichPrinted(row){
   else if(n==='なみのり'||n==='インファイト'){
    m.maxTargets=2;
    m.effect={id:n==='なみのり'?'ignore-held':'remove-marker-before'};
-   if(n==='なみのり')m.effectStatus='partial';
   }
   else if(n==='はかいこうせん')m.effect={id:'paid-bonus'};
   else if(n==='ホネブーメラン')m.effect={id:'paid-second-hit'};
@@ -116,8 +128,8 @@ export function enrichPrinted(row){
    m.effect={id:'lock-on'};
   }
   else if(n==='みらいよち'){
-   m.effect={id:'pending'};m.effectStatus='pending';
-   m.text='山札の並べ替えは未実装です。';
+   m.effect={id:'future-sight'};
+   m.text='対象を選んだあと、山札の上から3枚を確認し、好きな順番で戻す。';
   }
   else m.text='記載されたダメージを与える。';
   return m;
@@ -139,8 +151,11 @@ export function attackDamage(g,p,move,{recoil=false,target=null}={}){
  if(mon.status==='やけど'&&!ability(g,p,'こんじょう'))n=1;
  return n;
 }
-export function receivedDamage(g,p,n,{defender=false}={}){
+export function receivedDamage(g,p,n,{defender=false,marvelScale=false}={}){
  if(ability(g,p,'どんかん')&&g.players[g.turn]?.id!==p.id&&active(p).damagedTurn===g.turnNumber)return 0;
+ const mon=active(p);
+ if(n>0&&mon.hp===mon.maxHp&&ability(g,p,'マルチスケイル'))return 1;
+ if(n>=2&&marvelScale&&mon.status&&ability(g,p,'ふしぎなうろこ'))n--;
  return Math.max(0,defender&&active(p)?.status!=='まひ'?Math.min(1,n):n);
 }
 export function canDodge(g,p,card){return card?.type==='dodge'||(ability(g,p,'ふゆう')&&rain.includes(card?.weather));}

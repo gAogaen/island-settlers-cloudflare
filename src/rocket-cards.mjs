@@ -62,11 +62,11 @@ ROCKET_POKEMON_CARDS.push({
   id:'promo-dragonite', cardId:'promo-dragonite', familyId:'dratini-line',
   name:'カイリュー', species:'カイリュー', type:'ドラゴン', cardType:'バランス型', level:3,
   hp:8, greenHp:8, redHp:4, move:'りゅうせいぐん',
-  attacks:[{name:'りゅうせいぐん',damage:2,text:'左右のバトルエリアにいるポケモンが対象。追加効果の処理は未登録です。',weather:null,effect:null}],
+  attacks:[{name:'りゅうせいぐん',damage:2,text:'左右のポケモンを最大2匹選ぶ。せんせいのツメで対象範囲を拡張できる。プラスパワーとスピーダーは無効で、回避できない。',weather:null,effect:null}],
   levels:[
-    {level:1,name:'ミニリュウ',cardType:'バランス型',hp:3,greenHp:null,redHp:3,cardImage:'/assets/rocket/cards/evolution/dratini-q2.webp',ability:'ふしぎなうろこ',abilityText:'相手の番でも使える。特殊状態のこのポケモンが2以上のダメージを受けたとき、そのダメージを1減らすことができる。',attacks:[{name:'たつまき',damage:1,text:'技の追加効果はカード画像を確認してください。',weather:null,effect:null}]},
-    {level:2,name:'ハクリュー',cardType:'バランス型',hp:3,greenHp:null,redHp:3,cardImage:'/assets/rocket/cards/evolution/dragonair-q2.webp',ability:'ふしぎなうろこ',abilityText:'相手の番でも使える。特殊状態のこのポケモンが2以上のダメージを受けたとき、そのダメージを1減らすことができる。',attacks:[{name:'りゅうのいかり',damage:2,text:'対象・どうぐ・回避に関する追加効果があります。正確な効果処理は未登録です。',weather:null,effect:null}]},
-    {level:3,name:'カイリュー',cardType:'バランス型',hp:4,basicHp:8,greenHp:8,redHp:4,cardImage:'/assets/rocket/cards/evolution/dragonite-q2.webp',ability:'マルチスケイル',abilityText:'バトルエリアにいる間続く。HPが満タンのこのポケモンがダメージを受けたとき、そのダメージを1にする。',attacks:[{name:'りゅうせいぐん',damage:2,text:'左右のバトルエリアにいるポケモンが対象。追加効果の処理は未登録です。',weather:null,effect:null}]}
+    {level:1,name:'ミニリュウ',cardType:'バランス型',hp:3,greenHp:null,redHp:3,cardImage:'/assets/rocket/cards/evolution/dratini-q2.webp',ability:'ふしぎなうろこ',abilityText:'相手の番でも使える。特殊状態のこのポケモンが2以上のダメージを受けたとき、そのダメージを1減らすことができる。',attacks:[{name:'たつまき',damage:1,text:'1ダメージを与える。',weather:null,effect:null}]},
+    {level:2,name:'ハクリュー',cardType:'バランス型',hp:3,greenHp:null,redHp:3,cardImage:'/assets/rocket/cards/evolution/dragonair-q2.webp',ability:'ふしぎなうろこ',abilityText:'相手の番でも使える。特殊状態のこのポケモンが2以上のダメージを受けたとき、そのダメージを1減らすことができる。',attacks:[{name:'りゅうのいかり',damage:2,text:'左右のポケモンを1匹選ぶ。せんせいのツメで対象範囲を拡張できる。プラスパワーとスピーダーは無効で、回避できない。',weather:null,effect:null}]},
+    {level:3,name:'カイリュー',cardType:'バランス型',hp:4,basicHp:8,greenHp:8,redHp:4,cardImage:'/assets/rocket/cards/evolution/dragonite-q2.webp',ability:'マルチスケイル',abilityText:'バトルエリアにいる間続く。HPが満タンのこのポケモンがダメージを受けたとき、そのダメージを1にする。',attacks:[{name:'りゅうせいぐん',damage:2,text:'左右のポケモンを最大2匹選ぶ。せんせいのツメで対象範囲を拡張できる。プラスパワーとスピーダーは無効で、回避できない。',weather:null,effect:null}]}
   ],
   ability:'マルチスケイル', abilityText:'バトルエリアにいる間続く。HPが満タンのこのポケモンがダメージを受けたとき、そのダメージを1にする。',
   image:'/assets/rocket/pokemon/149.png', cardImage:'/assets/rocket/cards/evolution/dragonite-q2.webp',
@@ -207,14 +207,14 @@ export const ROCKET_EXPERT_POKEMON_CARDS = ROCKET_LV1_DATA.map(first => {
 });
 const dragonite = ROCKET_POKEMON_CARDS.find(card => card.id === 'promo-dragonite');
 if (dragonite) {
- const levels = dragonite.levels.map(stage => ({
-  ...stage,
-  attacks:stage.attacks.map(move => ({
-   ...move,trigger:'attack',maxTargets:stage.level===3?2:1,
+ dragonite.levels=dragonite.levels.map(stage=>({
+  ...stage,abilityStatus:'implemented',effectStatus:'implemented',
+  attacks:stage.attacks.map(move=>({
+   ...move,trigger:'attack',maxTargets:stage.level===3?2:1,effectStatus:'implemented',
    effect:{id:stage.level===1?'none':'dragon-adjacent'},
   })),
  }));
- ROCKET_EXPERT_POKEMON_CARDS.push({...dragonite,levels});
+ ROCKET_EXPERT_POKEMON_CARDS.push(dragonite);
 }
 for (const image of ROCKET_CARD_IMAGE_ASSETS) {
  const row = [...ROCKET_LV1_DATA,...ROCKET_LV2_DATA,...ROCKET_LV3_DATA].find(row => row.id === image.id);
