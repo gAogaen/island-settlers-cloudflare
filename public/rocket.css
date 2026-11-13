@@ -210,3 +210,5 @@ button{border-color:#c9b990;background:#eee5d2;color:#352f28}
 .rocket-turn-indicator{display:block;width:max-content;max-width:100%;margin:0 auto 4px;padding:3px 7px;border-radius:8px;background:#f6d56d;color:#24151a;font-size:12px;font-weight:900;box-shadow:0 0 0 2px #41212c;white-space:nowrap}
 .trainer.active{outline:3px solid #f6d56d;outline-offset:2px;box-shadow:0 0 18px #f6d56d88}
 .rematch-option{display:flex;align-items:center;gap:8px;margin:8px 0;font-weight:700}
+
+.rocket-action-guide{padding:8px 10px;border-left:4px solid #f6d56d;background:#3c2930;color:#fff8ed;border-radius:6px;line-height:1.5}.rocket-action-guide strong{color:#ffe18a}
