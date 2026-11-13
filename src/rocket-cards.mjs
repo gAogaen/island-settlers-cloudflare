@@ -1,6 +1,6 @@
 // Data registry for the Rocket game. Current records are provisional playtest placeholders.
 // Replace these rows with verified card data when the user supplies the card list/images.
-export const ROCKET_CARD_DATA_VERSION = 2;
+export const ROCKET_CARD_DATA_VERSION = 3;
 
 export const ROCKET_ROLE_CARDS = [
   { id: 'leader', role: 'leader', name: 'ジムリーダー', copies: 1, public: true, image: '/assets/rocket/cards/card_055.webp', provisional: false },
@@ -48,6 +48,23 @@ ROCKET_POKEMON_CARDS.push({
   image:'/assets/rocket/pokemon/089.png', cardImage:'/assets/rocket/cards/card_001.webp', provisional:true
 });
 
+// Dragonite evolution-line promo scans, rectified from the user-provided photos.
+// The printed names and values are legible; complex move effects remain provisional.
+ROCKET_POKEMON_CARDS.push({
+  id:'promo-dragonite', cardId:'promo-dragonite', familyId:'dratini-line',
+  name:'カイリュー', species:'カイリュー', type:'ドラゴン', cardType:'バランス型', level:3,
+  hp:8, greenHp:8, redHp:4, move:'りゅうせいぐん',
+  attacks:[{name:'りゅうせいぐん',damage:2,text:'左右のバトルエリアにいるポケモンが対象。追加効果の処理は未登録です。',weather:null,effect:null}],
+  levels:[
+    {level:1,name:'ミニリュウ',cardType:'バランス型',hp:3,greenHp:null,redHp:3,cardImage:'/assets/rocket/cards/evolution/dratini.webp',ability:'ふしぎなうろこ',abilityText:'相手の番でも使える。特殊状態のこのポケモンが2以上のダメージを受けたとき、そのダメージを1減らすことができる。',attacks:[{name:'たつまき',damage:1,text:'技の追加効果はカード画像を確認してください。',weather:null,effect:null}]},
+    {level:2,name:'ハクリュー',cardType:'バランス型',hp:3,greenHp:null,redHp:3,cardImage:'/assets/rocket/cards/evolution/dragonair.webp',ability:'ふしぎなうろこ',abilityText:'相手の番でも使える。特殊状態のこのポケモンが2以上のダメージを受けたとき、そのダメージを1減らすことができる。',attacks:[{name:'りゅうのいかり',damage:2,text:'対象・どうぐ・回避に関する追加効果があります。正確な効果処理は未登録です。',weather:null,effect:null}]},
+    {level:3,name:'カイリュー',cardType:'バランス型',hp:4,basicHp:8,greenHp:8,redHp:4,cardImage:'/assets/rocket/cards/evolution/dragonite.webp',ability:'マルチスケイル',abilityText:'バトルエリアにいる間続く。HPが満タンのこのポケモンがダメージを受けたとき、そのダメージを1にする。',attacks:[{name:'りゅうせいぐん',damage:2,text:'左右のバトルエリアにいるポケモンが対象。追加効果の処理は未登録です。',weather:null,effect:null}]}
+  ],
+  ability:'マルチスケイル', abilityText:'バトルエリアにいる間続く。HPが満タンのこのポケモンがダメージを受けたとき、そのダメージを1にする。',
+  image:'/assets/rocket/pokemon/149.png', cardImage:'/assets/rocket/cards/evolution/dragonite.webp',
+  provisional:true
+});
+
 export const ROCKET_ROLE_LABELS = Object.fromEntries(ROCKET_ROLE_CARDS.map(card=>[card.role,card.name]));
 
 // Every official-site image from the supplied ZIP is registered here. Names and
@@ -60,5 +77,8 @@ export const ROCKET_CARD_IMAGE_ASSETS = [
   {id:'card_kurae',category:'play',image:'/assets/rocket/cards/card_kurae.webp'},
   {id:'card_yokete',category:'play',image:'/assets/rocket/cards/card_yokete.webp'},
   {id:'card_mew',category:'special',image:'/assets/rocket/cards/card_mew.webp'},
-  {id:'card_mewtwo',category:'special',image:'/assets/rocket/cards/card_mewtwo.webp'}
+  {id:'card_mewtwo',category:'special',image:'/assets/rocket/cards/card_mewtwo.webp'},
+  {id:'promo-dragonite-lv1',category:'pokemon',image:'/assets/rocket/cards/evolution/dratini.webp'},
+  {id:'promo-dragonite-lv2',category:'pokemon',image:'/assets/rocket/cards/evolution/dragonair.webp'},
+  {id:'promo-dragonite-lv3',category:'pokemon',image:'/assets/rocket/cards/evolution/dragonite.webp'}
 ];
