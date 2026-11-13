@@ -51,3 +51,6 @@ jobs:
             test -s "/tmp/${key}-photo.webp"
           done
           curl --fail --silent --show-error --location --retry 3 "https://boardgame.un0wn.workers.dev/catalog-art.js" | grep -q "hannin-photo.webp"
+          curl --fail --silent --show-error --location --retry 3 "https://boardgame.un0wn.workers.dev/assets/rocket/role-rocket.svg" -o /tmp/rocket-role.svg
+          test -s /tmp/rocket-role.svg
+          curl --fail --silent --show-error --location --retry 3 "https://boardgame.un0wn.workers.dev/rocket.html" | grep -q "玄人ルール"

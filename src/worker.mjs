@@ -1,5 +1,6 @@
 import { handleHannin } from './hannin.mjs';
 import { handleChao } from './chao.mjs';
+import { handleRocket } from './rocket.mjs';
 const RESOURCES = ["wood", "brick", "sheep", "wheat", "ore"];
 const COST = {
   road: { wood: 1, brick: 1 },
@@ -19,6 +20,8 @@ export default {
     try {
       const hn=url.pathname.match(/^\/api\/hannin(?:\/([A-Z0-9]{6})(?:\/(join|action))?)?$/i);
       if(hn){const code=hn[1]?.toUpperCase()||randomCode(),route=hn[1]?(hn[2]||'state'):'create';if((route==='state'&&request.method!=='GET')||(route!=='state'&&request.method!=='POST'))return json({error:'操作が正しくありません。'},405);const room=env.ROOMS.get(env.ROOMS.idFromName('hannin:'+code));return room.fetch('https://room/hn/'+route+url.search,request.method==='POST'?{method:'POST',body:JSON.stringify({...await request.json(),code})}:undefined);}
+      const rk=url.pathname.match(/^\/api\/rocket(?:\/([A-Z0-9]{6})(?:\/(join|action))?)?$/i);
+      if(rk){const code=rk[1]?.toUpperCase()||randomCode(),route=rk[1]?(rk[2]||'state'):'create';if((route==='state'&&request.method!=='GET')||(route!=='state'&&request.method!=='POST'))return json({error:'操作が正しくありません。'},405);const room=env.ROOMS.get(env.ROOMS.idFromName('rocket:'+code));return room.fetch('https://room/rk/'+route+url.search,request.method==='POST'?{method:'POST',body:JSON.stringify({...await request.json(),code})}:undefined);}
       const cy=url.pathname.match(/^\/api\/coyote(?:\/([A-Z0-9]{6})(?:\/(join|action))?)?$/i);
       if(cy){
         const code=cy[1]?.toUpperCase()||randomCode(),route=cy[1]?(cy[2]||'state'):'create';
@@ -80,6 +83,7 @@ export class GameRoom {
 
   async handleRequest(request) {
     if(new URL(request.url).pathname.startsWith('/hn/'))return handleHannin(this.storage,request);
+    if(new URL(request.url).pathname.startsWith('/rk/'))return handleRocket(this.storage,request);
     if(new URL(request.url).pathname.startsWith('/cy/'))return handleCoyote(this.storage,request);
     if(new URL(request.url).pathname.startsWith('/chao/'))return handleChao(this.storage,request);
     if(new URL(request.url).pathname.startsWith("/bh/"))return handleBahamut(this.storage,request);
