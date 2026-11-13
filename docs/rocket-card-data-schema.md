@@ -37,3 +37,7 @@ Each `ROCKET_POKEMON_CARDS` row supports `id`, `cardId`, `familyId`, `name`, `sp
 2. All 60 Pokémon cards, including levels, HP, attacks, abilities, and evolution links.
 3. The six role-card copies and player-count setup rules.
 4. Matching image files or URLs, plus any status/equipment marker rules needed to resolve the effects.
+
+## Reference materials
+
+See [`rocket-card-reference-notes.md`](rocket-card-reference-notes.md) and [`references/rocket-card-overview-20261113.png`](references/rocket-card-overview-20261113.png) for the physical card overview photo. Use it alongside the individual card scans; do not infer exact effect text or copy counts from the overview photo.
