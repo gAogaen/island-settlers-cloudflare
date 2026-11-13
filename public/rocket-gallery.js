@@ -36,7 +36,7 @@
     if (!cards) {
       get('galleryCount').textContent = '読み込み中…';
       try {
-        const response = await fetch('/rocket-gallery.json?v=20261113-lv1');
+        const response = await fetch('/rocket-gallery.json?v=20261113-lv2');
         if (!response.ok) throw new Error('load failed');
         cards = await response.json();
       } catch {

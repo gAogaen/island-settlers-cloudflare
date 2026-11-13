@@ -46,3 +46,16 @@
 | カイリュー | `cards/evolution/dragonite.webp` | Lv.3、緑♥8、赤♥4、バランス型、特性「マルチスケイル」、技「りゅうせいぐん」2 |
 
 選択画面と盤面には、玄人ルールのレベルに合った進化段階のカード画像を表示します。技の追加効果は写真だけでは確実に転記できない箇所があるため、画像を原文確認用に併記し、効果処理は未登録のままにしています。
+
+## Lv.2 photo batch (2026-11-13)
+
+IMG_1629(1).jpeg–IMG_1633(1).jpeg: 30 card faces extracted into
+`public/assets/rocket/cards/evolution/*-lv2.webp`. The original text/art is
+retained (no generated reconstruction). Crop corners are recorded in
+`scripts/import-rocket-lv2.py`; metadata is in `src/rocket-lv2-data.mjs`.
+The four previously registered Lv.2 entries are updated by ID, not duplicated.
+Printed names, red HP, role, ability names and move names/base damage are
+transcribed. Weather-dependent and other complex effects remain pending;
+image registration does not mean those gameplay effects are implemented.
+The top borders of IMG_1633 are clipped in the source photo; no missing
+content was reconstructed.

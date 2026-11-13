@@ -131,3 +131,5 @@ button{border-color:#c9b990;background:#eee5d2;color:#352f28}
 .gallery-card{display:flex;flex-direction:column;gap:8px;padding:6px;font-size:.8rem}
 .gallery-card img{display:block;width:100%;aspect-ratio:745/1040;object-fit:contain;border-radius:6px}
 @media(max-width:500px){#galleryGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.effect-controls{width:100%;display:grid;gap:12px;padding:16px;border:1px solid var(--border,#888);border-radius:12px}.effect-controls label{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.effect-controls input[type=checkbox]{width:auto}.effect-move{display:grid;gap:5px}.effect-pending{color:var(--muted,#777);font-size:.85rem}.status-marker{display:block;color:#d76d24}.effect-controls fieldset{display:grid;gap:8px}

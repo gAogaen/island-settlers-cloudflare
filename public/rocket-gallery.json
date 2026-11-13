@@ -1,1 +1,2434 @@
-[{"id": "card_001", "name": "ベトベトン", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_001.webp"}, {"id": "card_002", "name": "パルシェン", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_002.webp"}, {"id": "card_003", "name": "ゲンガー", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_003.webp"}, {"id": "card_004", "name": "ナッシー", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_004.webp"}, {"id": "card_005", "name": "ガラガラ", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_005.webp"}, {"id": "card_006", "name": "マタドガス", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_006.webp"}, {"id": "card_007", "name": "サイドン", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_007.webp"}, {"id": "card_008", "name": "ラッキー", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_008.webp"}, {"id": "card_009", "name": "ガルーラ", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_009.webp"}, {"id": "card_010", "name": "スターミー", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_010.webp"}, {"id": "card_011", "name": "エレブー", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_011.webp"}, {"id": "card_012", "name": "ギャラドス", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_012.webp"}, {"id": "card_013", "name": "ポリゴン", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_013.webp"}, {"id": "card_014", "name": "プテラ", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_014.webp"}, {"id": "card_015", "name": "カビゴン", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_015.webp"}, {"id": "card_016", "name": "フシギバナ", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_016.webp"}, {"id": "card_017", "name": "リザードン", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_017.webp"}, {"id": "card_018", "name": "カメックス", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_018.webp"}, {"id": "card_019", "name": "カモネギ", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_019.webp"}, {"id": "card_020", "name": "ライチュウ", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_020.webp"}, {"id": "card_021", "name": "サンドパン", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_021.webp"}, {"id": "card_022", "name": "ニドキング", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_022.webp"}, {"id": "card_023", "name": "キュウコン", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_023.webp"}, {"id": "card_024", "name": "ペルシアン", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_024.webp"}, {"id": "card_025", "name": "オコリザル", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_025.webp"}, {"id": "card_026", "name": "ゴルダック", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_026.webp"}, {"id": "card_027", "name": "ウインディ", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_027.webp"}, {"id": "card_028", "name": "カイリキー", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_028.webp"}, {"id": "card_029", "name": "ヤドラン", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_029.webp"}, {"id": "card_030", "name": "レアコイル", "weather": null, "level": 3, "category": "pokemon", "image": "/assets/rocket/cards/card_030.webp"}, {"id": "card_031", "name": "ライバルからの挑戦", "weather": "thunderstorm", "level": null, "category": "play", "image": "/assets/rocket/cards/card_031.webp", "observedCopies": 1}, {"id": "card_032", "name": "どくバリ", "weather": "thunderstorm", "level": null, "category": "play", "image": "/assets/rocket/cards/card_032.webp"}, {"id": "card_033", "name": "いのちのたま", "weather": "thunderstorm", "level": null, "category": "play", "image": "/assets/rocket/cards/card_033.webp"}, {"id": "card_034", "name": "おんみつマント", "weather": "thunderstorm", "level": null, "category": "play", "image": "/assets/rocket/cards/card_034.webp"}, {"id": "card_035", "name": "バリヤードのトリック", "weather": "thunderstorm", "level": null, "category": "play", "image": "/assets/rocket/cards/card_035.webp", "observedCopies": 3}, {"id": "card_036", "name": "カモネギのいたずら", "weather": "thunderstorm", "level": null, "category": "play", "image": "/assets/rocket/cards/card_036.webp", "observedCopies": 3}, {"id": "card_037", "name": "プラスパワー／スピーダー", "weather": "thunderstorm", "level": null, "category": "play", "image": "/assets/rocket/cards/card_037.webp", "observedCopies": 3}, {"id": "card_038", "name": "からぶりほけん", "weather": "thunderstorm", "level": null, "category": "play", "image": "/assets/rocket/cards/card_038.webp"}, {"id": "card_039", "name": "ゴツゴツメット", "weather": "thunderstorm", "level": null, "category": "play", "image": "/assets/rocket/cards/card_039.webp"}, {"id": "card_040", "name": "おうじゃのしるし", "weather": "thunderstorm", "level": null, "category": "play", "image": "/assets/rocket/cards/card_040.webp"}, {"id": "card_041", "name": "フリーザーの守り", "weather": "thunderstorm", "level": null, "category": "play", "image": "/assets/rocket/cards/card_041.webp", "observedCopies": 1}, {"id": "card_042", "name": "ちからのハチマキ", "weather": "thunderstorm", "level": null, "category": "play", "image": "/assets/rocket/cards/card_042.webp"}, {"id": "card_043", "name": "せんせいのツメ", "weather": "thunderstorm", "level": null, "category": "play", "image": "/assets/rocket/cards/card_043.webp"}, {"id": "card_044", "name": "きのみ大豊作", "weather": "partly-cloudy", "level": null, "category": "play", "image": "/assets/rocket/cards/card_044.webp", "observedCopies": 2}, {"id": "card_045", "name": "キズぐすり／げんきのかけら", "weather": "partly-cloudy", "level": null, "category": "play", "image": "/assets/rocket/cards/card_045.webp", "observedCopies": 2}, {"id": "card_046", "name": "キズぐすり／なんでもなおし", "weather": "partly-cloudy", "level": null, "category": "play", "image": "/assets/rocket/cards/card_046.webp", "observedCopies": 6}, {"id": "card_047", "name": "プリンのライブ", "weather": "partly-cloudy", "level": null, "category": "play", "image": "/assets/rocket/cards/card_047.webp", "observedCopies": 1}, {"id": "card_048", "name": "ふしぎなアメ／きんのたま", "weather": "partly-cloudy", "level": null, "category": "play", "image": "/assets/rocket/cards/card_048.webp", "observedCopies": 4}, {"id": "card_049", "name": "ディフェンダー／スピーダー", "weather": "rain", "level": null, "category": "play", "image": "/assets/rocket/cards/card_049.webp", "observedCopies": 2}, {"id": "card_050", "name": "かえんだま", "weather": "sunny", "level": null, "category": "play", "image": "/assets/rocket/cards/card_050.webp"}, {"id": "card_051", "name": "ファイヤーからの試練", "weather": "sunny", "level": null, "category": "play", "image": "/assets/rocket/cards/card_051.webp", "observedCopies": 3}, {"id": "card_052", "name": "でんきだま", "weather": "sunny", "level": null, "category": "play", "image": "/assets/rocket/cards/card_052.webp"}, {"id": "card_053", "name": "たべのこし", "weather": "partly-cloudy", "level": null, "category": "play", "image": "/assets/rocket/cards/card_053.webp"}, {"id": "card_054", "name": "サンダーのペナルティ", "weather": "thunderstorm", "level": null, "category": "play", "image": "/assets/rocket/cards/card_054.webp", "observedCopies": 1}, {"id": "card_055", "name": "ジムリーダー", "weather": null, "level": null, "category": "role", "image": "/assets/rocket/cards/card_055.webp"}, {"id": "card_056", "name": "ジムトレーナー", "weather": null, "level": null, "category": "role", "image": "/assets/rocket/cards/card_056.webp"}, {"id": "card_057", "name": "挑戦者", "weather": null, "level": null, "category": "role", "image": "/assets/rocket/cards/card_057.webp"}, {"id": "card_058", "name": "ロケット団員", "weather": null, "level": null, "category": "role", "image": "/assets/rocket/cards/card_058.webp"}, {"id": "covert-cloak-rain", "name": "おんみつマント", "weather": "rain", "category": "play", "image": "/assets/rocket/cards/weather/covert-cloak-rain.webp", "level": null}, {"id": "quick-claw-rain", "name": "せんせいのツメ", "weather": "rain", "category": "play", "image": "/assets/rocket/cards/weather/quick-claw-rain.webp", "level": null}, {"id": "card_mew", "category": "special", "image": "/assets/rocket/cards/card_mew.webp", "name": "ミュウの祝福", "level": null, "weather": "partly-cloudy", "observedCopies": 1}, {"id": "card_mewtwo", "category": "special", "image": "/assets/rocket/cards/card_mewtwo.webp", "name": "ミュウツーのプレッシャー", "level": null, "weather": "partly-cloudy", "observedCopies": 1}, {"id": "bulbasaur-lv1", "name": "フシギダネ", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/bulbasaur-lv1-q2.webp", "cardType": "ディフェンス型", "redHp": 3, "ability": "ようりょくそ", "attacks": [{"name": "やどりぎのタネ", "damage": 1}]}, {"id": "pikachu-lv1", "name": "ピカチュウ", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/pikachu-lv1-q2.webp", "cardType": "アタック型", "redHp": 3, "ability": "せいでんき", "attacks": [{"name": "でんきショック", "damage": 1}]}, {"id": "meowth-lv1", "name": "ニャース", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/meowth-lv1-q2.webp", "cardType": "サポート型", "redHp": 3, "ability": "ものひろい", "attacks": [{"name": "まもる", "damage": 0}]}, {"id": "slowpoke-lv1", "name": "ヤドン", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/slowpoke-lv1-q2.webp", "cardType": "ディフェンス型", "redHp": 3, "ability": "どんかん", "attacks": [{"name": "みずでっぽう", "damage": 2}]}, {"id": "aerodactyl-lv2", "name": "プテラ", "level": 2, "category": "pokemon", "image": "/assets/rocket/cards/evolution/aerodactyl-lv2-q2.webp"}, {"id": "gyarados-lv2", "name": "ギャラドス", "level": 2, "category": "pokemon", "image": "/assets/rocket/cards/evolution/gyarados-lv2-q2.webp"}, {"id": "haunter-lv2", "name": "ゴースト", "level": 2, "category": "pokemon", "image": "/assets/rocket/cards/evolution/haunter-lv2-q2.webp"}, {"id": "pikachu-lv2", "name": "ピカチュウ", "level": 2, "category": "pokemon", "image": "/assets/rocket/cards/evolution/pikachu-lv2-q2.webp"}, {"id": "promo-dragonite-lv1", "category": "pokemon", "image": "/assets/rocket/cards/evolution/dratini-q2.webp", "name": "ミニリュウ", "level": 1}, {"id": "promo-dragonite-lv2", "category": "pokemon", "image": "/assets/rocket/cards/evolution/dragonair-q2.webp", "name": "ハクリュー", "level": 2}, {"id": "promo-dragonite-lv3", "category": "pokemon", "image": "/assets/rocket/cards/evolution/dragonite-q2.webp", "name": "カイリュー", "level": 3}, {"id": "farfetchd-partly-cloudy", "name": "カモネギのいたずら", "weather": "partly-cloudy", "category": "play", "image": "/assets/rocket/cards/weather/farfetchd-partly-cloudy.webp", "observedCopies": 1, "sourcePhoto": "IMG_1614.jpeg"}, {"id": "farfetchd-rain", "name": "カモネギのいたずら", "weather": "rain", "category": "play", "image": "/assets/rocket/cards/weather/farfetchd-rain.webp", "observedCopies": 2, "sourcePhoto": "IMG_1614.jpeg"}, {"id": "mr-mime-sunny", "name": "バリヤードのトリック", "weather": "sunny", "category": "play", "image": "/assets/rocket/cards/weather/mr-mime-sunny.webp", "observedCopies": 2, "sourcePhoto": "IMG_1615.jpeg"}, {"id": "articuno-rain", "name": "フリーザーの守り", "weather": "rain", "category": "play", "image": "/assets/rocket/cards/weather/articuno-rain.webp", "observedCopies": 3, "sourcePhoto": "IMG_1616.jpeg"}, {"id": "jigglypuff-rain", "name": "プリンのライブ", "weather": "rain", "category": "play", "image": "/assets/rocket/cards/weather/jigglypuff-rain.webp", "observedCopies": 1, "sourcePhoto": "IMG_1617.jpeg"}, {"id": "rival-rain", "name": "ライバルからの挑戦", "weather": "rain", "category": "play", "image": "/assets/rocket/cards/weather/rival-rain.webp", "observedCopies": 2, "sourcePhoto": "IMG_1618.jpeg"}, {"id": "plus-power-partly-cloudy", "name": "プラスパワー／スピーダー", "weather": "partly-cloudy", "category": "play", "image": "/assets/rocket/cards/weather/plus-power-partly-cloudy.webp", "observedCopies": 2, "sourcePhoto": "IMG_1619.jpeg"}, {"id": "plus-power-rain", "name": "プラスパワー／スピーダー", "weather": "rain", "category": "play", "image": "/assets/rocket/cards/weather/plus-power-rain.webp", "observedCopies": 1, "sourcePhoto": "IMG_1619.jpeg"}, {"id": "potion-full-heal-sunny", "name": "キズぐすり／なんでもなおし", "weather": "sunny", "category": "play", "image": "/assets/rocket/cards/weather/potion-full-heal-sunny.webp", "observedCopies": 2, "sourcePhoto": "IMG_1621.jpeg"}, {"id": "attack-sunny", "name": "くらえ！", "weather": "sunny", "copies": 6, "category": "play", "image": "/assets/rocket/cards/weather/attack-sunny.webp"}, {"id": "attack-partly-cloudy", "name": "くらえ！", "weather": "partly-cloudy", "copies": 3, "category": "play", "image": "/assets/rocket/cards/weather/attack-partly-cloudy.webp"}, {"id": "attack-rain", "name": "くらえ！", "weather": "rain", "copies": 14, "category": "play", "image": "/assets/rocket/cards/weather/attack-rain.webp"}, {"id": "attack-thunderstorm", "name": "くらえ！", "weather": "thunderstorm", "copies": 7, "category": "play", "image": "/assets/rocket/cards/card_kurae.webp"}, {"id": "dodge-sunny", "name": "よけて！", "weather": "sunny", "copies": 12, "category": "play", "image": "/assets/rocket/cards/weather/dodge-sunny.webp"}, {"id": "dodge-partly-cloudy", "name": "よけて！", "weather": "partly-cloudy", "copies": 3, "category": "play", "image": "/assets/rocket/cards/card_yokete.webp"}, {"id": "charmander-lv1", "name": "ヒトカゲ", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/charmander-lv1.webp", "cardType": "アタック型", "redHp": 3, "ability": "もうか", "attacks": [{"name": "ひのこ", "damage": 1}]}, {"id": "squirtle-lv1", "name": "ゼニガメ", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/squirtle-lv1.webp", "cardType": "バランス型", "redHp": 3, "ability": "あめうけざら", "attacks": [{"name": "みずでっぽう", "damage": 2}]}, {"id": "pidgey-lv1", "name": "ポッポ", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/pidgey-lv1.webp", "cardType": "アタック型", "redHp": 3, "ability": "するどいめ", "attacks": [{"name": "たいあたり", "damage": 1}]}, {"id": "nidoran-m-lv1", "name": "ニドラン♂", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/nidoran-m-lv1.webp", "cardType": "アタック型", "redHp": 3, "ability": "どくのトゲ", "attacks": [{"name": "にどげり", "damage": 1}]}, {"id": "mankey-lv1", "name": "マンキー", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/mankey-lv1.webp", "cardType": "バランス型", "redHp": 3, "ability": "まけんき", "attacks": [{"name": "ひっかく", "damage": 2}]}, {"id": "psyduck-lv1", "name": "コダック", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/psyduck-lv1.webp", "cardType": "ぼうがい型", "redHp": 3, "ability": "すいすい", "attacks": [{"name": "あわ", "damage": 1}]}, {"id": "growlithe-lv1", "name": "ガーディ", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/growlithe-lv1.webp", "cardType": "バランス型", "redHp": 3, "ability": "せいぎのこころ", "attacks": [{"name": "ほのおのキバ", "damage": 2}]}, {"id": "sandshrew-lv1", "name": "サンド", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/sandshrew-lv1.webp", "cardType": "ぼうがい型", "redHp": 3, "ability": "すながくれ", "attacks": [{"name": "どくばり", "damage": 1}]}, {"id": "machop-lv1", "name": "ワンリキー", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/machop-lv1.webp", "cardType": "アタック型", "redHp": 3, "ability": "こんじょう", "attacks": [{"name": "いわくだき", "damage": 1}]}, {"id": "magnemite-lv1", "name": "コイル", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/magnemite-lv1.webp", "cardType": "ぼうがい型", "redHp": 3, "ability": "アナライズ", "attacks": [{"name": "でんきショック", "damage": 1}]}, {"id": "shellder-lv1", "name": "シェルダー", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/shellder-lv1.webp", "cardType": "アタック型", "redHp": 3, "ability": "スキルリンク", "attacks": [{"name": "たいあたり", "damage": 1}]}, {"id": "gastly-lv1", "name": "ゴース", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/gastly-lv1.webp", "cardType": "アタック型", "redHp": 3, "ability": "ふゆう", "attacks": [{"name": "したでなめる", "damage": 1}]}, {"id": "exeggcute-lv1", "name": "タマタマ", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/exeggcute-lv1.webp", "cardType": "アタック型", "redHp": 3, "ability": "しゅうかく", "attacks": [{"name": "やどりぎのタネ", "damage": 1}]}, {"id": "cubone-lv1", "name": "カラカラ", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/cubone-lv1.webp", "cardType": "ディフェンス型", "redHp": 3, "ability": "カブトアーマー", "attacks": [{"name": "たいあたり", "damage": 1}]}, {"id": "koffing-lv1", "name": "ドガース", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/koffing-lv1.webp", "cardType": "バランス型", "redHp": 3, "ability": "かがくへんかガス", "attacks": [{"name": "アシッドボム", "damage": 2}]}, {"id": "rhyhorn-lv1", "name": "サイホーン", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/rhyhorn-lv1.webp", "cardType": "アタック型", "redHp": 3, "ability": "すてみ", "attacks": [{"name": "いわおとし", "damage": 1}]}, {"id": "chansey-lv1", "name": "ラッキー", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/chansey-lv1.webp", "cardType": "サポート型", "redHp": 3, "ability": "いやしのこころ", "attacks": [{"name": "あまえる", "damage": 0}]}, {"id": "kangaskhan-lv1", "name": "ガルーラ", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/kangaskhan-lv1.webp", "cardType": "アタック型", "redHp": 3, "ability": "はやおき", "attacks": [{"name": "ねこだまし", "damage": 1}]}, {"id": "staryu-lv1", "name": "ヒトデマン", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/staryu-lv1.webp", "cardType": "バランス型", "redHp": 3, "ability": "はっこう", "attacks": [{"name": "みずでっぽう", "damage": 2}]}, {"id": "electabuzz-lv1", "name": "エレブー", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/electabuzz-lv1.webp", "cardType": "バランス型", "redHp": 3, "ability": "やるき", "attacks": [{"name": "でんげきは", "damage": 2}]}, {"id": "vulpix-lv1", "name": "ロコン", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/vulpix-lv1.webp", "cardType": "ぼうがい型", "redHp": 3, "ability": "ひでり", "attacks": [{"name": "ひのこ", "damage": 1}]}, {"id": "magikarp-lv1", "name": "コイキング", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/magikarp-lv1.webp", "cardType": "アタック型", "redHp": 3, "ability": "びびり", "attacks": [{"name": "はねる", "damage": 0}]}, {"id": "grimer-lv1", "name": "ベトベター", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/grimer-lv1.webp", "cardType": "ぼうがい型", "redHp": 3, "ability": "どくしゅ", "attacks": [{"name": "はたく", "damage": 1}]}, {"id": "porygon-lv1", "name": "ポリゴン", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/porygon-lv1.webp", "cardType": "ぼうがい型", "redHp": 3, "ability": "ダウンロード", "attacks": [{"name": "でんきショック", "damage": 1}]}, {"id": "snorlax-lv1", "name": "カビゴン", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/snorlax-lv1.webp", "cardType": "ディフェンス型", "redHp": 4, "ability": "くいしんぼう", "attacks": [{"name": "たいあたり", "damage": 1}]}, {"id": "aerodactyl-lv1", "name": "プテラ", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/aerodactyl-lv1.webp", "cardType": "アタック型", "redHp": 3, "ability": "プレッシャー", "attacks": [{"name": "つばさでうつ", "damage": 2}]}]
+[
+  {
+    "id": "card_001",
+    "name": null,
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_001.webp"
+  },
+  {
+    "id": "card_002",
+    "name": null,
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_002.webp"
+  },
+  {
+    "id": "card_003",
+    "name": "ゲンガー",
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_003.webp"
+  },
+  {
+    "id": "card_004",
+    "name": null,
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_004.webp"
+  },
+  {
+    "id": "card_005",
+    "name": null,
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_005.webp"
+  },
+  {
+    "id": "card_006",
+    "name": null,
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_006.webp"
+  },
+  {
+    "id": "card_007",
+    "name": null,
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_007.webp"
+  },
+  {
+    "id": "card_008",
+    "name": null,
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_008.webp"
+  },
+  {
+    "id": "card_009",
+    "name": null,
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_009.webp"
+  },
+  {
+    "id": "card_010",
+    "name": "スターミー",
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_010.webp"
+  },
+  {
+    "id": "card_011",
+    "name": null,
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_011.webp"
+  },
+  {
+    "id": "card_012",
+    "name": "ギャラドス",
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_012.webp"
+  },
+  {
+    "id": "card_013",
+    "name": null,
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_013.webp"
+  },
+  {
+    "id": "card_014",
+    "name": "プテラ",
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_014.webp"
+  },
+  {
+    "id": "card_015",
+    "name": "カビゴン",
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_015.webp"
+  },
+  {
+    "id": "card_016",
+    "name": null,
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_016.webp"
+  },
+  {
+    "id": "card_017",
+    "name": "リザードン",
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_017.webp"
+  },
+  {
+    "id": "card_018",
+    "name": null,
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_018.webp"
+  },
+  {
+    "id": "card_019",
+    "name": null,
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_019.webp"
+  },
+  {
+    "id": "card_020",
+    "name": "ライチュウ",
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_020.webp"
+  },
+  {
+    "id": "card_021",
+    "name": null,
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_021.webp"
+  },
+  {
+    "id": "card_022",
+    "name": null,
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_022.webp"
+  },
+  {
+    "id": "card_023",
+    "name": null,
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_023.webp"
+  },
+  {
+    "id": "card_024",
+    "name": null,
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_024.webp"
+  },
+  {
+    "id": "card_025",
+    "name": null,
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_025.webp"
+  },
+  {
+    "id": "card_026",
+    "name": null,
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_026.webp"
+  },
+  {
+    "id": "card_027",
+    "name": null,
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_027.webp"
+  },
+  {
+    "id": "card_028",
+    "name": null,
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_028.webp"
+  },
+  {
+    "id": "card_029",
+    "name": null,
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_029.webp"
+  },
+  {
+    "id": "card_030",
+    "name": null,
+    "weather": null,
+    "level": 3,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/card_030.webp"
+  },
+  {
+    "id": "card_031",
+    "name": "ライバルからの挑戦",
+    "weather": "thunderstorm",
+    "level": null,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_031.webp",
+    "observedCopies": 1
+  },
+  {
+    "id": "card_032",
+    "name": "どくバリ",
+    "weather": "thunderstorm",
+    "level": null,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_032.webp"
+  },
+  {
+    "id": "card_033",
+    "name": "いのちのたま",
+    "weather": "thunderstorm",
+    "level": null,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_033.webp"
+  },
+  {
+    "id": "card_034",
+    "name": "おんみつマント",
+    "weather": "thunderstorm",
+    "level": null,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_034.webp"
+  },
+  {
+    "id": "card_035",
+    "name": "バリヤードのトリック",
+    "weather": "thunderstorm",
+    "level": null,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_035.webp",
+    "observedCopies": 3
+  },
+  {
+    "id": "card_036",
+    "name": "カモネギのいたずら",
+    "weather": "thunderstorm",
+    "level": null,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_036.webp",
+    "observedCopies": 3
+  },
+  {
+    "id": "card_037",
+    "name": "プラスパワー／スピーダー",
+    "weather": "thunderstorm",
+    "level": null,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_037.webp",
+    "observedCopies": 3
+  },
+  {
+    "id": "card_038",
+    "name": "からぶりほけん",
+    "weather": "thunderstorm",
+    "level": null,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_038.webp"
+  },
+  {
+    "id": "card_039",
+    "name": "ゴツゴツメット",
+    "weather": "thunderstorm",
+    "level": null,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_039.webp"
+  },
+  {
+    "id": "card_040",
+    "name": "おうじゃのしるし",
+    "weather": "thunderstorm",
+    "level": null,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_040.webp"
+  },
+  {
+    "id": "card_041",
+    "name": "フリーザーの守り",
+    "weather": "thunderstorm",
+    "level": null,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_041.webp",
+    "observedCopies": 1
+  },
+  {
+    "id": "card_042",
+    "name": "ちからのハチマキ",
+    "weather": "thunderstorm",
+    "level": null,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_042.webp"
+  },
+  {
+    "id": "card_043",
+    "name": "せんせいのツメ",
+    "weather": "thunderstorm",
+    "level": null,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_043.webp"
+  },
+  {
+    "id": "card_044",
+    "name": "きのみ大豊作",
+    "weather": "partly-cloudy",
+    "level": null,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_044.webp",
+    "observedCopies": 2
+  },
+  {
+    "id": "card_045",
+    "name": "キズぐすり／げんきのかけら",
+    "weather": "partly-cloudy",
+    "level": null,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_045.webp",
+    "observedCopies": 2
+  },
+  {
+    "id": "card_046",
+    "name": "キズぐすり／なんでもなおし",
+    "weather": "partly-cloudy",
+    "level": null,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_046.webp",
+    "observedCopies": 6
+  },
+  {
+    "id": "card_047",
+    "name": "プリンのライブ",
+    "weather": "partly-cloudy",
+    "level": null,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_047.webp",
+    "observedCopies": 1
+  },
+  {
+    "id": "card_048",
+    "name": "ふしぎなアメ／きんのたま",
+    "weather": "partly-cloudy",
+    "level": null,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_048.webp",
+    "observedCopies": 4
+  },
+  {
+    "id": "card_049",
+    "name": "ディフェンダー／スピーダー",
+    "weather": "rain",
+    "level": null,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_049.webp",
+    "observedCopies": 2
+  },
+  {
+    "id": "card_050",
+    "name": "かえんだま",
+    "weather": "sunny",
+    "level": null,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_050.webp"
+  },
+  {
+    "id": "card_051",
+    "name": "ファイヤーからの試練",
+    "weather": "sunny",
+    "level": null,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_051.webp",
+    "observedCopies": 3
+  },
+  {
+    "id": "card_052",
+    "name": "でんきだま",
+    "weather": "sunny",
+    "level": null,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_052.webp"
+  },
+  {
+    "id": "card_053",
+    "name": "たべのこし",
+    "weather": "partly-cloudy",
+    "level": null,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_053.webp"
+  },
+  {
+    "id": "card_054",
+    "name": "サンダーのペナルティ",
+    "weather": "thunderstorm",
+    "level": null,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_054.webp",
+    "observedCopies": 1
+  },
+  {
+    "id": "card_055",
+    "name": null,
+    "weather": null,
+    "level": null,
+    "category": "role",
+    "image": "/assets/rocket/cards/card_055.webp"
+  },
+  {
+    "id": "card_056",
+    "name": null,
+    "weather": null,
+    "level": null,
+    "category": "role",
+    "image": "/assets/rocket/cards/card_056.webp"
+  },
+  {
+    "id": "card_057",
+    "name": null,
+    "weather": null,
+    "level": null,
+    "category": "role",
+    "image": "/assets/rocket/cards/card_057.webp"
+  },
+  {
+    "id": "card_058",
+    "name": null,
+    "weather": null,
+    "level": null,
+    "category": "role",
+    "image": "/assets/rocket/cards/card_058.webp"
+  },
+  {
+    "id": "covert-cloak-rain",
+    "name": "おんみつマント",
+    "weather": "rain",
+    "category": "play",
+    "image": "/assets/rocket/cards/weather/covert-cloak-rain.webp",
+    "level": null
+  },
+  {
+    "id": "quick-claw-rain",
+    "name": "せんせいのツメ",
+    "weather": "rain",
+    "category": "play",
+    "image": "/assets/rocket/cards/weather/quick-claw-rain.webp",
+    "level": null
+  },
+  {
+    "id": "card_mew",
+    "category": "special",
+    "image": "/assets/rocket/cards/card_mew.webp",
+    "name": "ミュウの祝福",
+    "level": null,
+    "weather": "partly-cloudy",
+    "observedCopies": 1
+  },
+  {
+    "id": "card_mewtwo",
+    "category": "special",
+    "image": "/assets/rocket/cards/card_mewtwo.webp",
+    "name": "ミュウツーのプレッシャー",
+    "level": null,
+    "weather": "partly-cloudy",
+    "observedCopies": 1
+  },
+  {
+    "id": "bulbasaur-lv1",
+    "name": "フシギダネ",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/bulbasaur-lv1-q2.webp",
+    "cardType": "ディフェンス型",
+    "redHp": 3,
+    "ability": "ようりょくそ",
+    "attacks": [
+      {
+        "name": "やどりぎのタネ",
+        "damage": 1,
+        "trigger": "attack",
+        "effect": {
+          "id": "drain",
+          "amount": 1
+        },
+        "effectStatus": "implemented",
+        "text": "ダメージを与えたとき、自分のHPを1回復。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/bulbasaur-lv1-q2.webp",
+    "sourcePhoto": "IMG_1624.jpeg",
+    "effectStatus": "partial",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "pikachu-lv1",
+    "name": "ピカチュウ",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/pikachu-lv1-q2.webp",
+    "cardType": "アタック型",
+    "redHp": 3,
+    "ability": "せいでんき",
+    "attacks": [
+      {
+        "name": "でんきショック",
+        "damage": 1,
+        "trigger": "attack",
+        "effect": {
+          "id": "pending"
+        },
+        "effectStatus": "pending",
+        "text": "追加効果は自動処理未対応です。カード画像で確認してください。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/pikachu-lv1-q2.webp",
+    "sourcePhoto": "IMG_1624.jpeg",
+    "effectStatus": "partial",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "meowth-lv1",
+    "name": "ニャース",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/meowth-lv1-q2.webp",
+    "cardType": "サポート型",
+    "redHp": 3,
+    "ability": "ものひろい",
+    "attacks": [
+      {
+        "name": "まもる",
+        "damage": 0,
+        "trigger": "weather",
+        "effect": {
+          "id": "defender"
+        },
+        "effectStatus": "implemented",
+        "costWeather": [
+          "sunny",
+          "partly-cloudy"
+        ],
+        "text": "ディフェンダーがなければ1つ置く。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/meowth-lv1-q2.webp",
+    "sourcePhoto": "IMG_1625.jpeg",
+    "effectStatus": "implemented",
+    "abilityText": "ドローステップ以外で山札から引くとき、追加で1枚引く（各トレーナーの番に1回）。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "slowpoke-lv1",
+    "name": "ヤドン",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/slowpoke-lv1-q2.webp",
+    "cardType": "ディフェンス型",
+    "redHp": 3,
+    "ability": "どんかん",
+    "attacks": [
+      {
+        "name": "みずでっぽう",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "none"
+        },
+        "effectStatus": "implemented",
+        "text": "記載されたダメージを与える。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/slowpoke-lv1-q2.webp",
+    "sourcePhoto": "IMG_1626.jpeg",
+    "effectStatus": "implemented",
+    "abilityText": "自分の番以外にダメージを受けた後、その番は追加のダメージを受けない。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "aerodactyl-lv2",
+    "name": "プテラ",
+    "level": 2,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/aerodactyl-lv2.webp",
+    "cardType": "アタック型",
+    "redHp": 4,
+    "greenHp": null,
+    "ability": "プレッシャー",
+    "attacks": [
+      {
+        "name": "かみつく",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "pending"
+        },
+        "effectStatus": "pending",
+        "text": "追加効果は自動処理未対応です。カード画像で確認してください。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/aerodactyl-lv2.webp",
+    "sourcePhoto": "IMG_1633(1).jpeg",
+    "effectStatus": "partial",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "gyarados-lv2",
+    "name": "ギャラドス",
+    "level": 2,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/gyarados-lv2.webp",
+    "cardType": "アタック型",
+    "redHp": 4,
+    "greenHp": null,
+    "ability": "じしんかじょう",
+    "attacks": [
+      {
+        "name": "たきのぼり",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "pending"
+        },
+        "effectStatus": "pending",
+        "text": "追加効果は自動処理未対応です。カード画像で確認してください。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/gyarados-lv2.webp",
+    "sourcePhoto": "IMG_1633(1).jpeg",
+    "effectStatus": "partial",
+    "abilityText": "自分が「くらえ！」の効果を選んだ後、山札から1枚引く。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "haunter-lv2",
+    "name": "ゴースト",
+    "level": 2,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/haunter-lv2.webp",
+    "cardType": "アタック型",
+    "redHp": 3,
+    "greenHp": null,
+    "ability": "ふゆう",
+    "attacks": [
+      {
+        "name": "シャドーボール",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "pending"
+        },
+        "effectStatus": "pending",
+        "text": "追加効果は自動処理未対応です。カード画像で確認してください。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/haunter-lv2.webp",
+    "sourcePhoto": "IMG_1631(1).jpeg",
+    "effectStatus": "partial",
+    "abilityText": "雨・雷雨の手札を「よけて！」の代わりに使える。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "pikachu-lv2",
+    "name": "ピカチュウ",
+    "level": 2,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/pikachu-lv2.webp",
+    "cardType": "アタック型",
+    "redHp": 3,
+    "greenHp": null,
+    "ability": "せいでんき",
+    "attacks": [
+      {
+        "name": "１０まんボルト",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "pending"
+        },
+        "effectStatus": "pending",
+        "text": "追加効果は自動処理未対応です。カード画像で確認してください。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/pikachu-lv2.webp",
+    "sourcePhoto": "IMG_1629(1).jpeg",
+    "effectStatus": "partial",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "promo-dragonite-lv1",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/dratini-q2.webp",
+    "name": "ミニリュウ",
+    "level": 1
+  },
+  {
+    "id": "promo-dragonite-lv2",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/dragonair-q2.webp",
+    "name": "ハクリュー",
+    "level": 2
+  },
+  {
+    "id": "promo-dragonite-lv3",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/dragonite-q2.webp",
+    "name": "カイリュー",
+    "level": 3
+  },
+  {
+    "id": "farfetchd-partly-cloudy",
+    "name": "カモネギのいたずら",
+    "weather": "partly-cloudy",
+    "category": "play",
+    "image": "/assets/rocket/cards/weather/farfetchd-partly-cloudy.webp",
+    "observedCopies": 1,
+    "sourcePhoto": "IMG_1614.jpeg"
+  },
+  {
+    "id": "farfetchd-rain",
+    "name": "カモネギのいたずら",
+    "weather": "rain",
+    "category": "play",
+    "image": "/assets/rocket/cards/weather/farfetchd-rain.webp",
+    "observedCopies": 2,
+    "sourcePhoto": "IMG_1614.jpeg"
+  },
+  {
+    "id": "mr-mime-sunny",
+    "name": "バリヤードのトリック",
+    "weather": "sunny",
+    "category": "play",
+    "image": "/assets/rocket/cards/weather/mr-mime-sunny.webp",
+    "observedCopies": 2,
+    "sourcePhoto": "IMG_1615.jpeg"
+  },
+  {
+    "id": "articuno-rain",
+    "name": "フリーザーの守り",
+    "weather": "rain",
+    "category": "play",
+    "image": "/assets/rocket/cards/weather/articuno-rain.webp",
+    "observedCopies": 3,
+    "sourcePhoto": "IMG_1616.jpeg"
+  },
+  {
+    "id": "jigglypuff-rain",
+    "name": "プリンのライブ",
+    "weather": "rain",
+    "category": "play",
+    "image": "/assets/rocket/cards/weather/jigglypuff-rain.webp",
+    "observedCopies": 1,
+    "sourcePhoto": "IMG_1617.jpeg"
+  },
+  {
+    "id": "rival-rain",
+    "name": "ライバルからの挑戦",
+    "weather": "rain",
+    "category": "play",
+    "image": "/assets/rocket/cards/weather/rival-rain.webp",
+    "observedCopies": 2,
+    "sourcePhoto": "IMG_1618.jpeg"
+  },
+  {
+    "id": "plus-power-partly-cloudy",
+    "name": "プラスパワー／スピーダー",
+    "weather": "partly-cloudy",
+    "category": "play",
+    "image": "/assets/rocket/cards/weather/plus-power-partly-cloudy.webp",
+    "observedCopies": 2,
+    "sourcePhoto": "IMG_1619.jpeg"
+  },
+  {
+    "id": "plus-power-rain",
+    "name": "プラスパワー／スピーダー",
+    "weather": "rain",
+    "category": "play",
+    "image": "/assets/rocket/cards/weather/plus-power-rain.webp",
+    "observedCopies": 1,
+    "sourcePhoto": "IMG_1619.jpeg"
+  },
+  {
+    "id": "potion-full-heal-sunny",
+    "name": "キズぐすり／なんでもなおし",
+    "weather": "sunny",
+    "category": "play",
+    "image": "/assets/rocket/cards/weather/potion-full-heal-sunny.webp",
+    "observedCopies": 2,
+    "sourcePhoto": "IMG_1621.jpeg"
+  },
+  {
+    "id": "attack-sunny",
+    "name": "くらえ！",
+    "weather": "sunny",
+    "copies": 6,
+    "category": "play",
+    "image": "/assets/rocket/cards/weather/attack-sunny.webp"
+  },
+  {
+    "id": "attack-partly-cloudy",
+    "name": "くらえ！",
+    "weather": "partly-cloudy",
+    "copies": 3,
+    "category": "play",
+    "image": "/assets/rocket/cards/weather/attack-partly-cloudy.webp"
+  },
+  {
+    "id": "attack-rain",
+    "name": "くらえ！",
+    "weather": "rain",
+    "copies": 14,
+    "category": "play",
+    "image": "/assets/rocket/cards/weather/attack-rain.webp"
+  },
+  {
+    "id": "attack-thunderstorm",
+    "name": "くらえ！",
+    "weather": "thunderstorm",
+    "copies": 7,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_kurae.webp"
+  },
+  {
+    "id": "dodge-sunny",
+    "name": "よけて！",
+    "weather": "sunny",
+    "copies": 12,
+    "category": "play",
+    "image": "/assets/rocket/cards/weather/dodge-sunny.webp"
+  },
+  {
+    "id": "dodge-partly-cloudy",
+    "name": "よけて！",
+    "weather": "partly-cloudy",
+    "copies": 3,
+    "category": "play",
+    "image": "/assets/rocket/cards/card_yokete.webp"
+  },
+  {
+    "id": "charmander-lv1",
+    "name": "ヒトカゲ",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/charmander-lv1.webp",
+    "cardType": "アタック型",
+    "redHp": 3,
+    "ability": "もうか",
+    "attacks": [
+      {
+        "name": "ひのこ",
+        "damage": 1,
+        "trigger": "attack",
+        "effect": {
+          "id": "weather-status",
+          "weather": [
+            "sunny"
+          ],
+          "status": "やけど"
+        },
+        "effectStatus": "implemented",
+        "text": "ダメージ後のおてんきチェックが晴れなら、やけど。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/charmander-lv1.webp",
+    "sourcePhoto": "IMG_1624.jpeg",
+    "effectStatus": "implemented",
+    "abilityText": "HPが半分以下なら、技のダメージを2増やす。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "squirtle-lv1",
+    "name": "ゼニガメ",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/squirtle-lv1.webp",
+    "cardType": "バランス型",
+    "redHp": 3,
+    "ability": "あめうけざら",
+    "attacks": [
+      {
+        "name": "みずでっぽう",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "none"
+        },
+        "effectStatus": "implemented",
+        "text": "記載されたダメージを与える。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/squirtle-lv1.webp",
+    "sourcePhoto": "IMG_1624.jpeg",
+    "effectStatus": "partial",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "pidgey-lv1",
+    "name": "ポッポ",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/pidgey-lv1.webp",
+    "cardType": "アタック型",
+    "redHp": 3,
+    "ability": "するどいめ",
+    "attacks": [
+      {
+        "name": "たいあたり",
+        "damage": 1,
+        "trigger": "attack",
+        "effect": {
+          "id": "none"
+        },
+        "effectStatus": "implemented",
+        "text": "記載されたダメージを与える。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/pidgey-lv1.webp",
+    "sourcePhoto": "IMG_1624.jpeg",
+    "effectStatus": "implemented",
+    "abilityText": "技はよけられない。相手が「よけて！」を使った場合、ダメージを1減らす。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "nidoran-m-lv1",
+    "name": "ニドラン♂",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/nidoran-m-lv1.webp",
+    "cardType": "アタック型",
+    "redHp": 3,
+    "ability": "どくのトゲ",
+    "attacks": [
+      {
+        "name": "にどげり",
+        "damage": 1,
+        "trigger": "attack",
+        "effect": {
+          "id": "double-hit"
+        },
+        "effectStatus": "implemented",
+        "text": "同じポケモンに2回攻撃。回避は各攻撃に1枚必要。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/nidoran-m-lv1.webp",
+    "sourcePhoto": "IMG_1624.jpeg",
+    "effectStatus": "partial",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "mankey-lv1",
+    "name": "マンキー",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/mankey-lv1.webp",
+    "cardType": "バランス型",
+    "redHp": 3,
+    "ability": "まけんき",
+    "attacks": [
+      {
+        "name": "ひっかく",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "none"
+        },
+        "effectStatus": "implemented",
+        "text": "記載されたダメージを与える。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/mankey-lv1.webp",
+    "sourcePhoto": "IMG_1625.jpeg",
+    "effectStatus": "partial",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "psyduck-lv1",
+    "name": "コダック",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/psyduck-lv1.webp",
+    "cardType": "ぼうがい型",
+    "redHp": 3,
+    "ability": "すいすい",
+    "attacks": [
+      {
+        "name": "あわ",
+        "damage": 1,
+        "trigger": "attack",
+        "effect": {
+          "id": "remove-marker-after",
+          "markers": [
+            "plusPower",
+            "speeder"
+          ]
+        },
+        "effectStatus": "implemented",
+        "text": "ダメージ後、相手のプラスパワーまたはスピーダーを1つ取り除く。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/psyduck-lv1.webp",
+    "sourcePhoto": "IMG_1625.jpeg",
+    "effectStatus": "partial",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "growlithe-lv1",
+    "name": "ガーディ",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/growlithe-lv1.webp",
+    "cardType": "バランス型",
+    "redHp": 3,
+    "ability": "せいぎのこころ",
+    "attacks": [
+      {
+        "name": "ほのおのキバ",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "none"
+        },
+        "effectStatus": "implemented",
+        "text": "記載されたダメージを与える。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/growlithe-lv1.webp",
+    "sourcePhoto": "IMG_1625.jpeg",
+    "effectStatus": "partial",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "sandshrew-lv1",
+    "name": "サンド",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/sandshrew-lv1.webp",
+    "cardType": "ぼうがい型",
+    "redHp": 3,
+    "ability": "すながくれ",
+    "attacks": [
+      {
+        "name": "どくばり",
+        "damage": 1,
+        "trigger": "attack",
+        "effect": {
+          "id": "pending"
+        },
+        "effectStatus": "pending",
+        "text": "追加効果は自動処理未対応です。カード画像で確認してください。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/sandshrew-lv1.webp",
+    "sourcePhoto": "IMG_1625.jpeg",
+    "effectStatus": "partial",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "machop-lv1",
+    "name": "ワンリキー",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/machop-lv1.webp",
+    "cardType": "アタック型",
+    "redHp": 3,
+    "ability": "こんじょう",
+    "attacks": [
+      {
+        "name": "いわくだき",
+        "damage": 1,
+        "trigger": "attack",
+        "effect": {
+          "id": "remove-marker-before"
+        },
+        "effectStatus": "implemented",
+        "text": "先に相手の強化マーカーを1つ取り除いてから攻撃。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/machop-lv1.webp",
+    "sourcePhoto": "IMG_1625.jpeg",
+    "effectStatus": "implemented",
+    "abilityText": "やけどによるダメージ減少を受けず、特殊状態なら技のダメージを1増やす。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "magnemite-lv1",
+    "name": "コイル",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/magnemite-lv1.webp",
+    "cardType": "ぼうがい型",
+    "redHp": 3,
+    "ability": "アナライズ",
+    "attacks": [
+      {
+        "name": "でんきショック",
+        "damage": 1,
+        "trigger": "attack",
+        "effect": {
+          "id": "pending"
+        },
+        "effectStatus": "pending",
+        "text": "追加効果は自動処理未対応です。カード画像で確認してください。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/magnemite-lv1.webp",
+    "sourcePhoto": "IMG_1626.jpeg",
+    "effectStatus": "partial",
+    "abilityText": "自分の番に1回、残りHP以下の枚数の手札を捨て、同じ枚数を引く。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "shellder-lv1",
+    "name": "シェルダー",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/shellder-lv1.webp",
+    "cardType": "アタック型",
+    "redHp": 3,
+    "ability": "スキルリンク",
+    "attacks": [
+      {
+        "name": "たいあたり",
+        "damage": 1,
+        "trigger": "attack",
+        "effect": {
+          "id": "none"
+        },
+        "effectStatus": "implemented",
+        "text": "記載されたダメージを与える。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/shellder-lv1.webp",
+    "sourcePhoto": "IMG_1626.jpeg",
+    "effectStatus": "implemented",
+    "abilityText": "自分の番に「くらえ！」とこのポケモンの技を何度でも使える。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "gastly-lv1",
+    "name": "ゴース",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/gastly-lv1.webp",
+    "cardType": "アタック型",
+    "redHp": 3,
+    "ability": "ふゆう",
+    "attacks": [
+      {
+        "name": "したでなめる",
+        "damage": 1,
+        "trigger": "attack",
+        "effect": {
+          "id": "pending"
+        },
+        "effectStatus": "pending",
+        "text": "追加効果は自動処理未対応です。カード画像で確認してください。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/gastly-lv1.webp",
+    "sourcePhoto": "IMG_1626.jpeg",
+    "effectStatus": "partial",
+    "abilityText": "雨・雷雨の手札を「よけて！」の代わりに使える。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "exeggcute-lv1",
+    "name": "タマタマ",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/exeggcute-lv1.webp",
+    "cardType": "アタック型",
+    "redHp": 3,
+    "ability": "しゅうかく",
+    "attacks": [
+      {
+        "name": "やどりぎのタネ",
+        "damage": 1,
+        "trigger": "attack",
+        "effect": {
+          "id": "drain",
+          "amount": 1
+        },
+        "effectStatus": "implemented",
+        "text": "ダメージを与えたとき、自分のHPを1回復。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/exeggcute-lv1.webp",
+    "sourcePhoto": "IMG_1626.jpeg",
+    "effectStatus": "implemented",
+    "abilityText": "番の終了時、山札から1枚引くことができる。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "cubone-lv1",
+    "name": "カラカラ",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/cubone-lv1.webp",
+    "cardType": "ディフェンス型",
+    "redHp": 3,
+    "ability": "カブトアーマー",
+    "attacks": [
+      {
+        "name": "たいあたり",
+        "damage": 1,
+        "trigger": "attack",
+        "effect": {
+          "id": "none"
+        },
+        "effectStatus": "implemented",
+        "text": "記載されたダメージを与える。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/cubone-lv1.webp",
+    "sourcePhoto": "IMG_1626.jpeg",
+    "effectStatus": "partial",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "koffing-lv1",
+    "name": "ドガース",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/koffing-lv1.webp",
+    "cardType": "バランス型",
+    "redHp": 3,
+    "ability": "かがくへんかガス",
+    "attacks": [
+      {
+        "name": "アシッドボム",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "none"
+        },
+        "effectStatus": "implemented",
+        "text": "記載されたダメージを与える。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/koffing-lv1.webp",
+    "sourcePhoto": "IMG_1627.jpeg",
+    "effectStatus": "partial",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "rhyhorn-lv1",
+    "name": "サイホーン",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/rhyhorn-lv1.webp",
+    "cardType": "アタック型",
+    "redHp": 3,
+    "ability": "すてみ",
+    "attacks": [
+      {
+        "name": "いわおとし",
+        "damage": 1,
+        "trigger": "attack",
+        "effect": {
+          "id": "self-rescue-only"
+        },
+        "effectStatus": "implemented",
+        "text": "この技でHPが0になったポケモンには、そのトレーナーだけがキズぐすりを使える。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/rhyhorn-lv1.webp",
+    "sourcePhoto": "IMG_1627.jpeg",
+    "effectStatus": "implemented",
+    "abilityText": "自分の番に1回、HPを減らし、同じ枚数を引く。HPが0になる場合は引けない。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "chansey-lv1",
+    "name": "ラッキー",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/chansey-lv1.webp",
+    "cardType": "サポート型",
+    "redHp": 3,
+    "ability": "いやしのこころ",
+    "attacks": [
+      {
+        "name": "あまえる",
+        "damage": 0,
+        "trigger": "weather",
+        "effect": {
+          "id": "discard-random"
+        },
+        "effectStatus": "implemented",
+        "costWeather": [
+          "rain",
+          "thunderstorm"
+        ],
+        "text": "選んだトレーナーの手札を裏のまま1枚捨てる。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/chansey-lv1.webp",
+    "sourcePhoto": "IMG_1627.jpeg",
+    "effectStatus": "partial",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "kangaskhan-lv1",
+    "name": "ガルーラ",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/kangaskhan-lv1.webp",
+    "cardType": "アタック型",
+    "redHp": 3,
+    "ability": "はやおき",
+    "attacks": [
+      {
+        "name": "ねこだまし",
+        "damage": 1,
+        "trigger": "attack",
+        "effect": {
+          "id": "pending"
+        },
+        "effectStatus": "pending",
+        "text": "追加効果は自動処理未対応です。カード画像で確認してください。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/kangaskhan-lv1.webp",
+    "sourcePhoto": "IMG_1627.jpeg",
+    "effectStatus": "partial",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "staryu-lv1",
+    "name": "ヒトデマン",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/staryu-lv1.webp",
+    "cardType": "バランス型",
+    "redHp": 3,
+    "ability": "はっこう",
+    "attacks": [
+      {
+        "name": "みずでっぽう",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "none"
+        },
+        "effectStatus": "implemented",
+        "text": "記載されたダメージを与える。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/staryu-lv1.webp",
+    "sourcePhoto": "IMG_1627.jpeg",
+    "effectStatus": "implemented",
+    "abilityText": "ドローステップで山札から引くとき、追加で1枚引くことができる。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "electabuzz-lv1",
+    "name": "エレブー",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/electabuzz-lv1.webp",
+    "cardType": "バランス型",
+    "redHp": 3,
+    "ability": "やるき",
+    "attacks": [
+      {
+        "name": "でんげきは",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "none"
+        },
+        "effectStatus": "implemented",
+        "text": "記載されたダメージを与える。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/electabuzz-lv1.webp",
+    "sourcePhoto": "IMG_1627.jpeg",
+    "effectStatus": "partial",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "vulpix-lv1",
+    "name": "ロコン",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/vulpix-lv1.webp",
+    "cardType": "ぼうがい型",
+    "redHp": 3,
+    "ability": "ひでり",
+    "attacks": [
+      {
+        "name": "ひのこ",
+        "damage": 1,
+        "trigger": "attack",
+        "effect": {
+          "id": "weather-status",
+          "weather": [
+            "sunny"
+          ],
+          "status": "やけど"
+        },
+        "effectStatus": "implemented",
+        "text": "ダメージ後のおてんきチェックが晴れなら、やけど。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/vulpix-lv1.webp",
+    "sourcePhoto": "IMG_1628.jpeg",
+    "effectStatus": "partial",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "magikarp-lv1",
+    "name": "コイキング",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/magikarp-lv1.webp",
+    "cardType": "アタック型",
+    "redHp": 3,
+    "ability": "びびり",
+    "attacks": [
+      {
+        "name": "はねる",
+        "damage": 0,
+        "trigger": "attack",
+        "effect": {
+          "id": "none"
+        },
+        "effectStatus": "implemented",
+        "text": "はねるだけで、何も起こらない。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/magikarp-lv1.webp",
+    "sourcePhoto": "IMG_1628.jpeg",
+    "effectStatus": "implemented",
+    "abilityText": "自分の番のトラッシュステップをスキップする。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "grimer-lv1",
+    "name": "ベトベター",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/grimer-lv1.webp",
+    "cardType": "ぼうがい型",
+    "redHp": 3,
+    "ability": "どくしゅ",
+    "attacks": [
+      {
+        "name": "はたく",
+        "damage": 1,
+        "trigger": "attack",
+        "effect": {
+          "id": "none"
+        },
+        "effectStatus": "implemented",
+        "text": "記載されたダメージを与える。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/grimer-lv1.webp",
+    "sourcePhoto": "IMG_1628.jpeg",
+    "effectStatus": "partial",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "porygon-lv1",
+    "name": "ポリゴン",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/porygon-lv1.webp",
+    "cardType": "ぼうがい型",
+    "redHp": 3,
+    "ability": "ダウンロード",
+    "attacks": [
+      {
+        "name": "でんきショック",
+        "damage": 1,
+        "trigger": "attack",
+        "effect": {
+          "id": "pending"
+        },
+        "effectStatus": "pending",
+        "text": "追加効果は自動処理未対応です。カード画像で確認してください。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/porygon-lv1.webp",
+    "sourcePhoto": "IMG_1628.jpeg",
+    "effectStatus": "partial",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "snorlax-lv1",
+    "name": "カビゴン",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/snorlax-lv1.webp",
+    "cardType": "ディフェンス型",
+    "redHp": 4,
+    "ability": "くいしんぼう",
+    "attacks": [
+      {
+        "name": "たいあたり",
+        "damage": 1,
+        "trigger": "attack",
+        "effect": {
+          "id": "none"
+        },
+        "effectStatus": "implemented",
+        "text": "記載されたダメージを与える。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/snorlax-lv1.webp",
+    "sourcePhoto": "IMG_1628.jpeg",
+    "effectStatus": "implemented",
+    "abilityText": "もちものの効果が、番の終了時にHPが満タンでなければ1回復する効果になる。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "aerodactyl-lv1",
+    "name": "プテラ",
+    "level": 1,
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/aerodactyl-lv1.webp",
+    "cardType": "アタック型",
+    "redHp": 3,
+    "ability": "プレッシャー",
+    "attacks": [
+      {
+        "name": "つばさでうつ",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "none"
+        },
+        "effectStatus": "implemented",
+        "text": "記載されたダメージを与える。"
+      }
+    ],
+    "greenHp": null,
+    "cardImage": "/assets/rocket/cards/evolution/aerodactyl-lv1.webp",
+    "sourcePhoto": "IMG_1628.jpeg",
+    "effectStatus": "partial",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "ivysaur-lv2",
+    "name": "フシギソウ",
+    "level": 2,
+    "cardType": "ディフェンス型",
+    "redHp": 4,
+    "greenHp": null,
+    "ability": "ようりょくそ",
+    "attacks": [
+      {
+        "name": "メガドレイン",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "drain",
+          "amount": 1
+        },
+        "effectStatus": "implemented",
+        "text": "ダメージを与えたとき、自分のHPを1回復。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/ivysaur-lv2.webp",
+    "sourcePhoto": "IMG_1629(1).jpeg",
+    "effectStatus": "partial",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/ivysaur-lv2.webp",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "charmeleon-lv2",
+    "name": "リザード",
+    "level": 2,
+    "cardType": "アタック型",
+    "redHp": 4,
+    "greenHp": null,
+    "ability": "もうか",
+    "attacks": [
+      {
+        "name": "かえんほうしゃ",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "weather-status",
+          "weather": [
+            "sunny"
+          ],
+          "status": "やけど"
+        },
+        "effectStatus": "implemented",
+        "text": "ダメージ後のおてんきチェックが晴れなら、やけど。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/charmeleon-lv2.webp",
+    "sourcePhoto": "IMG_1629(1).jpeg",
+    "effectStatus": "implemented",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/charmeleon-lv2.webp",
+    "abilityText": "HPが半分以下なら、技のダメージを2増やす。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "wartortle-lv2",
+    "name": "カメール",
+    "level": 2,
+    "cardType": "バランス型",
+    "redHp": 4,
+    "greenHp": null,
+    "ability": "あめうけざら",
+    "attacks": [
+      {
+        "name": "アクアテール",
+        "damage": 1,
+        "trigger": "attack",
+        "effect": {
+          "id": "ignore-held"
+        },
+        "effectStatus": "partial",
+        "text": "この技の使用中、相手のもちものの効果を受けない。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/wartortle-lv2.webp",
+    "sourcePhoto": "IMG_1629(1).jpeg",
+    "effectStatus": "partial",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/wartortle-lv2.webp",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "pidgeotto-lv2",
+    "name": "ピジョン",
+    "level": 2,
+    "cardType": "アタック型",
+    "redHp": 4,
+    "greenHp": null,
+    "ability": "するどいめ",
+    "attacks": [
+      {
+        "name": "つばさでうつ",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "none"
+        },
+        "effectStatus": "implemented",
+        "text": "記載されたダメージを与える。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/pidgeotto-lv2.webp",
+    "sourcePhoto": "IMG_1629(1).jpeg",
+    "effectStatus": "implemented",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/pidgeotto-lv2.webp",
+    "abilityText": "技はよけられない。相手が「よけて！」を使った場合、ダメージを1減らす。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "nidorino-lv2",
+    "name": "ニドリーノ",
+    "level": 2,
+    "cardType": "アタック型",
+    "redHp": 4,
+    "greenHp": null,
+    "ability": "どくのトゲ",
+    "attacks": [
+      {
+        "name": "つのでつく",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "full-hp-bonus"
+        },
+        "effectStatus": "implemented",
+        "text": "自分のHPが満タンならダメージを1増やす。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/nidorino-lv2.webp",
+    "sourcePhoto": "IMG_1629(1).jpeg",
+    "effectStatus": "partial",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/nidorino-lv2.webp",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "meowth-lv2",
+    "name": "ニャース",
+    "level": 2,
+    "cardType": "サポート型",
+    "redHp": 3,
+    "greenHp": null,
+    "ability": "ものひろい",
+    "attacks": [
+      {
+        "name": "ネコにこばん",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "gift-two"
+        },
+        "effectStatus": "implemented",
+        "text": "ダメージを与えたとき2枚引き、他のトレーナーへ1枚ずつ渡す（同じ相手可）。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/meowth-lv2.webp",
+    "sourcePhoto": "IMG_1630(1).jpeg",
+    "effectStatus": "implemented",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/meowth-lv2.webp",
+    "abilityText": "ドローステップ以外で山札から引くとき、追加で1枚引く（各トレーナーの番に1回）。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "mankey-lv2",
+    "name": "マンキー",
+    "level": 2,
+    "cardType": "バランス型",
+    "redHp": 3,
+    "greenHp": null,
+    "ability": "まけんき",
+    "attacks": [
+      {
+        "name": "かわらわり",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "remove-marker-before"
+        },
+        "effectStatus": "implemented",
+        "text": "先に相手の強化マーカーを1つ取り除いてから攻撃。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/mankey-lv2.webp",
+    "sourcePhoto": "IMG_1630(1).jpeg",
+    "effectStatus": "partial",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/mankey-lv2.webp",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "psyduck-lv2",
+    "name": "コダック",
+    "level": 2,
+    "cardType": "ぼうがい型",
+    "redHp": 4,
+    "greenHp": null,
+    "ability": "すいすい",
+    "attacks": [
+      {
+        "name": "あわ",
+        "damage": 1,
+        "trigger": "attack",
+        "effect": {
+          "id": "remove-marker-after",
+          "markers": [
+            "plusPower",
+            "speeder"
+          ]
+        },
+        "effectStatus": "implemented",
+        "text": "ダメージ後、相手のプラスパワーまたはスピーダーを1つ取り除く。"
+      },
+      {
+        "name": "かなしばり",
+        "damage": 0,
+        "trigger": "weather",
+        "effect": {
+          "id": "lock-two"
+        },
+        "effectStatus": "implemented",
+        "costWeather": [
+          "rain",
+          "thunderstorm"
+        ],
+        "text": "相手の手札を裏のまま2枚、相手の次の番まで除外する。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/psyduck-lv2.webp",
+    "sourcePhoto": "IMG_1630(1).jpeg",
+    "effectStatus": "partial",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/psyduck-lv2.webp",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "growlithe-lv2",
+    "name": "ガーディ",
+    "level": 2,
+    "cardType": "バランス型",
+    "redHp": 4,
+    "greenHp": null,
+    "ability": "せいぎのこころ",
+    "attacks": [
+      {
+        "name": "かえんほうしゃ",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "weather-status",
+          "weather": [
+            "sunny"
+          ],
+          "status": "やけど"
+        },
+        "effectStatus": "implemented",
+        "text": "ダメージ後のおてんきチェックが晴れなら、やけど。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/growlithe-lv2.webp",
+    "sourcePhoto": "IMG_1630(1).jpeg",
+    "effectStatus": "partial",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/growlithe-lv2.webp",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "sandshrew-lv2",
+    "name": "サンド",
+    "level": 2,
+    "cardType": "ぼうがい型",
+    "redHp": 4,
+    "greenHp": null,
+    "ability": "すながくれ",
+    "attacks": [
+      {
+        "name": "はたきおとす",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "discard-random"
+        },
+        "effectStatus": "implemented",
+        "text": "ダメージを与えたとき、相手の手札を裏のまま1枚捨てる。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/sandshrew-lv2.webp",
+    "sourcePhoto": "IMG_1630(1).jpeg",
+    "effectStatus": "partial",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/sandshrew-lv2.webp",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "machoke-lv2",
+    "name": "ゴーリキー",
+    "level": 2,
+    "cardType": "アタック型",
+    "redHp": 4,
+    "greenHp": null,
+    "ability": "こんじょう",
+    "attacks": [
+      {
+        "name": "かわらわり",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "remove-marker-before"
+        },
+        "effectStatus": "implemented",
+        "text": "先に相手の強化マーカーを1つ取り除いてから攻撃。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/machoke-lv2.webp",
+    "sourcePhoto": "IMG_1630(1).jpeg",
+    "effectStatus": "implemented",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/machoke-lv2.webp",
+    "abilityText": "やけどによるダメージ減少を受けず、特殊状態なら技のダメージを1増やす。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "slowpoke-lv2",
+    "name": "ヤドン",
+    "level": 2,
+    "cardType": "ディフェンス型",
+    "redHp": 4,
+    "greenHp": null,
+    "ability": "どんかん",
+    "attacks": [
+      {
+        "name": "しねんのずつき",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "pending"
+        },
+        "effectStatus": "pending",
+        "text": "追加効果は自動処理未対応です。カード画像で確認してください。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/slowpoke-lv2.webp",
+    "sourcePhoto": "IMG_1631(1).jpeg",
+    "effectStatus": "partial",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/slowpoke-lv2.webp",
+    "abilityText": "自分の番以外にダメージを受けた後、その番は追加のダメージを受けない。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "magnemite-lv2",
+    "name": "コイル",
+    "level": 2,
+    "cardType": "ぼうがい型",
+    "redHp": 3,
+    "greenHp": null,
+    "ability": "アナライズ",
+    "attacks": [
+      {
+        "name": "でんきショック",
+        "damage": 1,
+        "trigger": "attack",
+        "effect": {
+          "id": "pending"
+        },
+        "effectStatus": "pending",
+        "text": "追加効果は自動処理未対応です。カード画像で確認してください。"
+      },
+      {
+        "name": "でんじは",
+        "damage": 0,
+        "trigger": "weather",
+        "effect": {
+          "id": "pending"
+        },
+        "effectStatus": "pending",
+        "text": "追加効果は自動処理未対応です。カード画像で確認してください。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/magnemite-lv2.webp",
+    "sourcePhoto": "IMG_1631(1).jpeg",
+    "effectStatus": "partial",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/magnemite-lv2.webp",
+    "abilityText": "自分の番に1回、残りHP以下の枚数の手札を捨て、同じ枚数を引く。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "shellder-lv2",
+    "name": "シェルダー",
+    "level": 2,
+    "cardType": "アタック型",
+    "redHp": 3,
+    "greenHp": null,
+    "ability": "スキルリンク",
+    "attacks": [
+      {
+        "name": "とげキャノン",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "cycle-after-hit"
+        },
+        "effectStatus": "implemented",
+        "text": "ダメージを与えたとき、手札を1枚捨てて1枚引くことができる。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/shellder-lv2.webp",
+    "sourcePhoto": "IMG_1631(1).jpeg",
+    "effectStatus": "implemented",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/shellder-lv2.webp",
+    "abilityText": "自分の番に「くらえ！」とこのポケモンの技を何度でも使える。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "exeggcute-lv2",
+    "name": "タマタマ",
+    "level": 2,
+    "cardType": "アタック型",
+    "redHp": 4,
+    "greenHp": null,
+    "ability": "しゅうかく",
+    "attacks": [
+      {
+        "name": "タネばくだん",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "none"
+        },
+        "effectStatus": "implemented",
+        "text": "記載されたダメージを与える。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/exeggcute-lv2.webp",
+    "sourcePhoto": "IMG_1631(1).jpeg",
+    "effectStatus": "implemented",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/exeggcute-lv2.webp",
+    "abilityText": "番の終了時、山札から1枚引くことができる。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "cubone-lv2",
+    "name": "カラカラ",
+    "level": 2,
+    "cardType": "ディフェンス型",
+    "redHp": 4,
+    "greenHp": null,
+    "ability": "カブトアーマー",
+    "attacks": [
+      {
+        "name": "ボーンラッシュ",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "repeat-lock"
+        },
+        "effectStatus": "implemented",
+        "text": "何度でも使用できる。使用後、この番はこの技だけを使用できる。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/cubone-lv2.webp",
+    "sourcePhoto": "IMG_1631(1).jpeg",
+    "effectStatus": "partial",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/cubone-lv2.webp",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "koffing-lv2",
+    "name": "ドガース",
+    "level": 2,
+    "cardType": "バランス型",
+    "redHp": 4,
+    "greenHp": null,
+    "ability": "かがくへんかガス",
+    "attacks": [
+      {
+        "name": "ヘドロばくだん",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "pending"
+        },
+        "effectStatus": "pending",
+        "text": "追加効果は自動処理未対応です。カード画像で確認してください。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/koffing-lv2.webp",
+    "sourcePhoto": "IMG_1632(1).jpeg",
+    "effectStatus": "partial",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/koffing-lv2.webp",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "rhyhorn-lv2",
+    "name": "サイホーン",
+    "level": 2,
+    "cardType": "アタック型",
+    "redHp": 4,
+    "greenHp": null,
+    "ability": "すてみ",
+    "attacks": [
+      {
+        "name": "いわなだれ",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "self-rescue-only"
+        },
+        "effectStatus": "implemented",
+        "text": "この技でHPが0になったポケモンには、そのトレーナーだけがキズぐすりを使える。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/rhyhorn-lv2.webp",
+    "sourcePhoto": "IMG_1632(1).jpeg",
+    "effectStatus": "implemented",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/rhyhorn-lv2.webp",
+    "abilityText": "自分の番に1回、HPを減らし、同じ枚数を引く。HPが0になる場合は引けない。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "chansey-lv2",
+    "name": "ラッキー",
+    "level": 2,
+    "cardType": "サポート型",
+    "redHp": 4,
+    "greenHp": null,
+    "ability": "いやしのこころ",
+    "attacks": [
+      {
+        "name": "あまえる",
+        "damage": 0,
+        "trigger": "weather",
+        "effect": {
+          "id": "discard-random"
+        },
+        "effectStatus": "implemented",
+        "costWeather": [
+          "rain",
+          "thunderstorm"
+        ],
+        "text": "選んだトレーナーの手札を裏のまま1枚捨てる。"
+      },
+      {
+        "name": "いのちのしずく",
+        "damage": 0,
+        "trigger": "weather",
+        "effect": {
+          "id": "heal-many"
+        },
+        "effectStatus": "implemented",
+        "costWeather": [
+          "sunny",
+          "partly-cloudy"
+        ],
+        "text": "好きな数のバトルポケモンを選び、HPを1回復する。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/chansey-lv2.webp",
+    "sourcePhoto": "IMG_1632(1).jpeg",
+    "effectStatus": "partial",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/chansey-lv2.webp",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "kangaskhan-lv2",
+    "name": "ガルーラ",
+    "level": 2,
+    "cardType": "アタック型",
+    "redHp": 4,
+    "greenHp": null,
+    "ability": "はやおき",
+    "attacks": [
+      {
+        "name": "すてみタックル",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "optional-recoil"
+        },
+        "effectStatus": "implemented",
+        "text": "ダメージを1増やせる。その場合、自分のHPを1減らす。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/kangaskhan-lv2.webp",
+    "sourcePhoto": "IMG_1632(1).jpeg",
+    "effectStatus": "partial",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/kangaskhan-lv2.webp",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "staryu-lv2",
+    "name": "ヒトデマン",
+    "level": 2,
+    "cardType": "バランス型",
+    "redHp": 3,
+    "greenHp": null,
+    "ability": "はっこう",
+    "attacks": [
+      {
+        "name": "ねんりき",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "pending"
+        },
+        "effectStatus": "pending",
+        "text": "追加効果は自動処理未対応です。カード画像で確認してください。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/staryu-lv2.webp",
+    "sourcePhoto": "IMG_1632(1).jpeg",
+    "effectStatus": "partial",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/staryu-lv2.webp",
+    "abilityText": "ドローステップで山札から引くとき、追加で1枚引くことができる。",
+    "abilityStatus": "implemented"
+  },
+  {
+    "id": "electabuzz-lv2",
+    "name": "エレブー",
+    "level": 2,
+    "cardType": "バランス型",
+    "redHp": 4,
+    "greenHp": null,
+    "ability": "やるき",
+    "attacks": [
+      {
+        "name": "１０まんボルト",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "pending"
+        },
+        "effectStatus": "pending",
+        "text": "追加効果は自動処理未対応です。カード画像で確認してください。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/electabuzz-lv2.webp",
+    "sourcePhoto": "IMG_1632(1).jpeg",
+    "effectStatus": "partial",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/electabuzz-lv2.webp",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "vulpix-lv2",
+    "name": "ロコン",
+    "level": 2,
+    "cardType": "ぼうがい型",
+    "redHp": 3,
+    "greenHp": null,
+    "ability": "ひでり",
+    "attacks": [
+      {
+        "name": "ひのこ",
+        "damage": 1,
+        "trigger": "attack",
+        "effect": {
+          "id": "weather-status",
+          "weather": [
+            "sunny"
+          ],
+          "status": "やけど"
+        },
+        "effectStatus": "implemented",
+        "text": "ダメージ後のおてんきチェックが晴れなら、やけど。"
+      },
+      {
+        "name": "おにび",
+        "damage": 0,
+        "trigger": "weather",
+        "effect": {
+          "id": "pending"
+        },
+        "effectStatus": "pending",
+        "text": "追加効果は自動処理未対応です。カード画像で確認してください。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/vulpix-lv2.webp",
+    "sourcePhoto": "IMG_1633(1).jpeg",
+    "effectStatus": "partial",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/vulpix-lv2.webp",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "grimer-lv2",
+    "name": "ベトベター",
+    "level": 2,
+    "cardType": "ぼうがい型",
+    "redHp": 4,
+    "greenHp": null,
+    "ability": "どくしゅ",
+    "attacks": [
+      {
+        "name": "ヘドロばくだん",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "pending"
+        },
+        "effectStatus": "pending",
+        "text": "追加効果は自動処理未対応です。カード画像で確認してください。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/grimer-lv2.webp",
+    "sourcePhoto": "IMG_1633(1).jpeg",
+    "effectStatus": "partial",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/grimer-lv2.webp",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "porygon-lv2",
+    "name": "ポリゴン",
+    "level": 2,
+    "cardType": "ぼうがい型",
+    "redHp": 4,
+    "greenHp": null,
+    "ability": "ダウンロード",
+    "attacks": [
+      {
+        "name": "トライアタック",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "pending"
+        },
+        "effectStatus": "pending",
+        "text": "追加効果は自動処理未対応です。カード画像で確認してください。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/porygon-lv2.webp",
+    "sourcePhoto": "IMG_1633(1).jpeg",
+    "effectStatus": "partial",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/porygon-lv2.webp",
+    "abilityText": "特性の自動処理は未対応です。カード画像の効果を確認してください。",
+    "abilityStatus": "pending"
+  },
+  {
+    "id": "snorlax-lv2",
+    "name": "カビゴン",
+    "level": 2,
+    "cardType": "ディフェンス型",
+    "redHp": 5,
+    "greenHp": null,
+    "ability": "くいしんぼう",
+    "attacks": [
+      {
+        "name": "かみつく",
+        "damage": 2,
+        "trigger": "attack",
+        "effect": {
+          "id": "pending"
+        },
+        "effectStatus": "pending",
+        "text": "追加効果は自動処理未対応です。カード画像で確認してください。"
+      }
+    ],
+    "cardImage": "/assets/rocket/cards/evolution/snorlax-lv2.webp",
+    "sourcePhoto": "IMG_1633(1).jpeg",
+    "effectStatus": "partial",
+    "category": "pokemon",
+    "image": "/assets/rocket/cards/evolution/snorlax-lv2.webp",
+    "abilityText": "もちものの効果が、番の終了時にHPが満タンでなければ1回復する効果になる。",
+    "abilityStatus": "implemented"
+  }
+]

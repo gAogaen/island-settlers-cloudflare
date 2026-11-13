@@ -1,7 +1,9 @@
+import { enrichPrinted } from './rocket-effects.mjs';
+import { ROCKET_LV2_DATA } from './rocket-lv2-data.mjs';
 import { ROCKET_LV1_DATA } from './rocket-lv1-data.mjs';
 // Data registry for the Rocket game. Current records are provisional playtest placeholders.
 // Replace these rows with verified card data when the user supplies the card list/images.
-export const ROCKET_CARD_DATA_VERSION = 12;
+export const ROCKET_CARD_DATA_VERSION = 14;
 
 export const ROCKET_ROLE_CARDS = [
   { id: 'leader', role: 'leader', name: 'ジムリーダー', copies: 1, public: true, image: '/assets/rocket/cards/card_055.webp', provisional: false },
@@ -176,4 +178,32 @@ for (const card of ROCKET_POKEMON_CARDS) {
 for (const image of ROCKET_CARD_IMAGE_ASSETS) {
  const printed = ROCKET_LV1_DATA.find(row => row.name === image.name && image.level === 1);
  if (printed) Object.assign(image, {redHp:printed.redHp,cardType:printed.cardType,ability:printed.ability,attacks:printed.attacks});
+}
+
+// Lv.2 scans are registered separately from same-name Lv.1 cards.
+for (const printed of ROCKET_LV2_DATA) {
+ const asset = {...printed, category:'pokemon', image:printed.cardImage};
+ const existing = ROCKET_CARD_IMAGE_ASSETS.find(row => row.id === printed.id);
+ if (existing) Object.assign(existing, asset);
+ else ROCKET_CARD_IMAGE_ASSETS.push(asset);
+}
+// Only attach to already established families; do not infer new playable families.
+const level2Names = {フシギダネ:'フシギソウ',ヒトカゲ:'リザード',ゼニガメ:'カメール'};
+for (const card of ROCKET_POKEMON_CARDS) {
+ const printed = ROCKET_LV2_DATA.find(row => row.name === (level2Names[card.name] || card.name));
+ const stage = card.levels?.find(row => row.level === 2);
+ if (!printed || !stage) continue;
+ Object.assign(stage, {name:printed.name,hp:printed.redHp,redHp:printed.redHp,greenHp:null,cardType:printed.cardType,cardImage:printed.cardImage,ability:printed.ability,effectStatus:printed.effectStatus,attacks:printed.attacks.map(move => ({...move,text:'追加効果はカード画像を確認してください。'}))});
+}
+
+// All supplied expert-mode families. Lv.3 is not fabricated from Lv.1/2 data.
+const NEXT_SPECIES = {フシギダネ:'フシギソウ',ヒトカゲ:'リザード',ゼニガメ:'カメール',ポッポ:'ピジョン','ニドラン♂':'ニドリーノ',ワンリキー:'ゴーリキー',ゴース:'ゴースト',コイキング:'ギャラドス'};
+export const ROCKET_EXPERT_POKEMON_CARDS = ROCKET_LV1_DATA.map(first => {
+ const second = ROCKET_LV2_DATA.find(row => row.name === (NEXT_SPECIES[first.name] || first.name));
+ const stages = [first,second].filter(Boolean).map(row => ({...enrichPrinted(row), hp:row.redHp}));
+ return {...stages[0],id:'expert-'+first.id,familyId:first.id.replace('-lv1',''),species:first.name,type:'',level:1,hp:first.redHp,levels:stages,provisional:true};
+});
+for (const image of ROCKET_CARD_IMAGE_ASSETS) {
+ const row = [...ROCKET_LV1_DATA,...ROCKET_LV2_DATA].find(row => row.id === image.id);
+ if (row) Object.assign(image, enrichPrinted(row));
 }
