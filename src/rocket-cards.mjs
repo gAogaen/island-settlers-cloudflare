@@ -1,6 +1,6 @@
 // Data registry for the Rocket game. Current records are provisional playtest placeholders.
 // Replace these rows with verified card data when the user supplies the card list/images.
-export const ROCKET_CARD_DATA_VERSION = 3;
+export const ROCKET_CARD_DATA_VERSION = 4;
 
 export const ROCKET_ROLE_CARDS = [
   { id: 'leader', role: 'leader', name: 'ジムリーダー', copies: 1, public: true, image: '/assets/rocket/cards/card_055.webp', provisional: false },
@@ -78,6 +78,8 @@ export const ROCKET_CARD_IMAGE_ASSETS = [
   {id:'card_yokete',category:'play',image:'/assets/rocket/cards/card_yokete.webp'},
   {id:'card_mew',category:'special',image:'/assets/rocket/cards/card_mew.webp'},
   {id:'card_mewtwo',category:'special',image:'/assets/rocket/cards/card_mewtwo.webp'},
+  {id:'haunter-lv2',name:'ゴースト',level:2,category:'pokemon',image:'/assets/rocket/cards/evolution/haunter-lv2.webp'},
+  {id:'pikachu-lv2',name:'ピカチュウ',level:2,category:'pokemon',image:'/assets/rocket/cards/evolution/pikachu-lv2.webp'},
   {id:'promo-dragonite-lv1',category:'pokemon',image:'/assets/rocket/cards/evolution/dratini.webp'},
   {id:'promo-dragonite-lv2',category:'pokemon',image:'/assets/rocket/cards/evolution/dragonair.webp'},
   {id:'promo-dragonite-lv3',category:'pokemon',image:'/assets/rocket/cards/evolution/dragonite.webp'}
