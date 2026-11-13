@@ -101,3 +101,13 @@ button{border-color:#c9b990;background:#eee5d2;color:#352f28}
 @media(max-width:700px){.trainer{padding:7px 5px}.board-card{width:clamp(38px,11vw,60px)}.board-cards{gap:4px}.trainer-copy small{line-height:1.25}.arena{min-height:640px}#players[data-count="6"] .board-card{width:clamp(30px,8vw,46px)}#players[data-count="6"] .trainer{gap:3px}}
 
 .scan-reference{display:block;text-align:center;font-size:9px;color:#675943}
+
+/* Reserve space for the complete card panels before placing seat centers. */
+.arena{height:760px;min-height:760px}
+.players{inset:145px 16px}
+.arena:has(#players[data-count="5"]),.arena:has(#players[data-count="6"]){height:1040px;min-height:1040px}
+@media(max-width:700px){
+ .arena{height:760px;min-height:760px}
+ .players{inset:120px 0}
+ .arena:has(#players[data-count="5"]),.arena:has(#players[data-count="6"]){height:1000px;min-height:1000px}
+}
