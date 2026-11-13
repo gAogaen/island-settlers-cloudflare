@@ -205,6 +205,17 @@ export const ROCKET_EXPERT_POKEMON_CARDS = ROCKET_LV1_DATA.map(first => {
  const stages = [first,second,third].filter(Boolean).map(row => ({...enrichPrinted(row), hp:row.redHp, basicHp:row.greenHp}));
  return {...stages[0],id:'expert-'+first.id,familyId:first.id.replace('-lv1',''),species:first.name,type:'',level:1,hp:first.redHp,levels:stages,provisional:true};
 });
+const dragonite = ROCKET_POKEMON_CARDS.find(card => card.id === 'promo-dragonite');
+if (dragonite) {
+ const levels = dragonite.levels.map(stage => ({
+  ...stage,
+  attacks:stage.attacks.map(move => ({
+   ...move,trigger:'attack',maxTargets:stage.level===3?2:1,
+   effect:{id:stage.level===1?'none':'dragon-adjacent'},
+  })),
+ }));
+ ROCKET_EXPERT_POKEMON_CARDS.push({...dragonite,levels});
+}
 for (const image of ROCKET_CARD_IMAGE_ASSETS) {
  const row = [...ROCKET_LV1_DATA,...ROCKET_LV2_DATA,...ROCKET_LV3_DATA].find(row => row.id === image.id);
  if (row) Object.assign(image, enrichPrinted(row));

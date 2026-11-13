@@ -65,6 +65,7 @@ function displayCard(card,level){const stage=card.levels?.find(x=>x.level===leve
 function view(g,p){const teamFor=x=>(x.team||[]).map((m,i)=>({name:m.name,type:m.type,level:m.level,hp:m.hp,maxHp:m.maxHp,active:i===(x.activeIndex||0),fainted:!!m.fainted,heldEffect:m.heldItem?.effectId,status:m.status||null,markers:m.markers||{},ability:m.ability,abilityText:m.abilityText,abilityStatus:m.abilityStatus,attacks:m.attacks||[],image:m.image||null,cardImage:m.cardImage||null,canLevelUp:!!m.levels?.some(stage=>stage.level===m.level+1)}));return{catalog:{version:ROCKET_CARD_DATA_VERSION,cardImages:ROCKET_CARD_IMAGE_ASSETS,playCards:ROCKET_PLAY_CARDS,pokemonCards:g.mode==='expert'?ROCKET_EXPERT_POKEMON_CARDS:ROCKET_POKEMON_CARDS,roleCards:ROCKET_ROLE_CARDS},code:g.code,mode:g.mode,phase:g.phase,hostId:g.hostId,revision:g.revision,turnId:g.players[g.turn]?.id,turnNumber:g.turnNumber||0,winner:g.winner||'',reason:g.reason||'',deckCount:g.deck.length,players:g.players.map(x=>{const mon=activePokemon(x);return{id:x.id,name:x.name,role:x.role==='leader'||!x.alive||p?.id===x.id?x.role:null,alive:x.alive,hp:mon?.hp??x.hp,maxHp:mon?.maxHp??x.maxHp,pokemon:mon?.name||'',type:mon?.type||'',level:mon?.level||3,cardImage:mon?.cardImage||null,team:teamFor(x),item:mon?.heldItem?.name||x.item||'',status:mon?.status||null,markers:mon?.markers||{},handCount:x.hand.length,attackUsed:x.attackUsed}}),me:p?{id:p.id,role:p.role,hand:p.hand.map(c=>({...c})),options:(p.options||[]).map(card=>displayCard(card,g.mode==='expert'?1:3)),team:teamFor(p),activeIndex:p.activeIndex||0}:null,pending:g.pending?publicPending(g.pending,p):null,notice:p?.secretInfo||null,log:[...g.log]};}
 function nextIndex(g,from){for(let n=1;n<=g.players.length;n++){const i=(from-n+g.players.length)%g.players.length;if(g.players[i].alive)return i}return from;}
 function draw(g,p,count=1,phase='effect'){
+ if(phase==='draw'&&p.flinchTurn===g.turnNumber)count=Math.max(0,count-1);
  let extra=phase==='effect'&&count>0&&ability(g,p,'ものひろい')&&p.pickupTurn!==g.turnNumber;
  if(extra){p.pickupTurn=g.turnNumber;count++;log(g,p.name+'の「ものひろい」で追加1枚。');}
  for(let i=0;i<count;i++){const card=topCard(g);if(!card)break;p.hand.push(card);}
@@ -78,17 +79,24 @@ function knockout(g,{victimId,attackerId,pokemonIndex}){
 }
 function attack(g,p,a){
  const source=activePokemon(p),move=source?.attacks?.[a.moveIndex??0];
+ if(p.noMoveTurn===g.turnNumber)throw Error('この番はわざを使えません。');
  if(!move||move.trigger==='weather')throw Error('使う攻撃技を選んでください。');
  const ids=a.secondTargetId?[a.targetId,a.secondTargetId]:[a.targetId];
  const targets=ids.map(id=>player(g,id));
  if(ids.length>(move.maxTargets||1)||new Set(ids).size!==ids.length||targets.some(t=>!t?.alive||t.id===p.id))throw Error('攻撃する相手を選んでください。');
  const flexible=ability(g,p,'じゅうなん');
+ if(['りゅうのいかり','りゅうせいぐん'].includes(move.name)&&source.heldItem?.effectId!=='quick-claw'&&!(g.mode==='expert'&&source.status!=='まひ'&&source.markers?.speeder)){
+  const seats=g.players.filter(trainer=>trainer.alive);
+  const seat=seats.indexOf(p);
+  const neighbors=[seats[(seat+1)%seats.length],seats[(seat-1+seats.length)%seats.length]];
+  if(targets.some(target=>!neighbors.includes(target)))throw Error('左右のバトルエリアから対象を選んでください。');
+ }
  const repeat=ability(g,p,'スキルリンク')||move.effect?.id==='repeat-lock';
  if(p.moveLock&&p.moveLock!==move.name)throw Error('この番は'+p.moveLock+'だけ使用できます。');
  if(!repeat&&(flexible?p.usedMoves?.includes(move.name):p.attackUsed))throw Error('この番は使用済みです。');
  const card=p.hand.find(c=>c.id===a.cardId&&c.type==='attack');
  if(!card)throw Error('「くらえ！」カードを選んでください。');
- if(source.status==='まひ')throw Error('まひの使用条件は未確認です。');
+ if(source.status==='まひ'&&!['sunny','partly-cloudy'].includes(card.weather))throw Error('まひ中は晴れ・晴れのち曇りの「くらえ！」だけ使えます。');
  const paid=['paid-bonus','paid-second-hit'].includes(move.effect?.id)&&a.costCardId;
  if(paid&&(paid===card.id||!p.hand.some(c=>c.id===paid)))throw Error('追加コストのカードを選んでください。');
  for(const target of targets){
@@ -113,7 +121,7 @@ function attack(g,p,a){
    lifeOrb:a.lifeOrb===true,keen:ability(g,p,'するどいめ'),recoil:!!a.recoil,
    removeMarker:a.marker,defender:!!mon.markers?.defender,choices:['dodge','take']};
  });
- if(source.status!=='まひ'&&source.markers?.plusPower)delete source.markers.plusPower;
+ if(move.effect?.id!=='dragon-adjacent'&&source.status!=='まひ'&&source.markers?.plusPower)delete source.markers.plusPower;
  if(move.effect?.id==='double-hit'||(paid&&move.effect?.id==='paid-second-hit'))hits.push({...hits[0],secondHit:true});
  g.pending=hits.shift();
  g.effectQueue=hits;
@@ -125,6 +133,7 @@ function resolve(g,p,a){
  const q=g.pending;if(!q)throw Error('対応する効果がありません。');
  if(q.type==='attackResponse'){
   if(q.targetId!==p.id)throw Error('この攻撃への対応対象ではありません。');
+  if(q.effect?.id==='dragon-adjacent'&&a.choice!=='take')throw Error('このわざは回避できません。');
   if(!['dodge','take'].includes(a.choice))throw Error('対応方法を選択してください。');
   let damage=q.damage;
   if(a.choice==='dodge'){if(player(g,q.actorId)?.lockOnTargets?.includes(p.id))throw Error('ロックオンで回避できません。');const c=p.hand.find(x=>x.id===a.cardId);if(!canDodge(g,p,c))throw Error('回避に使用できるカードを選んでください。');trash(g,p,[c.id]);damage=q.keen?Math.max(0,damage-1):0;log(g,p.name+'は回避を試みました。');}
@@ -137,7 +146,7 @@ function resolve(g,p,a){
    }
   }
   const mon=p.team[q.pokemonIndex];damage=receivedDamage(g,p,damage,{defender:q.defender});
-  if(damage>0){mon.hp-=damage;mon.damagedTurn=g.turnNumber;if(mon.markers?.defender)delete mon.markers.defender;log(g,p.name+'は'+damage+'ダメージ。');afterDamage(g,p,q,a);}
+  if(damage>0){mon.hp-=damage;mon.damagedTurn=g.turnNumber;if(mon.status!=='まひ'&&mon.markers?.defender)delete mon.markers.defender;log(g,p.name+'は'+damage+'ダメージ。');afterDamage(g,p,q,a);}
   g.pending=null;
   if(mon.hp<=0)beginRescue(g,p,q);else pumpEffects(g);
  }else if(q.type==='rescue'){
@@ -197,7 +206,7 @@ function apply(g,p,a){if(a.revision!=null&&a.revision!==g.revision)throw Error('
  trash(g,p,[c.id]);
  log(g,p.name+'が「ふしぎなアメ」を使い、'+target.name+'のポケモンがレベルアップしました。');
  }else if(c.type==='item'){const t=cardDef(c.cardId)?.effect?.targetMode==='any-trainer'&&a.targetId?player(g,a.targetId):p;if(!t?.alive)throw Error('カードを引くトレーナーを選んでください。');p.hand=p.hand.filter(x=>x.id!==c.id);g.discard.push(c);draw(g,t,cardAmount(c.cardId,1));log(g,p.name+'が'+c.name+'を使いました。')}else if(c.type==='scout'){const t=player(g,a.targetId);if(!t?.alive||t.id===p.id)throw Error('調べる相手を選んでください。');p.hand=p.hand.filter(x=>x.id!==c.id);g.discard.push(c);p.secretInfo={name:t.name,role:roleLabels[t.role]};log(g,p.name+'が相手の様子を探っています。')}else if(c.type==='boost'){p.hand=p.hand.filter(x=>x.id!==c.id);g.discard.push(c);const mon=activePokemon(p);mon.hp=Math.min(mon.maxHp,mon.hp+cardAmount(c.cardId,1));log(g,p.name+'は'+c.name+'を使いました。')}else if(c.type==='dodge')throw Error('「よけて！」は攻撃を受けたときに使います。');g.revision++;return}
- if(a.type==='switch'){requireTurn(g,p);if(g.mode!=='expert'||!Number.isInteger(a.index)||!p.team?.[a.index]||a.index===p.activeIndex||p.team[a.index].fainted)throw Error('交代できるポケモンを選んでください。');const previous=activePokemon(p);previous.markers={};p.activeIndex=a.index;p.pokemon=activePokemon(p);log(g,p.name+'はバトルポケモンを交代しました。');g.revision++;return}
+ if(a.type==='switch'){requireTurn(g,p);if(p.noSwitchTurn===g.turnNumber)throw Error('ねむりでこの番は交代できません。');if(g.mode!=='expert'||!Number.isInteger(a.index)||!p.team?.[a.index]||a.index===p.activeIndex||p.team[a.index].fainted)throw Error('交代できるポケモンを選んでください。');const previous=activePokemon(p);previous.markers={};p.activeIndex=a.index;p.pokemon=activePokemon(p);log(g,p.name+'はバトルポケモンを交代しました。');g.revision++;return}
  if(a.type==='end'){requireTurn(g,p);if(p.hand.length>4&&!handLimitExempt(g,p))throw Error('手札が5枚以上です。残すカードを4枚選んでください。');if(a.levelUp&&g.mode==='expert'){if(!levelUp(p))throw Error('バトルポケモンはレベルアップできません。');log(g,p.name+'のバトルポケモンがLv.'+activePokemon(p).level+'にレベルアップ！')}endEffects(g,p,a);log(g,p.name+'の番が終了しました。');nextTurn(g);g.revision++;return}
  if(a.type==='discard'){requireTurn(g,p);const ids=Array.isArray(a.cardIds)?a.cardIds:[];if(p.hand.length-ids.length!==4||new Set(ids).size!==ids.length||ids.some(id=>!p.hand.some(c=>c.id===id)))throw Error('手札が4枚になるよう、捨てるカードを選んでください。');for(const id of ids){const i=p.hand.findIndex(c=>c.id===id);g.discard.push(p.hand.splice(i,1)[0])}if(a.levelUp&&g.mode==='expert')levelUp(p);endEffects(g,p,a);log(g,p.name+'は手札を4枚に整えました。');nextTurn(g);g.revision++;return}
  if(a.type==='rematch'){if(p.id!==g.hostId||g.phase!=='finished')throw Error('再戦できません。');g.phase='lobby';g.pending=null;g.winner='';g.reason='';g.players.forEach(x=>{delete x.role;delete x.pokemon;delete x.options;delete x.team;delete x.activeIndex;x.hand=[];x.hp=0;x.maxHp=0;x.alive=true});g.revision++;log(g,'再戦の準備ができました。');return}throw Error('未対応の操作です。')}
@@ -207,14 +216,32 @@ function publicPending(q,p){const out={...q};if(q.actorId!==p?.id){delete out.ca
 function topCard(g){if(!g.deck.length&&g.discard.length){g.deck=shuffle(g.discard);g.discard=[];}return g.deck.pop()||null;}
 function trash(g,p,ids){if(!Array.isArray(ids)||new Set(ids).size!==ids.length||ids.some(id=>!p.hand.some(c=>c.id===id)))throw Error('手札のカードを選んでください。');for(const id of ids){const i=p.hand.findIndex(c=>c.id===id);g.discard.push(p.hand.splice(i,1)[0]);}}
 function removeMarker(mon,key,allowed){const present=allowed.filter(k=>mon.markers?.[k]);if(!present.length)return;if(!present.includes(key)){if(present.length===1)key=present[0];else throw Error('取り除く強化マーカーを選んでください。');}delete mon.markers[key];}
-function startDraw(g,p){if(ability(g,p,'はっこう')){g.pending={type:'drawChoice',actorId:p.id,targetId:p.id};return;}draw(g,p,2,'draw');log(g,p.name+'がドローステップでカードを引きました。');}
+function startDraw(g,p){
+ const mon=activePokemon(p);
+ const status=mon?.status;
+ if(['こんらん','ねむり','ひるみ'].includes(status))delete mon.status;
+ if(status==='こんらん'||status==='ねむり')p.noMoveTurn=g.turnNumber;
+ if(status==='ねむり')p.noSwitchTurn=g.turnNumber;
+ if(status==='ひるみ')p.flinchTurn=g.turnNumber;
+ if(status==='こんらん'||status==='どく'){
+  mon.hp=Math.max(0,mon.hp-1);
+  log(g,p.name+'は'+status+'で1ダメージを受けました。');
+  if(!mon.hp){
+   (g.effectQueue??=[]).unshift({type:'resumeDraw',actorId:p.id});
+   beginRescue(g,p,{pokemonIndex:p.activeIndex||0,actorId:null});
+   return;
+  }
+ }
+ drawStep(g,p);
+}
+function drawStep(g,p){if(ability(g,p,'はっこう')){g.pending={type:'drawChoice',actorId:p.id,targetId:p.id};return;}draw(g,p,2,'draw');log(g,p.name+'がドローステップでカードを引きました。');}
 function endEffects(g,p,a){const mon=activePokemon(p);if(a.rainDish&&ability(g,p,'あめうけざら')&&checkWeather(g,['rain','thunderstorm'])){
  mon.hp=Math.min(mon.maxHp,mon.hp+1);
  delete mon.status;
  }
  if(a.harvest&&ability(g,p,'しゅうかく'))draw(g,p,1);if(mon.heldItem&&(ability(g,p,'くいしんぼう')||mon.heldItem.effectId==='leftovers'))mon.hp=Math.min(mon.maxHp,mon.hp+1);}
 function beginRescue(g,p,q){const from=g.players.findIndex(x=>x.id===p.id),queue=[];for(let i=0;i<g.players.length;i++){const candidate=g.players[(from-i+g.players.length)%g.players.length];if(candidate.alive&&(q.effect?.id!=='self-rescue-only'||candidate.id===p.id))queue.push(candidate.id);}g.pending={type:'rescue',actorId:queue[0],queue,victimId:p.id,pokemonIndex:q.pokemonIndex,attackerId:q.actorId};if(!queue.length)knockout(g,g.pending);}
-function pumpEffects(g){if(g.pending||g.phase!=='playing')return;while(g.effectQueue?.length){const q=g.effectQueue.shift(),p=player(g,q.actorId);if(!p?.alive)continue;if(q.type==='attackResponse'){const t=player(g,q.targetId);if(!t?.alive||t.team[q.pokemonIndex]?.fainted)continue;}if(q.type==='selfKnockout'){beginRescue(g,p,{pokemonIndex:q.pokemonIndex,actorId:null});return;}if(q.type==='cycle'&&!p.hand.length)continue;if(q.type==='gift'&&!g.players.some(t=>t.alive&&t.id!==p.id))continue;g.pending=q;return;}}
+function pumpEffects(g){if(g.pending||g.phase!=='playing')return;while(g.effectQueue?.length){const q=g.effectQueue.shift(),p=player(g,q.actorId);if(q.type==='resumeDraw'){if(p?.alive)drawStep(g,p);else nextTurn(g);return;}if(!p?.alive)continue;if(q.type==='attackResponse'){const t=player(g,q.targetId);if(!t?.alive||t.team[q.pokemonIndex]?.fainted)continue;}if(q.type==='selfKnockout'){beginRescue(g,p,{pokemonIndex:q.pokemonIndex,actorId:null});return;}if(q.type==='cycle'&&!p.hand.length)continue;if(q.type==='gift'&&!g.players.some(t=>t.alive&&t.id!==p.id))continue;g.pending=q;return;}}
 function afterDamage(g,target,q,action){
  const p=player(g,q.actorId),source=p?.team?.[q.sourceIndex],mon=target.team[q.pokemonIndex],id=q.effect?.id;if(!source)return;
  if(id==='drain'){
@@ -292,7 +319,7 @@ function applySpecialStatus(g,target,mon,status){
  mon.status=status;
  log(g,target.name+'のポケモンは'+status+'になりました。');
 }
-function useWeatherMove(g,p,a){const mon=activePokemon(p),move=mon.attacks?.[a.moveIndex],card=p.hand.find(c=>c.id===a.cardId);if(!move||move.trigger!=='weather'||!move.costWeather?.includes(card?.weather))throw Error('技に対応する天気のカードを選んでください。');if(p.moveLock&&p.moveLock!==move.name)throw Error('この番は'+p.moveLock+'だけ使用できます。');const id=move.effect?.id,target=player(g,a.targetId);
+function useWeatherMove(g,p,a){if(p.noMoveTurn===g.turnNumber)throw Error('この番はわざを使えません。');const mon=activePokemon(p),move=mon.attacks?.[a.moveIndex],card=p.hand.find(c=>c.id===a.cardId);if(!move||move.trigger!=='weather'||!move.costWeather?.includes(card?.weather))throw Error('技に対応する天気のカードを選んでください。');if(p.moveLock&&p.moveLock!==move.name)throw Error('この番は'+p.moveLock+'だけ使用できます。');const id=move.effect?.id,target=player(g,a.targetId);
  if(id==='defender'&&mon.markers?.defender)throw Error('ディフェンダーはすでにあります。');
  if(['discard-random','lock-two','weather-status','lock-on'].includes(id)&&!target?.alive)throw Error('対象を選んでください。');
  const targets=id==='heal-many'?(a.targetIds||[]).map(id=>player(g,id)):[];if(id==='heal-many'&&(!targets.length||targets.some(t=>!t?.alive)||new Set(a.targetIds).size!==targets.length))throw Error('回復するバトルポケモンを選んでください。');

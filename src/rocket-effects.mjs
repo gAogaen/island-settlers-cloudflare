@@ -135,13 +135,13 @@ export function attackDamage(g,p,move,{recoil=false,target=null}={}){
  if(move.effect?.id==='target-hp-bonus'&&target?.hp>mon.hp)n++;
  if(move.effect?.id==='full-hp-bonus'&&mon.hp===mon.maxHp)n++;
  if(move.effect?.id==='optional-recoil'&&recoil)n++;
- if(mon.markers?.plusPower&&mon.status!=='まひ')n++;
+ if(move.effect?.id!=='dragon-adjacent'&&mon.markers?.plusPower&&mon.status!=='まひ')n++;
  if(mon.status==='やけど'&&!ability(g,p,'こんじょう'))n=1;
  return n;
 }
 export function receivedDamage(g,p,n,{defender=false}={}){
  if(ability(g,p,'どんかん')&&g.players[g.turn]?.id!==p.id&&active(p).damagedTurn===g.turnNumber)return 0;
- return Math.max(0,defender?Math.min(1,n):n);
+ return Math.max(0,defender&&active(p)?.status!=='まひ'?Math.min(1,n):n);
 }
 export function canDodge(g,p,card){return card?.type==='dodge'||(ability(g,p,'ふゆう')&&rain.includes(card?.weather));}
 export function handLimitExempt(g,p){return ability(g,p,'びびり')||p.noDiscardTurn===g.turnNumber;}
