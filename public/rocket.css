@@ -141,3 +141,59 @@ button{border-color:#c9b990;background:#eee5d2;color:#352f28}
 
 .play-steps {margin-top:-6px;padding-inline-start:12px;border-inline-start:2px solid #ffc84d88;}
 .play-steps li {padding-block:6px;}
+
+@media (min-width: 1050px) {
+  body:has(#room:not([hidden])) {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  body:has(#room:not([hidden])) > main {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    max-width: 1600px;
+    padding: 8px 16px;
+  }
+
+  #room:not([hidden]) {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  #room .room-head h2,
+  #room .room-head p { margin: 0; }
+
+  #room .turn-steps { margin-block: 4px; }
+  #room .turn-steps li { padding-block: 4px; }
+
+  .rocket-table {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(165px, .48fr);
+    gap: 10px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .rocket-board, .rocket-actions, .rocket-log {
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  .rocket-table .panel, .rocket-table .arena { margin: 0 0 8px; padding: 10px; }
+  .rocket-table h2 { margin-block: 0 8px; font-size: 1rem; }
+  .rocket-table .effect-controls { padding: 8px; gap: 6px; }
+  .rocket-table #hand { flex-wrap: nowrap; overflow-x: auto; }
+  .rocket-log .log { max-height: none; }
+}
+
+.board-markers { display: flex; flex-wrap: wrap; gap: 3px; margin-block: 3px; }
+.board-marker { border-radius: 4px; padding: 2px 4px; font-size: .65rem; font-weight: 700; color: #fff; }
+.board-marker.plusPower { background: #9e372c; }
+.board-marker.defender { background: #374d88; }
+.board-marker.speeder { background: #21665e; }
+.board-marker.suppressed { background: #56565a; }
