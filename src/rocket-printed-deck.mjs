@@ -323,6 +323,16 @@ export function printedCardKind(name) {
 }
 
 export function createPrintedDeck(makeId) {
+  // Only the 108 verified face-up play cards may enter the draw pile.
+  // Reject invalid data rather than silently dealing a card back or reducing the deck.
+  const total = ROCKET_PRINTED_DECK.reduce((sum, card) => sum + card.copies, 0);
+  if (total !== 108 || ROCKET_PRINTED_DECK.some(card =>
+    !card.id || !card.name || !Number.isInteger(card.copies) || card.copies < 1 ||
+    typeof card.image !== 'string' || !card.image.startsWith('/assets/rocket/cards/') ||
+    /(?:^|[\/_.-])(?:back|reverse|裏面)(?:[\/_.-]|$)/i.test(card.image)
+  ) || new Set(ROCKET_PRINTED_DECK.map(card => card.id)).size !== ROCKET_PRINTED_DECK.length) {
+    throw new Error('プレイカードの山札に未登録・裏面カード・枚数不一致があります。');
+  }
   return ROCKET_PRINTED_DECK.flatMap(card =>
     Array.from({length: card.copies}, () => ({
       id: makeId(),
