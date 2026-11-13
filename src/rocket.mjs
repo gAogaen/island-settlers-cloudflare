@@ -15,7 +15,7 @@ const roleLabels=ROCKET_ROLE_LABELS;
 const cardDef=id=>ROCKET_PLAY_CARDS.find(card=>card.id===id);
 const cardAmount=(id,fallback=0)=>Number(cardDef(id)?.effect?.amount??fallback);
 
-function deck(){return shuffle(ROCKET_PLAY_CARDS.flatMap(def=>Array.from({length:def.copies},()=>({id:uid(),cardId:def.id,type:def.action||def.effect.id,kind:def.kind,name:def.name,effectId:def.effect.id}))));}
+function deck(){return shuffle(ROCKET_PLAY_CARDS.flatMap(def=>Array.from({length:def.copies},()=>({id:uid(),cardId:def.id,type:def.action||def.effect.id,kind:def.kind,name:def.name,effectId:def.effect.id,weather:def.weather||null}))));}
 function makeRoles(n){return shuffle(['leader','trainer',...Array(n-3).fill('challenger'),'rocket']);}
 function cloneMon(card,level,mode='basic'){
  const stage=card.levels?.find(x=>x.level===level);

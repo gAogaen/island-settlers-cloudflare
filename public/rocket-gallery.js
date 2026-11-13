@@ -14,7 +14,7 @@
       image.alt = card.name;
       image.loading = 'lazy';
       const caption = document.createElement('span');
-      caption.textContent = card.name + (card.level ? ' Lv.' + card.level : '') + (card.weather ? ' · ' + (weatherNames[card.weather] || card.weather) : '');
+      caption.textContent = (card.copies ? card.copies + '枚 · ' : '') + card.name + (card.level ? ' Lv.' + card.level : '') + (card.weather ? ' · ' + (weatherNames[card.weather] || card.weather) : '');
       button.append(image, caption);
       button.onclick = () => {
         get('cardPreviewTitle').textContent = caption.textContent;
@@ -31,7 +31,7 @@
     if (!cards) {
       get('galleryCount').textContent = '読み込み中…';
       try {
-        const response = await fetch('/rocket-gallery.json?v=20261113-weather2');
+        const response = await fetch('/rocket-gallery.json?v=20261113-attack-weather');
         if (!response.ok) throw new Error('load failed');
         cards = await response.json();
       } catch {

@@ -2,7 +2,7 @@
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ROLE={leader:'ジムリーダー',trainer:'ジムトレーナー',challenger:'挑戦者',rocket:'ロケット団員'};
 const CARD={attack:['くらえ！','相手に攻撃する。'],dodge:['よけて！','攻撃を回避する。'],potion:['キズぐすり','選んだトレーナーのHPを回復。'],item:['どうぐ','カードを引く。'],scout:['さぐる','選んだ相手の役割を自分だけ確認。'],boost:['きあい','自分のHPを回復。']};
-const cardDefinition=c=>game?.catalog?.playCards?.find(x=>x.id===c.cardId)||game?.catalog?.playCards?.find(x=>x.name===c.name)||game?.catalog?.playCards?.find(x=>x.action===c.type);
+const cardDefinition=c=>game?.catalog?.playCards?.find(x=>x.id===c.cardId)||game?.catalog?.playCards?.find(x=>x.name===c.name&&(!c.weather||x.weather===c.weather))||game?.catalog?.playCards?.find(x=>x.action===c.type);
 const cardText=c=>cardDefinition(c)?.text||CARD[c.type]?.[1]||'効果情報未登録';
 const safeImage=s=>typeof s==='string'&&(/^\/assets\//.test(s)||/^https:\/\//.test(s))?s:'';
 const handImage=c=>safeImage(cardDefinition(c)?.image)||'/assets/rocket/cards/hand-back.svg';

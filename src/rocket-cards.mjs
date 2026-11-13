@@ -1,6 +1,6 @@
 // Data registry for the Rocket game. Current records are provisional playtest placeholders.
 // Replace these rows with verified card data when the user supplies the card list/images.
-export const ROCKET_CARD_DATA_VERSION = 10;
+export const ROCKET_CARD_DATA_VERSION = 11;
 
 export const ROCKET_ROLE_CARDS = [
   { id: 'leader', role: 'leader', name: 'ジムリーダー', copies: 1, public: true, image: '/assets/rocket/cards/card_055.webp', provisional: false },
@@ -12,8 +12,12 @@ export const ROCKET_ROLE_CARDS = [
 // kind is the broad rules family; effect.id maps to a server-side resolver.
 // copies, text, and numeric values below are placeholders, not verified official data.
 export const ROCKET_PLAY_CARDS = [
-  { id: 'placeholder-attack', name: 'くらえ！', kind: 'attack', action: 'attack', copies: 30, text: '相手に攻撃する。', effect: { id: 'attack', damage: 2 }, weather: null, timing: '自分の番', target: '相手1人', targetMode: 'opponent', image: '/assets/rocket/cards/card_kurae.webp', provisional: true },
-  { id: 'placeholder-dodge', name: 'よけて！', kind: 'dodge', action: 'dodge', copies: 20, text: '攻撃を回避する。', effect: { id: 'dodge' }, weather: null, timing: '攻撃されたとき', target: '自分', targetMode: 'self', image: '/assets/rocket/cards/card_yokete.webp', provisional: true },
+  {"id": "attack-sunny", "name": "くらえ！", "kind": "attack", "action": "attack", "copies": 6, "weather": "sunny", "image": "/assets/rocket/cards/weather/attack-sunny.webp", "text": "相手に攻撃する。", "effect": {"id": "attack"}, "targetMode": "opponent", "provisional": true},
+  {"id": "attack-partly-cloudy", "name": "くらえ！", "kind": "attack", "action": "attack", "copies": 3, "weather": "partly-cloudy", "image": "/assets/rocket/cards/weather/attack-partly-cloudy.webp", "text": "相手に攻撃する。", "effect": {"id": "attack"}, "targetMode": "opponent", "provisional": true},
+  {"id": "attack-rain", "name": "くらえ！", "kind": "attack", "action": "attack", "copies": 14, "weather": "rain", "image": "/assets/rocket/cards/weather/attack-rain.webp", "text": "相手に攻撃する。", "effect": {"id": "attack"}, "targetMode": "opponent", "provisional": true},
+  {"id": "attack-thunderstorm", "name": "くらえ！", "kind": "attack", "action": "attack", "copies": 7, "weather": "thunderstorm", "image": "/assets/rocket/cards/card_kurae.webp", "text": "相手に攻撃する。", "effect": {"id": "attack"}, "targetMode": "opponent", "provisional": true},
+  {"id": "dodge-sunny", "name": "よけて！", "kind": "dodge", "action": "dodge", "copies": 12, "weather": "sunny", "image": "/assets/rocket/cards/weather/dodge-sunny.webp", "text": "攻撃を回避する。", "effect": {"id": "dodge"}, "targetMode": "self", "provisional": true},
+  {"id": "dodge-partly-cloudy", "name": "よけて！", "kind": "dodge", "action": "dodge", "copies": 3, "weather": "partly-cloudy", "image": "/assets/rocket/cards/card_yokete.webp", "text": "攻撃を回避する。", "effect": {"id": "dodge"}, "targetMode": "self", "provisional": true},
   { id: 'placeholder-potion', name: 'キズぐすり', kind: 'tool', action: 'potion', copies: 18, text: '選んだトレーナーのHPを3回復。', effect: { id: 'heal', amount: 3 }, weather: null, timing: '仮設定', target: '生存中のトレーナー', targetMode: 'any-trainer', image: '/assets/rocket/cards/card_045.webp', provisional: true },
   { id: 'placeholder-item', name: 'どうぐ', kind: 'tool', action: 'item', copies: 14, text: 'カードを1枚引く。', effect: { id: 'draw', amount: 1 }, weather: null, timing: '自分の番', target: '自分', targetMode: 'self', image: null, provisional: true },
   { id: 'placeholder-scout', name: 'さぐる', kind: 'event', action: 'scout', copies: 10, text: '選んだ相手の役割を自分だけ確認。', effect: { id: 'revealRole' }, weather: null, timing: '自分の番', target: '相手1人', targetMode: 'opponent', image: null, provisional: true },
@@ -114,8 +118,12 @@ export const ROCKET_CARD_IMAGE_ASSETS = [
   {"id": "plus-power-partly-cloudy", "name": "プラスパワー／スピーダー", "weather": "partly-cloudy", "category": "play", "image": "/assets/rocket/cards/weather/plus-power-partly-cloudy.webp", "observedCopies": 2, "sourcePhoto": "IMG_1619.jpeg"},
   {"id": "plus-power-rain", "name": "プラスパワー／スピーダー", "weather": "rain", "category": "play", "image": "/assets/rocket/cards/weather/plus-power-rain.webp", "observedCopies": 1, "sourcePhoto": "IMG_1619.jpeg"},
   {"id": "potion-full-heal-sunny", "name": "キズぐすり／なんでもなおし", "weather": "sunny", "category": "play", "image": "/assets/rocket/cards/weather/potion-full-heal-sunny.webp", "observedCopies": 2, "sourcePhoto": "IMG_1621.jpeg"},
-  {id:'card_kurae',category:'play',image:'/assets/rocket/cards/card_kurae.webp'},
-  {id:'card_yokete',category:'play',image:'/assets/rocket/cards/card_yokete.webp'},
+  {"id": "attack-sunny", "name": "くらえ！", "weather": "sunny", "copies": 6, "category": "play", "image": "/assets/rocket/cards/weather/attack-sunny.webp"},
+  {"id": "attack-partly-cloudy", "name": "くらえ！", "weather": "partly-cloudy", "copies": 3, "category": "play", "image": "/assets/rocket/cards/weather/attack-partly-cloudy.webp"},
+  {"id": "attack-rain", "name": "くらえ！", "weather": "rain", "copies": 14, "category": "play", "image": "/assets/rocket/cards/weather/attack-rain.webp"},
+  {"id": "attack-thunderstorm", "name": "くらえ！", "weather": "thunderstorm", "copies": 7, "category": "play", "image": "/assets/rocket/cards/card_kurae.webp"},
+  {"id": "dodge-sunny", "name": "よけて！", "weather": "sunny", "copies": 12, "category": "play", "image": "/assets/rocket/cards/weather/dodge-sunny.webp"},
+  {"id": "dodge-partly-cloudy", "name": "よけて！", "weather": "partly-cloudy", "copies": 3, "category": "play", "image": "/assets/rocket/cards/card_yokete.webp"},
   {id:'card_mew',weather:'partly-cloudy',category:'special',image:'/assets/rocket/cards/card_mew.webp'},
   {id:'card_mewtwo',weather:'partly-cloudy',category:'special',image:'/assets/rocket/cards/card_mewtwo.webp'},
   {id:'bulbasaur-lv1',name:'フシギダネ',level:1,category:'pokemon',image:'/assets/rocket/cards/evolution/bulbasaur-lv1-q2.webp'},
