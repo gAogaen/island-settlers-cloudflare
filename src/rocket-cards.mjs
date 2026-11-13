@@ -1,6 +1,7 @@
+import { ROCKET_LV1_DATA } from './rocket-lv1-data.mjs';
 // Data registry for the Rocket game. Current records are provisional playtest placeholders.
 // Replace these rows with verified card data when the user supplies the card list/images.
-export const ROCKET_CARD_DATA_VERSION = 11;
+export const ROCKET_CARD_DATA_VERSION = 12;
 
 export const ROCKET_ROLE_CARDS = [
   { id: 'leader', role: 'leader', name: 'ジムリーダー', copies: 1, public: true, image: '/assets/rocket/cards/card_055.webp', provisional: false },
@@ -124,6 +125,32 @@ export const ROCKET_CARD_IMAGE_ASSETS = [
   {"id": "attack-thunderstorm", "name": "くらえ！", "weather": "thunderstorm", "copies": 7, "category": "play", "image": "/assets/rocket/cards/card_kurae.webp"},
   {"id": "dodge-sunny", "name": "よけて！", "weather": "sunny", "copies": 12, "category": "play", "image": "/assets/rocket/cards/weather/dodge-sunny.webp"},
   {"id": "dodge-partly-cloudy", "name": "よけて！", "weather": "partly-cloudy", "copies": 3, "category": "play", "image": "/assets/rocket/cards/card_yokete.webp"},
+  {"id": "charmander-lv1", "name": "ヒトカゲ", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/charmander-lv1.webp", "cardType": "アタック型", "redHp": 3, "ability": "もうか", "attacks": [{"name": "ひのこ", "damage": 1}]},
+  {"id": "squirtle-lv1", "name": "ゼニガメ", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/squirtle-lv1.webp", "cardType": "バランス型", "redHp": 3, "ability": "あめうけざら", "attacks": [{"name": "みずでっぽう", "damage": 2}]},
+  {"id": "pidgey-lv1", "name": "ポッポ", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/pidgey-lv1.webp", "cardType": "アタック型", "redHp": 3, "ability": "するどいめ", "attacks": [{"name": "たいあたり", "damage": 1}]},
+  {"id": "nidoran-m-lv1", "name": "ニドラン♂", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/nidoran-m-lv1.webp", "cardType": "アタック型", "redHp": 3, "ability": "どくのトゲ", "attacks": [{"name": "にどげり", "damage": 1}]},
+  {"id": "mankey-lv1", "name": "マンキー", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/mankey-lv1.webp", "cardType": "バランス型", "redHp": 3, "ability": "まけんき", "attacks": [{"name": "ひっかく", "damage": 2}]},
+  {"id": "psyduck-lv1", "name": "コダック", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/psyduck-lv1.webp", "cardType": "ぼうがい型", "redHp": 3, "ability": "すいすい", "attacks": [{"name": "あわ", "damage": 1}]},
+  {"id": "growlithe-lv1", "name": "ガーディ", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/growlithe-lv1.webp", "cardType": "バランス型", "redHp": 3, "ability": "せいぎのこころ", "attacks": [{"name": "ほのおのキバ", "damage": 2}]},
+  {"id": "sandshrew-lv1", "name": "サンド", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/sandshrew-lv1.webp", "cardType": "ぼうがい型", "redHp": 3, "ability": "すながくれ", "attacks": [{"name": "どくばり", "damage": 1}]},
+  {"id": "machop-lv1", "name": "ワンリキー", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/machop-lv1.webp", "cardType": "アタック型", "redHp": 3, "ability": "こんじょう", "attacks": [{"name": "いわくだき", "damage": 1}]},
+  {"id": "magnemite-lv1", "name": "コイル", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/magnemite-lv1.webp", "cardType": "ぼうがい型", "redHp": 3, "ability": "アナライズ", "attacks": [{"name": "でんきショック", "damage": 1}]},
+  {"id": "shellder-lv1", "name": "シェルダー", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/shellder-lv1.webp", "cardType": "アタック型", "redHp": 3, "ability": "スキルリンク", "attacks": [{"name": "たいあたり", "damage": 1}]},
+  {"id": "gastly-lv1", "name": "ゴース", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/gastly-lv1.webp", "cardType": "アタック型", "redHp": 3, "ability": "ふゆう", "attacks": [{"name": "したでなめる", "damage": 1}]},
+  {"id": "exeggcute-lv1", "name": "タマタマ", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/exeggcute-lv1.webp", "cardType": "アタック型", "redHp": 3, "ability": "しゅうかく", "attacks": [{"name": "やどりぎのタネ", "damage": 1}]},
+  {"id": "cubone-lv1", "name": "カラカラ", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/cubone-lv1.webp", "cardType": "ディフェンス型", "redHp": 3, "ability": "カブトアーマー", "attacks": [{"name": "たいあたり", "damage": 1}]},
+  {"id": "koffing-lv1", "name": "ドガース", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/koffing-lv1.webp", "cardType": "バランス型", "redHp": 3, "ability": "かがくへんかガス", "attacks": [{"name": "アシッドボム", "damage": 2}]},
+  {"id": "rhyhorn-lv1", "name": "サイホーン", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/rhyhorn-lv1.webp", "cardType": "アタック型", "redHp": 3, "ability": "すてみ", "attacks": [{"name": "いわおとし", "damage": 1}]},
+  {"id": "chansey-lv1", "name": "ラッキー", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/chansey-lv1.webp", "cardType": "サポート型", "redHp": 3, "ability": "いやしのこころ", "attacks": [{"name": "あまえる", "damage": 0}]},
+  {"id": "kangaskhan-lv1", "name": "ガルーラ", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/kangaskhan-lv1.webp", "cardType": "アタック型", "redHp": 3, "ability": "はやおき", "attacks": [{"name": "ねこだまし", "damage": 1}]},
+  {"id": "staryu-lv1", "name": "ヒトデマン", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/staryu-lv1.webp", "cardType": "バランス型", "redHp": 3, "ability": "はっこう", "attacks": [{"name": "みずでっぽう", "damage": 2}]},
+  {"id": "electabuzz-lv1", "name": "エレブー", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/electabuzz-lv1.webp", "cardType": "バランス型", "redHp": 3, "ability": "やるき", "attacks": [{"name": "でんげきは", "damage": 2}]},
+  {"id": "vulpix-lv1", "name": "ロコン", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/vulpix-lv1.webp", "cardType": "ぼうがい型", "redHp": 3, "ability": "ひでり", "attacks": [{"name": "ひのこ", "damage": 1}]},
+  {"id": "magikarp-lv1", "name": "コイキング", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/magikarp-lv1.webp", "cardType": "アタック型", "redHp": 3, "ability": "びびり", "attacks": [{"name": "はねる", "damage": 0}]},
+  {"id": "grimer-lv1", "name": "ベトベター", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/grimer-lv1.webp", "cardType": "ぼうがい型", "redHp": 3, "ability": "どくしゅ", "attacks": [{"name": "はたく", "damage": 1}]},
+  {"id": "porygon-lv1", "name": "ポリゴン", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/porygon-lv1.webp", "cardType": "ぼうがい型", "redHp": 3, "ability": "ダウンロード", "attacks": [{"name": "でんきショック", "damage": 1}]},
+  {"id": "snorlax-lv1", "name": "カビゴン", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/snorlax-lv1.webp", "cardType": "ディフェンス型", "redHp": 4, "ability": "くいしんぼう", "attacks": [{"name": "たいあたり", "damage": 1}]},
+  {"id": "aerodactyl-lv1", "name": "プテラ", "level": 1, "category": "pokemon", "image": "/assets/rocket/cards/evolution/aerodactyl-lv1.webp", "cardType": "アタック型", "redHp": 3, "ability": "プレッシャー", "attacks": [{"name": "つばさでうつ", "damage": 2}]},
   {id:'card_mew',weather:'partly-cloudy',category:'special',image:'/assets/rocket/cards/card_mew.webp'},
   {id:'card_mewtwo',weather:'partly-cloudy',category:'special',image:'/assets/rocket/cards/card_mewtwo.webp'},
   {id:'bulbasaur-lv1',name:'フシギダネ',level:1,category:'pokemon',image:'/assets/rocket/cards/evolution/bulbasaur-lv1-q2.webp'},
@@ -138,3 +165,15 @@ export const ROCKET_CARD_IMAGE_ASSETS = [
   {id:'promo-dragonite-lv2',category:'pokemon',image:'/assets/rocket/cards/evolution/dragonair-q2.webp'},
   {id:'promo-dragonite-lv3',category:'pokemon',image:'/assets/rocket/cards/evolution/dragonite-q2.webp'}
 ];
+
+// Attach verified printed Lv.1 fields to matching existing selection candidates.
+for (const card of ROCKET_POKEMON_CARDS) {
+ const printed = ROCKET_LV1_DATA.find(row => row.name === card.name);
+ if (!printed) continue;
+ const stage = card.levels?.find(row => row.level === 1);
+ if (stage) Object.assign(stage, {name:printed.name, hp:printed.redHp, redHp:printed.redHp, greenHp:null, cardType:printed.cardType, cardImage:printed.cardImage, ability:printed.ability, attacks:printed.attacks.map(move => ({...move, text:'追加効果はカード画像を確認してください。'}))});
+}
+for (const image of ROCKET_CARD_IMAGE_ASSETS) {
+ const printed = ROCKET_LV1_DATA.find(row => row.name === image.name && image.level === 1);
+ if (printed) Object.assign(image, {redHp:printed.redHp,cardType:printed.cardType,ability:printed.ability,attacks:printed.attacks});
+}
