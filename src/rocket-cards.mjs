@@ -34,7 +34,18 @@ export const ROCKET_POKEMON_CARDS = [
   // Provisional stages keep the expert mode playable until verified card stats arrive.
   // Replace each family's stage rows with the printed red-heart HP and attack data.
   const levels=[1,2,3].map(level=>({level,hp,attacks:attacks.map(attack=>({...attack}))}));
-  return {id:'placeholder-'+id,familyId:'placeholder-'+id,name,species:name,type,level:3,hp,move,attacks,levels,ability:null,abilityText:'',image:`/assets/rocket/pokemon/${pokedexNumber}.png`,provisional:true};
+  return {id:'placeholder-'+id,familyId:'placeholder-'+id,name,species:name,type,cardType:null,level:3,hp,greenHp:null,redHp:null,move,attacks,levels,ability:null,abilityText:'',image:`/assets/rocket/pokemon/${pokedexNumber}.png`,cardImage:null,provisional:true};
+});
+
+// First supplied Pokémon card. Its printed card text and both heart values are visible in the scan;
+// expert level 1/2 progression still awaits the complete card data.
+ROCKET_POKEMON_CARDS.push({
+  id:'official-card-001', cardId:'card_001', familyId:'muk', name:'ベトベトン', species:'ベトベトン',
+  type:'どく', cardType:'ぼうがい型', level:3, hp:10, greenHp:10, redHp:5, move:'どくどく',
+  attacks:[{name:'どくどく',damage:2,text:'ダメージを与えた後、おてんきチェック。カード記載の天気なら、相手を「どく」にする。',weather:null,effect:{id:'poison-on-weather'}}],
+  levels:[{level:3,hp:10,attacks:[{name:'どくどく',damage:2,text:'ダメージを与えた後、おてんきチェック。カード記載の天気なら、相手を「どく」にする。',weather:null,effect:{id:'poison-on-weather'}}]}],
+  ability:'どくしゅ', abilityText:'バトルエリアの好きなポケモンが特殊状態になるとき、その特殊状態を「どく」に変更できる。どくでHPを失うとき、ダメージを2にできる。',
+  image:'/assets/rocket/pokemon/089.png', cardImage:'/assets/rocket/cards/card_001.webp', provisional:true
 });
 
 export const ROCKET_ROLE_LABELS = Object.fromEntries(ROCKET_ROLE_CARDS.map(card=>[card.role,card.name]));

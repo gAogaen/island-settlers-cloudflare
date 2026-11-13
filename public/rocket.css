@@ -67,3 +67,27 @@ button{border-color:#c9b990;background:#eee5d2;color:#352f28}
 .play-card.potion,.play-card.boost{background:linear-gradient(155deg,#718a68,#465b45 74%)}
 .play-card.item{background:linear-gradient(155deg,#aa8950,#625235 74%)}
 .play-card.scout{background:linear-gradient(155deg,#89728e,#50465b 74%)}
+.pokemon-choice{grid-template-columns:clamp(112px,32%,156px) minmax(0,1fr);min-height:190px;background:linear-gradient(145deg,#f4ecdc,#e0d3b8);box-shadow:0 5px 13px #15110d35}
+.pokemon-choice .pokemon-card-scan{height:auto;aspect-ratio:745/1040;object-fit:contain;padding:0;border:1px solid #55443d;border-radius:8px!important;background:#f8f4e9;box-shadow:0 3px 9px #30251f45}
+.choice-copy{display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:0;color:#392f2a;white-space:normal}
+.choice-copy>strong{display:flex;justify-content:space-between;align-items:baseline;gap:5px;font-size:1rem}
+.choice-copy>strong small{font-size:.74rem;color:#6b5d50}
+.choice-kind{display:block;padding:3px 7px;border-radius:6px;background:#dfd2b2;color:#524438;font-weight:800;font-size:.77rem}
+.choice-hp{display:flex;flex-wrap:wrap;gap:4px}
+.choice-hp>span{padding:3px 6px;border:1px solid #c8baa0;border-radius:6px;background:#f6f0e3;color:#655b4d;font-size:.7rem;white-space:nowrap}
+.choice-hp>span:first-child b{color:#55754e}.choice-hp>span:last-child b{color:#974f4d}
+.choice-hp>span.current{border-color:#a68a54;background:#eee0bd;box-shadow:inset 0 0 0 1px #a68a5444}
+.choice-section{display:flex;flex-direction:column;gap:2px;padding-top:4px;border-top:1px solid #cfc1a8;color:#40362f;font-size:.74rem;line-height:1.35}
+.choice-section>small,.choice-move small{white-space:normal;color:#62574d;font-size:.68rem;line-height:1.35}
+.choice-move{display:flex;flex-direction:column;gap:2px}
+.choice-provisional{color:#866a3b;font-size:.65rem;white-space:normal;line-height:1.3}
+.pokemon-option-wrap{display:flex;flex-direction:column;align-items:stretch;flex:1 1 340px;min-width:min(100%,300px);max-width:520px;gap:6px}
+.pokemon-option-wrap .pokemon-choice{width:100%;min-width:0;text-align:left}
+.card-preview-trigger{align-self:flex-end;padding:6px 10px;border-color:#bca77e;background:#f4ecdc;color:#514237;font-size:.76rem}
+.card-preview-dialog{width:min(560px,96vw);padding:12px;background:#28211e;color:#f7eddd}
+.card-preview-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.card-preview-head h2{margin:0}
+.card-preview-head button{padding:6px 10px}
+.card-preview-image{display:block;width:auto;max-width:100%;height:min(78dvh,900px);margin:0 auto;object-fit:contain;border-radius:7px;box-shadow:0 6px 22px #0008}
+@media(max-width:700px){.pokemon-choice{grid-template-columns:112px minmax(0,1fr);min-height:178px}.pokemon-choice .pokemon-card-scan{width:112px}.choice-copy{gap:5px}.choice-copy>strong{font-size:.94rem}.choice-kind{font-size:.72rem}.choice-hp>span{font-size:.66rem;padding:3px 5px}.choice-section{font-size:.72rem}}
+@media(max-width:380px){.pokemon-choice{grid-template-columns:98px minmax(0,1fr);min-height:164px}.pokemon-choice .pokemon-card-scan{width:98px}.choice-hp>span{font-size:.61rem}.choice-section>small,.choice-move small{font-size:.64rem}}

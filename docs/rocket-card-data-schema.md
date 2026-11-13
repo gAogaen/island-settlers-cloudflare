@@ -19,13 +19,13 @@ Suggested `kind` values: `attack`, `dodge`, `tool`, `item`, `event`. The exact g
 
 ## Pokémon cards
 
-Each `ROCKET_POKEMON_CARDS` row supports `id`, `familyId`, `name`, `species`, `type`, `level`, `hp`, `attacks` (name, damage, weather, effect), `ability`, `abilityText`, `image`, and `provisional`. Include `levels` as ordered records containing `level`, the correct mode-specific HP, and that level's attacks. The prototype currently models a Pokémon family as one row with a `levels` array so the same family can be selected and leveled up. Add explicit `cardId`/physical-card data if the supplied 60-card list needs per-card identity.
+Each `ROCKET_POKEMON_CARDS` row supports `id`, `cardId`, `familyId`, `name`, `species`, `type`, `cardType` (printed role such as `ぼうがい型`), `level`, `hp`, `greenHp` (basic-rule green-heart HP), `redHp` (expert-rule red-heart HP), `attacks` (name, damage, printed text, weather, effect), `ability`, `abilityText`, `image` (Pokémon artwork), `cardImage` (full scan of the physical card), and `provisional`. Include `levels` as ordered records containing `level`, the correct expert-mode red-heart HP, and that level's attacks. The prototype currently models a Pokémon family as one row with a `levels` array so the same family can be selected and leveled up. A selection card should keep the scan visible and show these fields in readable text; when no scan or verified text exists, label the missing information rather than inventing it. `cardImage` can be opened full size in the selection view.
 
 ## Modes
 
 - `basic`: draw 2 Pokémon candidates, choose 1, start at Lv.3.
 - `expert`: draw 4 candidates, choose 2, start both at Lv.1, switch the active Pokémon, and optionally level up the active Pokémon at end of turn.
-- HP and attack values in the current registry are placeholders. Replace all levels with the supplied red-heart values and printed attacks before calling this an official rules implementation. The current level-up HP change preserves missing HP while adding the increase in maximum HP; revise this if the supplied rules/cards specify another calculation.
+- Except for explicitly supplied scans/records, HP and attack values in the current registry are placeholders. Replace all levels with the supplied red-heart values and printed attacks before calling this an official rules implementation. Level-up is only offered when the next level exists in the card data. The current level-up HP change preserves missing HP while adding the increase in maximum HP; revise this if the supplied rules/cards specify another calculation.
 
 ## Role cards
 
