@@ -1,6 +1,6 @@
 // Data registry for the Rocket game. Current records are provisional playtest placeholders.
 // Replace these rows with verified card data when the user supplies the card list/images.
-export const ROCKET_CARD_DATA_VERSION = 6;
+export const ROCKET_CARD_DATA_VERSION = 7;
 
 export const ROCKET_ROLE_CARDS = [
   { id: 'leader', role: 'leader', name: 'ジムリーダー', copies: 1, public: true, image: '/assets/rocket/cards/card_055.webp', provisional: false },
@@ -72,7 +72,7 @@ export const ROCKET_ROLE_LABELS = Object.fromEntries(ROCKET_ROLE_CARDS.map(card=
 export const ROCKET_CARD_IMAGE_ASSETS = [
   ...Array.from({length:58},(_,index)=>{
     const n=String(index+1).padStart(3,'0');
-    const known={3:'ゲンガー',10:'スターミー',12:'ギャラドス',15:'カビゴン',17:'リザードン',20:'ライチュウ'};
+    const known={3:'ゲンガー',10:'スターミー',12:'ギャラドス',14:'プテラ',15:'カビゴン',17:'リザードン',20:'ライチュウ'};
     return {id:`card_${n}`,name:known[index+1]||null,level:index<30?3:null,category:index<30?'pokemon':index<54?'play': 'role',image:`/assets/rocket/cards/card_${n}.webp`};
   }),
   {id:'card_kurae',category:'play',image:'/assets/rocket/cards/card_kurae.webp'},
@@ -83,6 +83,7 @@ export const ROCKET_CARD_IMAGE_ASSETS = [
   {id:'pikachu-lv1',name:'ピカチュウ',level:1,category:'pokemon',image:'/assets/rocket/cards/evolution/pikachu-lv1.webp'},
   {id:'meowth-lv1',name:'ニャース',level:1,category:'pokemon',image:'/assets/rocket/cards/evolution/meowth-lv1.webp'},
   {id:'slowpoke-lv1',name:'ヤドン',level:1,category:'pokemon',image:'/assets/rocket/cards/evolution/slowpoke-lv1.webp'},
+  {id:'aerodactyl-lv2',name:'プテラ',level:2,category:'pokemon',image:'/assets/rocket/cards/evolution/aerodactyl-lv2.webp'},
   {id:'gyarados-lv2',name:'ギャラドス',level:2,category:'pokemon',image:'/assets/rocket/cards/evolution/gyarados-lv2.webp'},
   {id:'haunter-lv2',name:'ゴースト',level:2,category:'pokemon',image:'/assets/rocket/cards/evolution/haunter-lv2.webp'},
   {id:'pikachu-lv2',name:'ピカチュウ',level:2,category:'pokemon',image:'/assets/rocket/cards/evolution/pikachu-lv2.webp'},
