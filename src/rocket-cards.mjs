@@ -28,37 +28,7 @@ export const ROCKET_PLAY_CARDS = [
   { id: 'placeholder-boost', name: 'きあい', kind: 'tool', action: 'boost', copies: 10, text: '自分のHPを1回復。', effect: { id: 'heal', amount: 1 }, weather: null, timing: '自分の番', target: '自分', targetMode: 'self', image: null, provisional: true }
 ];
 
-// Provisional, simplified Pokémon roster. Official levels, abilities, moves and card images are not entered yet.
-export const ROCKET_POKEMON_CARDS = [
-  ['pikachu','ピカチュウ','でんき',8,'でんこうせっか'],['bulbasaur','フシギダネ','くさ',9,'つるのムチ'],
-  ['charmander','ヒトカゲ','ほのお',8,'ひっかく'],['squirtle','ゼニガメ','みず',10,'みずでっぽう'],
-  ['rattata','コラッタ','ノーマル',8,'たいあたり'],['growlithe','ガーディ','ほのお',9,'かみつく'],
-  ['meowth','ニャース','ノーマル',8,'ひっかく'],['koffing','ドガース','どく',9,'たいあたり'],
-  ['geodude','イシツブテ','いわ',10,'いわおとし'],['psyduck','コダック','みず',9,'みずでっぽう'],
-  ['abra','ケーシィ','エスパー',8,'ねんりき'],['sandshrew','サンド','じめん',10,'ひっかく']
-].map(([id,name,type,hp,move])=>{
-  const pokedexNumber={pikachu:'025',bulbasaur:'001',charmander:'004',squirtle:'007',rattata:'019',growlithe:'058',meowth:'052',koffing:'109',geodude:'074',psyduck:'054',abra:'063',sandshrew:'027'}[id];
-  const attacks=[{name:move,damage:2,weather:null,effect:null}];
-  // Provisional stages keep the expert mode playable until verified card stats arrive.
-  // Replace each family's stage rows with the printed red-heart HP and attack data.
-  const levels=[1,2,3].map(level=>({level,hp,attacks:attacks.map(attack=>({...attack}))}));
-  return {id:'placeholder-'+id,familyId:'placeholder-'+id,name,species:name,type,cardType:null,level:3,hp,greenHp:null,redHp:null,move,attacks,levels,ability:null,abilityText:'',image:`/assets/rocket/pokemon/${pokedexNumber}.png`,cardImage:null,provisional:true};
-});
-
-// First supplied Pokémon card. Its printed card text and both heart values are visible in the scan;
-// expert level 1/2 progression still awaits the complete card data.
-ROCKET_POKEMON_CARDS.push({
-  id:'official-card-001', cardId:'card_001', familyId:'muk', name:'ベトベトン', species:'ベトベトン',
-  type:'どく', cardType:'ぼうがい型', level:3, hp:10, greenHp:10, redHp:5, move:'どくどく',
-  attacks:[{name:'どくどく',damage:2,text:'ダメージを与えた後、おてんきチェック。カード記載の天気なら、相手を「どく」にする。',weather:null,effect:{id:'poison-on-weather'}}],
-  levels:[{level:3,hp:10,attacks:[{name:'どくどく',damage:2,text:'ダメージを与えた後、おてんきチェック。カード記載の天気なら、相手を「どく」にする。',weather:null,effect:{id:'poison-on-weather'}}]}],
-  ability:'どくしゅ', abilityText:'バトルエリアの好きなポケモンが特殊状態になるとき、その特殊状態を「どく」に変更できる。どくでHPを失うとき、ダメージを2にできる。',
-  image:'/assets/rocket/pokemon/089.png', cardImage:'/assets/rocket/cards/card_001.webp', provisional:true
-});
-
-// Dragonite evolution-line promo scans, rectified from the user-provided photos.
-// The printed names and values are legible; complex move effects remain provisional.
-ROCKET_POKEMON_CARDS.push({
+const dragonite = {
   id:'promo-dragonite', cardId:'promo-dragonite', familyId:'dratini-line',
   name:'カイリュー', species:'カイリュー', type:'ドラゴン', cardType:'バランス型', level:3,
   hp:8, greenHp:8, redHp:4, move:'りゅうせいぐん',
@@ -71,7 +41,7 @@ ROCKET_POKEMON_CARDS.push({
   ability:'マルチスケイル', abilityText:'バトルエリアにいる間続く。HPが満タンのこのポケモンがダメージを受けたとき、そのダメージを1にする。',
   image:'/assets/rocket/pokemon/149.png', cardImage:'/assets/rocket/cards/evolution/dragonite-q2.webp',
   provisional:true
-});
+};
 
 export const ROCKET_ROLE_LABELS = Object.fromEntries(ROCKET_ROLE_CARDS.map(card=>[card.role,card.name]));
 
@@ -169,13 +139,6 @@ export const ROCKET_CARD_IMAGE_ASSETS = [
   {id:'promo-dragonite-lv3',category:'pokemon',image:'/assets/rocket/cards/evolution/dragonite-q2.webp'}
 ];
 
-// Attach verified printed Lv.1 fields to matching existing selection candidates.
-for (const card of ROCKET_POKEMON_CARDS) {
- const printed = ROCKET_LV1_DATA.find(row => row.name === card.name);
- if (!printed) continue;
- const stage = card.levels?.find(row => row.level === 1);
- if (stage) Object.assign(stage, {name:printed.name, hp:printed.redHp, redHp:printed.redHp, greenHp:null, cardType:printed.cardType, cardImage:printed.cardImage, ability:printed.ability, attacks:printed.attacks.map(move => ({...move, text:'追加効果はカード画像を確認してください。'}))});
-}
 for (const image of ROCKET_CARD_IMAGE_ASSETS) {
  const printed = ROCKET_LV1_DATA.find(row => row.name === image.name && image.level === 1);
  if (printed) Object.assign(image, {redHp:printed.redHp,cardType:printed.cardType,ability:printed.ability,attacks:printed.attacks});
@@ -188,15 +151,6 @@ for (const printed of ROCKET_LV2_DATA) {
  if (existing) Object.assign(existing, asset);
  else ROCKET_CARD_IMAGE_ASSETS.push(asset);
 }
-// Only attach to already established families; do not infer new playable families.
-const level2Names = {フシギダネ:'フシギソウ',ヒトカゲ:'リザード',ゼニガメ:'カメール'};
-for (const card of ROCKET_POKEMON_CARDS) {
- const printed = ROCKET_LV2_DATA.find(row => row.name === (level2Names[card.name] || card.name));
- const stage = card.levels?.find(row => row.level === 2);
- if (!printed || !stage) continue;
- Object.assign(stage, {name:printed.name,hp:printed.redHp,redHp:printed.redHp,greenHp:null,cardType:printed.cardType,cardImage:printed.cardImage,ability:printed.ability,effectStatus:printed.effectStatus,attacks:printed.attacks.map(move => ({...move,text:'追加効果はカード画像を確認してください。'}))});
-}
-
 // Attach the matching printed Lv.3 face to each expert family.
 const NEXT_SPECIES = {フシギダネ:'フシギソウ',ヒトカゲ:'リザード',ゼニガメ:'カメール',ポッポ:'ピジョン','ニドラン♂':'ニドリーノ',ワンリキー:'ゴーリキー',ゴース:'ゴースト',コイキング:'ギャラドス'};
 export const ROCKET_EXPERT_POKEMON_CARDS = ROCKET_LV1_DATA.map(first => {
@@ -205,8 +159,6 @@ export const ROCKET_EXPERT_POKEMON_CARDS = ROCKET_LV1_DATA.map(first => {
  const stages = [first,second,third].filter(Boolean).map(row => ({...enrichPrinted(row), hp:row.redHp, basicHp:row.greenHp}));
  return {...stages[0],id:'expert-'+first.id,familyId:first.id.replace('-lv1',''),species:first.name,type:'',level:1,hp:first.redHp,levels:stages,provisional:true};
 });
-const dragonite = ROCKET_POKEMON_CARDS.find(card => card.id === 'promo-dragonite');
-if (dragonite) {
  dragonite.levels=dragonite.levels.map(stage=>({
   ...stage,abilityStatus:'implemented',effectStatus:'implemented',
   attacks:stage.attacks.map(move=>({
@@ -214,8 +166,12 @@ if (dragonite) {
    effect:{id:stage.level===1?'none':'dragon-adjacent'},
   })),
  }));
- ROCKET_EXPERT_POKEMON_CARDS.push(dragonite);
-}
+ROCKET_EXPERT_POKEMON_CARDS.push(dragonite);
+export const ROCKET_POKEMON_CARDS = ROCKET_EXPERT_POKEMON_CARDS.flatMap(family => {
+ const stage=family.levels.find(card=>card.level===3);
+ if(!stage?.cardImage||!Number.isFinite(stage.basicHp))return [];
+ return [{...family,...stage,id:family.id,name:stage.name,species:stage.name,hp:stage.basicHp,provisional:false,levels:[stage]}];
+});
 for (const image of ROCKET_CARD_IMAGE_ASSETS) {
  const row = [...ROCKET_LV1_DATA,...ROCKET_LV2_DATA,...ROCKET_LV3_DATA].find(row => row.id === image.id);
  if (row) Object.assign(image, enrichPrinted(row));
