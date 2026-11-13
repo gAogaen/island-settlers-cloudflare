@@ -197,3 +197,9 @@ button{border-color:#c9b990;background:#eee5d2;color:#352f28}
 .board-marker.defender { background: #374d88; }
 .board-marker.speeder { background: #21665e; }
 .board-marker.suppressed { background: #56565a; }
+
+.table-card-preview { display: grid; gap: 4px; flex: 0 0 7rem; width: 7rem; padding: 4px; }
+.table-card-preview img { display: block; width: 100%; height: auto; }
+
+#decisionDialog { width: min(32rem, 92vw); max-height: 85dvh; overflow: auto; }
+#decisionControls .actions { align-items: stretch; }

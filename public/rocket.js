@@ -76,7 +76,7 @@ function render(){if(!game)return;renderTurnSteps();const me=game.me,turn=game.p
  if(tableCards){
   const cards=game.tableCards||[];
   tableCards.hidden=!cards.length||(!game.pending&&Date.now()>=game.tableCardsUntil);
-  if(!tableCards.hidden)tableCards.innerHTML='<h2>使用されたカード</h2><div class="hand">'+cards.map(card=>'<figure style="margin:0;width:7rem"><img style="width:100%;height:auto" src="'+esc(handImage(card))+'" alt="'+esc(card.name)+'"><figcaption>'+esc(card.playerName)+' · '+esc(card.name)+'</figcaption></figure>').join('')+'</div>';
+  if(!tableCards.hidden)tableCards.innerHTML='<h2>使用されたカード</h2><div class="hand">'+cards.map((card,index)=>'<button class="table-card-preview" type="button" data-table-card="'+index+'" aria-label="'+esc(card.name)+'を拡大"><img src="'+esc(handImage(card))+'" alt=""><span>'+esc(card.playerName)+' · '+esc(card.name)+'</span></button>').join('')+'</div>';
  }
  $('arenaInfo').textContent=game.phase==='lobby'?'トレーナーを待っています':game.phase==='setup'?'相棒を選ぼう':game.phase==='finished'?game.winner+'の勝利':game.pending?'攻撃が飛んできた！':(turn?.name||'')+' の番';$('deckCount').textContent='山札 '+game.deckCount+' 枚';
  const seatPlayers=[...game.players],seatCount=seatPlayers.length,mySeat=seatPlayers.findIndex(p=>p.id===me?.id),bottomSeat=Math.floor(seatCount/2),mobileSeats=matchMedia('(max-width:700px)').matches;if(mySeat>=0){const offset=(mySeat-bottomSeat+seatCount)%seatCount;seatPlayers.push(...seatPlayers.splice(0,offset))}const seatRadiusX=seatCount<=4?38:40,seatRadiusY=mobileSeats?33:40,mobileSix=[[50,17],[98,37],[98,63],[50,83],[2,63],[2,37]];
@@ -112,9 +112,26 @@ function render(){if(!game)return;renderTurnSteps();const me=game.me,turn=game.p
    button.classList.toggle('selected', chosen === button.dataset.card);
    button.classList.toggle('discard-selected', discardSet.has(button.dataset.card));
  });
- $('selection').textContent=discarding?'選択中：'+discardSet.size+'枚':chosen?'選択中：'+(selected?.name||''):'';$('log').innerHTML=game.log.slice().reverse().map(s=>'<p>'+esc(s)+'</p>').join('');$('winner').hidden=game.phase!=='finished';$('winner').textContent=game.reason||'';renderEffectControls()}
+ $('selection').textContent=discarding?'選択中：'+discardSet.size+'枚':chosen?'選択中：'+(selected?.name||''):'';$('log').innerHTML=game.log.slice().reverse().map(s=>'<p>'+esc(s)+'</p>').join('');$('winner').hidden=game.phase!=='finished';$('winner').textContent=game.reason||'';renderEffectControls();renderDecisionDialog()}
+function renderDecisionDialog(){
+ const dialog=$('decisionDialog');
+ if(!dialog)return;
+ const pending=game?.pending;
+ const owner=pending?.type==='attackResponse'?pending.targetId:pending?.actorId;
+ const controls=$('controls');
+ if(game?.me&&owner===game.me.id&&controls.childElementCount){
+  const card=pending.eventName||pending.move||game.tableCards?.[0]?.name;
+  $('decisionTitle').textContent=card?'あなたの選択 · '+card:'あなたの選択';
+  if(controls.parentElement!==$('decisionControls'))$('decisionControls').append(controls);
+  if(!dialog.open)dialog.showModal();
+ }else{
+  if(dialog.open)dialog.close();
+  if(controls.parentElement!==$('controlsHome'))$('controlsHome').append(controls);
+ }
+}
+$('decisionDialog')?.addEventListener('cancel',event=>event.preventDefault());
 async function join(s=false){try{const c=$('code').value.trim().toUpperCase();if(!/^[A-Z0-9]{6}$/.test(c))throw Error('6文字の部屋コードを入力してください。');if(s){enter(await api('/'+c+'?spectate=1'),null,true);return}const saved=localStorage.getItem('rocket-token-'+c);if(saved){try{enter(await api('/'+c+'?token='+encodeURIComponent(saved)),saved);return}catch{}}const name=$('name').value.trim();if(!name)throw Error('名前を入力してください。');const d=await api('/'+c+'/join',{name});enter(d,d.token)}catch(e){toast(e.message)}}
-$('create').onclick=async()=>{try{const name=$('name').value.trim();if(!name)throw Error('名前を入力してください。');localStorage.setItem('island-last-name',name);const d=await api('',{name,mode:$('gameMode').value});enter(d,d.token)}catch(e){toast(e.message)}};$('join').onclick=()=>join();$('watch').onclick=()=>join(true);$('copy').onclick=async()=>{try{await navigator.clipboard.writeText(location.origin+'/rocket.html?room='+code);toast('招待URLをコピーしました')}catch{toast('部屋コード：'+code)}};$('leave').onclick=()=>{clearInterval(interval);game=null;code=null;token=null;$('room').hidden=true;$('entry').hidden=false;history.replaceState({},'','/rocket.html')};$('rules').onclick=()=>$('rulesDialog').showModal();$('rulesClose').onclick=()=>{$('rulesDialog').close();localStorage.setItem('rocket-rules-seen','1')};$('name').value=localStorage.getItem('island-last-name')||'';const params=new URLSearchParams(location.search),room=params.get('room');if(room){$('code').value=room.toUpperCase();if(params.get('spectate')==='1')join(true);else if(localStorage.getItem('rocket-token-'+room.toUpperCase()))join()}
+$('create').onclick=async()=>{try{const name=$('name').value.trim();if(!name)throw Error('名前を入力してください。');localStorage.setItem('island-last-name',name);const d=await api('',{name,mode:$('gameMode').value});enter(d,d.token)}catch(e){toast(e.message)}};$('join').onclick=()=>join();$('watch').onclick=()=>join(true);$('copy').onclick=async()=>{try{await navigator.clipboard.writeText(location.origin+'/rocket.html?room='+code);toast('招待URLをコピーしました')}catch{toast('部屋コード：'+code)}};$('leave').onclick=()=>{clearInterval(interval);game=null;code=null;token=null;renderDecisionDialog();$('room').hidden=true;$('entry').hidden=false;history.replaceState({},'','/rocket.html')};$('rules').onclick=()=>$('rulesDialog').showModal();$('rulesClose').onclick=()=>{$('rulesDialog').close();localStorage.setItem('rocket-rules-seen','1')};$('name').value=localStorage.getItem('island-last-name')||'';const params=new URLSearchParams(location.search),room=params.get('room');if(room){$('code').value=room.toUpperCase();if(params.get('spectate')==='1')join(true);else if(localStorage.getItem('rocket-token-'+room.toUpperCase()))join()}
 
 // Dismiss only clicks that both start and finish outside the dialog bounds.
 document.querySelectorAll('dialog').forEach(dialog=>{
@@ -146,10 +163,18 @@ hand.addEventListener('click', event => {
  }
  render();
 });
+$('tableCards')?.addEventListener('click',event=>{
+ const button=event.target.closest('[data-table-card]');
+ const card=button&&game?.tableCards?.[Number(button.dataset.tableCard)];
+ if(card)showPlayCardPreview(card);
+});
 function previewHandCard(event) {
  const card = clickedHandCard(event);
  if (!card) return;
  event.preventDefault();
+ showPlayCardPreview(card);
+}
+function showPlayCardPreview(card){
  const dialog = $('cardPreviewDialog');
  const image = $('cardPreviewImage');
  image.src = handImage(card);
