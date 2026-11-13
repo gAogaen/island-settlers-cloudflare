@@ -107,7 +107,7 @@ export const ROCKET_CARD_IMAGE_ASSETS = [
       53: ['たべのこし', 'partly-cloudy']
     };
     const variant = weatherVariants[index + 1];
-    const known={3:'ゲンガー',10:'スターミー',12:'ギャラドス',14:'プテラ',15:'カビゴン',17:'リザードン',20:'ライチュウ'};
+    const known={"1": "ベトベトン", "2": "パルシェン", "3": "ゲンガー", "4": "ナッシー", "5": "ガラガラ", "6": "マタドガス", "7": "サイドン", "8": "ラッキー", "9": "ガルーラ", "10": "スターミー", "11": "エレブー", "12": "ギャラドス", "13": "ポリゴン", "14": "プテラ", "15": "カビゴン", "16": "フシギバナ", "17": "リザードン", "18": "カメックス", "19": "ピジョット", "20": "ライチュウ", "21": "サンドパン", "22": "ニドキング", "23": "キュウコン", "24": "ペルシアン", "25": "オコリザル", "26": "ゴルダック", "27": "ウインディ", "28": "カイリキー", "29": "ヤドラン", "30": "レアコイル", "55": "ジムリーダー", "56": "ジムトレーナー", "57": "挑戦者", "58": "ロケット団員"};
     return {id:`card_${n}`,name:variant?.[0]||known[index+1]||null,weather:variant?.[1]||null,level:index<30?3:null,category:index<30?'pokemon':index<54?'play': 'role',image:`/assets/rocket/cards/card_${n}.webp`};
   }),
   {id:'covert-cloak-rain',name:'おんみつマント',weather:'rain',category:'play',image:'/assets/rocket/cards/weather/covert-cloak-rain.webp'},

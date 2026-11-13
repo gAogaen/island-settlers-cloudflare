@@ -1,12 +1,21 @@
 (() => {
   const get = id => document.getElementById(id);
   const weatherNames = {rain:'雨', thunderstorm:'雷雨', sunny:'晴れ', 'partly-cloudy':'晴れと曇り'};
+  const categories = new Map([...get('galleryCategory').options].filter(option => option.value).map(option => [option.value, option.textContent]));
+  const rank = [...categories.keys()];
+  const readings = {'挑戦者':'ちょうせんしゃ','ロケット団員':'ろけっとだんいん'};
+  const collator = new Intl.Collator('ja');
+  const normalize = name => name.normalize('NFKC').replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0)-96));
   let cards;
   function renderGallery() {
     const query = get('gallerySearch').value.trim();
     const category = get('galleryCategory').value;
-    const matches = cards.filter(card => (card.name || card.id).includes(query) && (!category || card.category === category));
-    get('galleryGrid').replaceChildren(...matches.map(card => {
+    const matches = cards.filter(card => normalize(card.name).includes(normalize(query)) && (!category || card.category === category));
+    matches.sort((a,b) => rank.indexOf(a.category)-rank.indexOf(b.category)
+      || collator.compare(normalize(readings[a.name] || a.name), normalize(readings[b.name] || b.name))
+      || (a.level || 0)-(b.level || 0));
+    let lastCategory;
+    get('galleryGrid').replaceChildren(...matches.flatMap(card => {
       const button = document.createElement('button');
       button.className = 'gallery-card';
       const image = document.createElement('img');
@@ -27,7 +36,12 @@
         get('cardPreviewImage').alt = caption.textContent;
         get('cardPreviewDialog').showModal();
       };
-      return button;
+      if (category || card.category === lastCategory) return [button];
+      lastCategory = card.category;
+      const heading = document.createElement('h3');
+      heading.style.gridColumn = '1 / -1';
+      heading.textContent = categories.get(card.category);
+      return [heading, button];
     }));
     get('galleryCount').textContent = matches.length + '種類';
   }
@@ -36,7 +50,7 @@
     if (!cards) {
       get('galleryCount').textContent = '読み込み中…';
       try {
-        const response = await fetch('/rocket-gallery.json?v=20261113-lv2');
+        const response = await fetch('/rocket-gallery.json?v=20261113-names');
         if (!response.ok) throw new Error('load failed');
         cards = await response.json();
       } catch {

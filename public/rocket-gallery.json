@@ -1,7 +1,7 @@
 [
   {
     "id": "card_001",
-    "name": null,
+    "name": "ベトベトン",
     "weather": null,
     "level": 3,
     "category": "pokemon",
@@ -9,7 +9,7 @@
   },
   {
     "id": "card_002",
-    "name": null,
+    "name": "パルシェン",
     "weather": null,
     "level": 3,
     "category": "pokemon",
@@ -25,7 +25,7 @@
   },
   {
     "id": "card_004",
-    "name": null,
+    "name": "ナッシー",
     "weather": null,
     "level": 3,
     "category": "pokemon",
@@ -33,7 +33,7 @@
   },
   {
     "id": "card_005",
-    "name": null,
+    "name": "ガラガラ",
     "weather": null,
     "level": 3,
     "category": "pokemon",
@@ -41,7 +41,7 @@
   },
   {
     "id": "card_006",
-    "name": null,
+    "name": "マタドガス",
     "weather": null,
     "level": 3,
     "category": "pokemon",
@@ -49,7 +49,7 @@
   },
   {
     "id": "card_007",
-    "name": null,
+    "name": "サイドン",
     "weather": null,
     "level": 3,
     "category": "pokemon",
@@ -57,7 +57,7 @@
   },
   {
     "id": "card_008",
-    "name": null,
+    "name": "ラッキー",
     "weather": null,
     "level": 3,
     "category": "pokemon",
@@ -65,7 +65,7 @@
   },
   {
     "id": "card_009",
-    "name": null,
+    "name": "ガルーラ",
     "weather": null,
     "level": 3,
     "category": "pokemon",
@@ -81,7 +81,7 @@
   },
   {
     "id": "card_011",
-    "name": null,
+    "name": "エレブー",
     "weather": null,
     "level": 3,
     "category": "pokemon",
@@ -97,7 +97,7 @@
   },
   {
     "id": "card_013",
-    "name": null,
+    "name": "ポリゴン",
     "weather": null,
     "level": 3,
     "category": "pokemon",
@@ -121,7 +121,7 @@
   },
   {
     "id": "card_016",
-    "name": null,
+    "name": "フシギバナ",
     "weather": null,
     "level": 3,
     "category": "pokemon",
@@ -137,7 +137,7 @@
   },
   {
     "id": "card_018",
-    "name": null,
+    "name": "カメックス",
     "weather": null,
     "level": 3,
     "category": "pokemon",
@@ -145,7 +145,7 @@
   },
   {
     "id": "card_019",
-    "name": null,
+    "name": "ピジョット",
     "weather": null,
     "level": 3,
     "category": "pokemon",
@@ -161,7 +161,7 @@
   },
   {
     "id": "card_021",
-    "name": null,
+    "name": "サンドパン",
     "weather": null,
     "level": 3,
     "category": "pokemon",
@@ -169,7 +169,7 @@
   },
   {
     "id": "card_022",
-    "name": null,
+    "name": "ニドキング",
     "weather": null,
     "level": 3,
     "category": "pokemon",
@@ -177,7 +177,7 @@
   },
   {
     "id": "card_023",
-    "name": null,
+    "name": "キュウコン",
     "weather": null,
     "level": 3,
     "category": "pokemon",
@@ -185,7 +185,7 @@
   },
   {
     "id": "card_024",
-    "name": null,
+    "name": "ペルシアン",
     "weather": null,
     "level": 3,
     "category": "pokemon",
@@ -193,7 +193,7 @@
   },
   {
     "id": "card_025",
-    "name": null,
+    "name": "オコリザル",
     "weather": null,
     "level": 3,
     "category": "pokemon",
@@ -201,7 +201,7 @@
   },
   {
     "id": "card_026",
-    "name": null,
+    "name": "ゴルダック",
     "weather": null,
     "level": 3,
     "category": "pokemon",
@@ -209,7 +209,7 @@
   },
   {
     "id": "card_027",
-    "name": null,
+    "name": "ウインディ",
     "weather": null,
     "level": 3,
     "category": "pokemon",
@@ -217,7 +217,7 @@
   },
   {
     "id": "card_028",
-    "name": null,
+    "name": "カイリキー",
     "weather": null,
     "level": 3,
     "category": "pokemon",
@@ -225,7 +225,7 @@
   },
   {
     "id": "card_029",
-    "name": null,
+    "name": "ヤドラン",
     "weather": null,
     "level": 3,
     "category": "pokemon",
@@ -233,7 +233,7 @@
   },
   {
     "id": "card_030",
-    "name": null,
+    "name": "レアコイル",
     "weather": null,
     "level": 3,
     "category": "pokemon",
@@ -446,7 +446,7 @@
   },
   {
     "id": "card_055",
-    "name": null,
+    "name": "ジムリーダー",
     "weather": null,
     "level": null,
     "category": "role",
@@ -454,7 +454,7 @@
   },
   {
     "id": "card_056",
-    "name": null,
+    "name": "ジムトレーナー",
     "weather": null,
     "level": null,
     "category": "role",
@@ -462,7 +462,7 @@
   },
   {
     "id": "card_057",
-    "name": null,
+    "name": "挑戦者",
     "weather": null,
     "level": null,
     "category": "role",
@@ -470,7 +470,7 @@
   },
   {
     "id": "card_058",
-    "name": null,
+    "name": "ロケット団員",
     "weather": null,
     "level": null,
     "category": "role",
