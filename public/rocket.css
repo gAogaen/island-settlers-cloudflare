@@ -3,3 +3,22 @@
 .role-card-display{display:flex;align-items:center;gap:14px}.role-card-display img{width:74px;height:98px;object-fit:cover;border:1px solid #e4ca9b;border-radius:9px;box-shadow:0 5px 12px #0004}.role-card-display>div{display:flex;flex-direction:column;gap:7px}.mon img{width:35px;height:35px;object-fit:contain}.pokemon-choice{position:relative;padding-left:64px;min-height:78px}.pokemon-choice .pokemon-token{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;object-fit:contain}.pokemon-choice strong{font-family:system-ui,sans-serif}
 .card-art{position:relative;z-index:1;display:grid;place-items:center;align-self:center;flex:none;width:42px;height:42px;overflow:hidden;border:1px solid #ffedc9aa;border-radius:50%;background:radial-gradient(circle,#f4d68a,#ac253d);color:#fff9e7}.play-card.dodge .card-art{background:radial-gradient(circle,#c9f3ed,#267d98)}.play-card.potion,.play-card.boost{background:linear-gradient(155deg,#4e9b68,#23523c 74%)}.play-card.potion .card-art,.play-card.boost .card-art{background:radial-gradient(circle,#dbf0bb,#55a05c)}.play-card.item .card-art{background:radial-gradient(circle,#fff0b8,#ad7a31)}.play-card.scout .card-art{background:radial-gradient(circle,#f1d6ff,#7653a0)}.card-art>i{font-style:normal;font-size:1.3rem}.card-art>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.pokemon-choice .pokemon-token{border-radius:50%}
 .pokemon-choice.selected{outline:3px solid #f0c86f;outline-offset:2px;transform:translateY(-3px)}.team-strip{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px}.team-strip>b{flex-basis:100%;color:#f4d184}.team-pokemon{display:flex;flex-direction:column;gap:4px;min-width:150px;padding:10px;border:1px solid #e2c89e;border-radius:10px;background:#fff6e7;color:#3b2826}.team-pokemon small{color:#675654}.team-pokemon.active{border:2px solid #f2c860;box-shadow:0 0 0 3px #f2c8603b}
+
+/* The play area is a shared table: seats circle the center and the local player sits at the bottom. */
+.arena{min-height:570px;padding:0;overflow:hidden}
+.arena-title{position:absolute;z-index:2;left:50%;top:50%;width:min(210px,24%);min-height:108px;transform:translate(-50%,-50%);justify-content:center;padding:16px;border:1px solid #d7c27866;border-radius:50%;background:radial-gradient(ellipse,#345141 0,#294336 64%,#20342b 100%);box-shadow:0 0 0 8px #e2c67e0c,0 8px 20px #0004}
+.players{position:absolute;inset:0;margin:0;display:block}
+.trainer{position:absolute;left:var(--seat-x);top:var(--seat-y);width:clamp(178px,23%,236px);transform:translate(-50%,-50%);z-index:1}
+.trainer.active{z-index:3}
+@media(max-width:700px){
+ .arena{min-height:600px}
+ .arena-title{display:none}
+ .trainer{width:43%;padding:7px;gap:6px}
+ .trainer.seat-left{transform:translate(0,-50%)}
+ .trainer.seat-right{transform:translate(-100%,-50%)}
+ .trainer .mon{width:34px;height:34px;border-width:2px;font-size:1.1rem}
+ .trainer-copy b{font-size:.72rem}
+ .trainer-copy small{font-size:.58rem}
+ .hp i{width:8px;height:6px}
+}
+@media(max-width:380px){.arena{min-height:570px}.trainer{width:45%;padding:6px;gap:5px}.trainer .mon{width:30px;height:30px}.trainer-copy small{font-size:.54rem}}
