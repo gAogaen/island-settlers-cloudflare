@@ -56,12 +56,12 @@ ROCKET_POKEMON_CARDS.push({
   hp:8, greenHp:8, redHp:4, move:'りゅうせいぐん',
   attacks:[{name:'りゅうせいぐん',damage:2,text:'左右のバトルエリアにいるポケモンが対象。追加効果の処理は未登録です。',weather:null,effect:null}],
   levels:[
-    {level:1,name:'ミニリュウ',cardType:'バランス型',hp:3,greenHp:null,redHp:3,cardImage:'/assets/rocket/cards/evolution/dratini.webp',ability:'ふしぎなうろこ',abilityText:'相手の番でも使える。特殊状態のこのポケモンが2以上のダメージを受けたとき、そのダメージを1減らすことができる。',attacks:[{name:'たつまき',damage:1,text:'技の追加効果はカード画像を確認してください。',weather:null,effect:null}]},
-    {level:2,name:'ハクリュー',cardType:'バランス型',hp:3,greenHp:null,redHp:3,cardImage:'/assets/rocket/cards/evolution/dragonair.webp',ability:'ふしぎなうろこ',abilityText:'相手の番でも使える。特殊状態のこのポケモンが2以上のダメージを受けたとき、そのダメージを1減らすことができる。',attacks:[{name:'りゅうのいかり',damage:2,text:'対象・どうぐ・回避に関する追加効果があります。正確な効果処理は未登録です。',weather:null,effect:null}]},
-    {level:3,name:'カイリュー',cardType:'バランス型',hp:4,basicHp:8,greenHp:8,redHp:4,cardImage:'/assets/rocket/cards/evolution/dragonite.webp',ability:'マルチスケイル',abilityText:'バトルエリアにいる間続く。HPが満タンのこのポケモンがダメージを受けたとき、そのダメージを1にする。',attacks:[{name:'りゅうせいぐん',damage:2,text:'左右のバトルエリアにいるポケモンが対象。追加効果の処理は未登録です。',weather:null,effect:null}]}
+    {level:1,name:'ミニリュウ',cardType:'バランス型',hp:3,greenHp:null,redHp:3,cardImage:'/assets/rocket/cards/evolution/dratini-q2.webp',ability:'ふしぎなうろこ',abilityText:'相手の番でも使える。特殊状態のこのポケモンが2以上のダメージを受けたとき、そのダメージを1減らすことができる。',attacks:[{name:'たつまき',damage:1,text:'技の追加効果はカード画像を確認してください。',weather:null,effect:null}]},
+    {level:2,name:'ハクリュー',cardType:'バランス型',hp:3,greenHp:null,redHp:3,cardImage:'/assets/rocket/cards/evolution/dragonair-q2.webp',ability:'ふしぎなうろこ',abilityText:'相手の番でも使える。特殊状態のこのポケモンが2以上のダメージを受けたとき、そのダメージを1減らすことができる。',attacks:[{name:'りゅうのいかり',damage:2,text:'対象・どうぐ・回避に関する追加効果があります。正確な効果処理は未登録です。',weather:null,effect:null}]},
+    {level:3,name:'カイリュー',cardType:'バランス型',hp:4,basicHp:8,greenHp:8,redHp:4,cardImage:'/assets/rocket/cards/evolution/dragonite-q2.webp',ability:'マルチスケイル',abilityText:'バトルエリアにいる間続く。HPが満タンのこのポケモンがダメージを受けたとき、そのダメージを1にする。',attacks:[{name:'りゅうせいぐん',damage:2,text:'左右のバトルエリアにいるポケモンが対象。追加効果の処理は未登録です。',weather:null,effect:null}]}
   ],
   ability:'マルチスケイル', abilityText:'バトルエリアにいる間続く。HPが満タンのこのポケモンがダメージを受けたとき、そのダメージを1にする。',
-  image:'/assets/rocket/pokemon/149.png', cardImage:'/assets/rocket/cards/evolution/dragonite.webp',
+  image:'/assets/rocket/pokemon/149.png', cardImage:'/assets/rocket/cards/evolution/dragonite-q2.webp',
   provisional:true
 });
 
@@ -79,15 +79,15 @@ export const ROCKET_CARD_IMAGE_ASSETS = [
   {id:'card_yokete',category:'play',image:'/assets/rocket/cards/card_yokete.webp'},
   {id:'card_mew',category:'special',image:'/assets/rocket/cards/card_mew.webp'},
   {id:'card_mewtwo',category:'special',image:'/assets/rocket/cards/card_mewtwo.webp'},
-  {id:'bulbasaur-lv1',name:'フシギダネ',level:1,category:'pokemon',image:'/assets/rocket/cards/evolution/bulbasaur-lv1.webp'},
-  {id:'pikachu-lv1',name:'ピカチュウ',level:1,category:'pokemon',image:'/assets/rocket/cards/evolution/pikachu-lv1.webp'},
-  {id:'meowth-lv1',name:'ニャース',level:1,category:'pokemon',image:'/assets/rocket/cards/evolution/meowth-lv1.webp'},
-  {id:'slowpoke-lv1',name:'ヤドン',level:1,category:'pokemon',image:'/assets/rocket/cards/evolution/slowpoke-lv1.webp'},
-  {id:'aerodactyl-lv2',name:'プテラ',level:2,category:'pokemon',image:'/assets/rocket/cards/evolution/aerodactyl-lv2.webp'},
-  {id:'gyarados-lv2',name:'ギャラドス',level:2,category:'pokemon',image:'/assets/rocket/cards/evolution/gyarados-lv2.webp'},
-  {id:'haunter-lv2',name:'ゴースト',level:2,category:'pokemon',image:'/assets/rocket/cards/evolution/haunter-lv2.webp'},
-  {id:'pikachu-lv2',name:'ピカチュウ',level:2,category:'pokemon',image:'/assets/rocket/cards/evolution/pikachu-lv2.webp'},
-  {id:'promo-dragonite-lv1',category:'pokemon',image:'/assets/rocket/cards/evolution/dratini.webp'},
-  {id:'promo-dragonite-lv2',category:'pokemon',image:'/assets/rocket/cards/evolution/dragonair.webp'},
-  {id:'promo-dragonite-lv3',category:'pokemon',image:'/assets/rocket/cards/evolution/dragonite.webp'}
+  {id:'bulbasaur-lv1',name:'フシギダネ',level:1,category:'pokemon',image:'/assets/rocket/cards/evolution/bulbasaur-lv1-q2.webp'},
+  {id:'pikachu-lv1',name:'ピカチュウ',level:1,category:'pokemon',image:'/assets/rocket/cards/evolution/pikachu-lv1-q2.webp'},
+  {id:'meowth-lv1',name:'ニャース',level:1,category:'pokemon',image:'/assets/rocket/cards/evolution/meowth-lv1-q2.webp'},
+  {id:'slowpoke-lv1',name:'ヤドン',level:1,category:'pokemon',image:'/assets/rocket/cards/evolution/slowpoke-lv1-q2.webp'},
+  {id:'aerodactyl-lv2',name:'プテラ',level:2,category:'pokemon',image:'/assets/rocket/cards/evolution/aerodactyl-lv2-q2.webp'},
+  {id:'gyarados-lv2',name:'ギャラドス',level:2,category:'pokemon',image:'/assets/rocket/cards/evolution/gyarados-lv2-q2.webp'},
+  {id:'haunter-lv2',name:'ゴースト',level:2,category:'pokemon',image:'/assets/rocket/cards/evolution/haunter-lv2-q2.webp'},
+  {id:'pikachu-lv2',name:'ピカチュウ',level:2,category:'pokemon',image:'/assets/rocket/cards/evolution/pikachu-lv2-q2.webp'},
+  {id:'promo-dragonite-lv1',category:'pokemon',image:'/assets/rocket/cards/evolution/dratini-q2.webp'},
+  {id:'promo-dragonite-lv2',category:'pokemon',image:'/assets/rocket/cards/evolution/dragonair-q2.webp'},
+  {id:'promo-dragonite-lv3',category:'pokemon',image:'/assets/rocket/cards/evolution/dragonite-q2.webp'}
 ];
