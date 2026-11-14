@@ -67,7 +67,7 @@ function turnCopy() {
   const privateDie = $('privateDie');
   const myFace = pending?.myFace;
   privateDie.hidden = myFace == null;
-  privateDie.textContent = myFace == null ? '' : `あなたの秘密の出目　${myFace === 'x' ? '×' : myFace}`;
+  privateDie.textContent = myFace == null ? '' : `あなたの出目　${myFace === 'x' ? '×' : myFace}`;
   if (game.phase === 'roll') {
     $('turnTag').textContent = isMine ? 'YOUR TURN' : 'NEXT CROSSING';
     $('status').textContent = isMine ? 'ダイスを振る番です' : `${p?.name || 'プレイヤー'}がダイスを振ります`;
@@ -81,7 +81,7 @@ function turnCopy() {
       for (let n = 1; n <= 4; n++) actions.append(button(String(n), 'declare', { amount: n }, 'chao-number'));
     } else {
       privateDie.hidden = false;
-      privateDie.textContent = '🔒 出目は手番プレイヤーだけに表示';
+      privateDie.textContent = '🔒 出目は非公開';
     }
   } else if (game.phase === 'challenge') {
     const due = game.challengeId === game.me?.id, declared = pending?.declared;
