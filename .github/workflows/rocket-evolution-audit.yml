@@ -29,7 +29,23 @@ jobs:
           assert data['count'] == 10, f"Expected 10 audited images, got {data['count']}"
           print('PASS: first 10 images decoded; 74 total images found')
           PY
+      - name: Publish audit summary
+        if: always()
+        run: |
+          if [ -f rocket-evolution-audit-00.json ]; then
+            python - <<'PY'
+          import json, os
+          with open('rocket-evolution-audit-00.json', encoding='utf-8') as f:
+              data = json.load(f)
+          lines = ['## Rocket evolution batch 00', '', f"Files found: {data['total_files']}; inspected: {data['count']}", '']
+          lines += [f"- {item['file']}: {item['width']}x{item['height']}" for item in data['results']]
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as out:
+              out.write('\\n'.join(lines)+'\\n')
+          PY
+          fi
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: rocket-evolution-audit-batch-00
           path: rocket-evolution-audit-00.json
+          if-no-files-found: warn
