@@ -24,6 +24,33 @@ jobs:
         run: python -m pip install 'Pillow>=11,<13'
       - name: Decode and audit all evolution images
         run: python scripts/audit_rocket_evolution.py
+      - name: Publish readable audit summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -f docs/rocket-evolution-pixel-audit.json ]; then
+            python - <<'PY'
+          import json, os
+          from collections import Counter
+          p = 'docs/rocket-evolution-pixel-audit.json'
+          data = json.load(open(p, encoding='utf-8'))
+          rows = data['records']
+          bad = [r for r in rows if not r.get('decoded')]
+          shapes = Counter(tuple(r.get('dimensions', [])) for r in rows if r.get('decoded'))
+          out = ['# Rocket evolution: decoded-pixel audit', '',
+                 f"**Files:** {len(rows)}; **decoded:** {len(rows)-len(bad)}; **failed:** {len(bad)}", '',
+                 '## Image sizes', '', '| Width × height | Count |', '|---|---:|']
+          out += [f'| {w} × {h} | {n} |' for (w,h),n in sorted(shapes.items())]
+          out += ['', '## Decode failures', '']
+          out += [f"- {r['file']}: {r.get('error','unknown')}" for r in bad] or ['None']
+          out += ['', '## Important limitations', '',
+                  'Patch RGB medians are not isolated white/name/type masks.',
+                  'Dark-edge spread is a screening measure, not a perspective-correction verdict.',
+                  'Shadow removal and Lv.3 RGB matching remain unverified.']
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as f:
+              f.write('\n'.join(out)+'\n')
+          PY
+          fi
       - name: Save audit JSON
         if: always()
         uses: actions/upload-artifact@v4
