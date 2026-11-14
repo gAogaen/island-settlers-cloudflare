@@ -9,7 +9,6 @@ Usage:
 Reports measurements only; does not overwrite any card images.
 """
 import argparse
-import csv
 import json
 from pathlib import Path
 from statistics import median
