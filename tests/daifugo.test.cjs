@@ -1,5 +1,5 @@
-const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),crypto=require('node:crypto').webcrypto;
-const ctx={crypto,Request,Response,URL,structuredClone};vm.createContext(ctx);vm.runInContext(fs.readFileSync('src/worker.mjs','utf8').replace('export default {','const worker={').replace('export class GameRoom','class GameRoom')+';globalThis.D={worker,GameRoom,dfPlayer,dfStart,dfAction,dfView,dfMoves,dfMelds,dfOptions,dfSettings,dfReversed,dfAdvance,dfRoundEnd,dfFinishPlayer,DF_RULES};',ctx);const D=ctx.D;
+const vm=require('node:vm'),assert=require('node:assert/strict'),crypto=require('node:crypto').webcrypto;
+const ctx={crypto,Request,Response,URL,structuredClone};vm.createContext(ctx);vm.runInContext(require('./worker-source.cjs')(ctx)+';globalThis.D={worker,GameRoom,dfPlayer,dfStart,dfAction,dfView,dfMoves,dfMelds,dfOptions,dfSettings,dfReversed,dfAdvance,dfRoundEnd,dfFinishPlayer,DF_RULES};',ctx);const D=ctx.D;
 let seq=0;const card=(rank,suit='S')=>({id:'c'+(++seq),rank,suit});
 function make(n=4,settings={}){const players=Array.from({length:n},(_,i)=>D.dfPlayer('P'+i)),g={code:'ABCDEF',players,hostId:players[0].id,phase:'lobby',rules:D.dfSettings(settings),messages:[],log:[],events:[]};D.dfStart(g);return g;}
 function rig(settings={}){const g=make(4,{forbiddenFinish:false,...settings});g.activeIndex=0;g.players.forEach((p,i)=>p.hand=[card(4+i,'H'),card(12+i,'C')]);return g;}

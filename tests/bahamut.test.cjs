@@ -1,4 +1,4 @@
-const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');const e={crypto:require('crypto').webcrypto,Request,Response,URL,structuredClone};vm.createContext(e);vm.runInContext(fs.readFileSync('src/worker.mjs','utf8').replace('export default {','const worker={').replace('export class GameRoom','class GameRoom')+';globalThis.E={worker,GameRoom,bhPlayer,bhStart,bhAction,bhView,bhResolve,bhBeginTurn,BH_NAMES};',e);const S=e.E;
+const vm=require('vm'),assert=require('node:assert/strict');const e={crypto:require('crypto').webcrypto,Request,Response,URL,structuredClone};vm.createContext(e);vm.runInContext(require('./worker-source.cjs')(e)+';globalThis.E={worker,GameRoom,bhPlayer,bhStart,bhAction,bhView,bhResolve,bhBeginTurn,BH_NAMES};',e);const S=e.E;
 function make(){const players=[S.bhPlayer('A'),S.bhPlayer('B')],g={players,hostId:players[0].id,revision:1,log:[],phase:'lobby'};S.bhStart(g);return g;}
 function act(g,p,type,x={}){S.bhAction(g,p,{type,matchId:g.matchId,revision:g.revision,...x});g.revision++;}
 function total(g){return[g.deck,g.discard,...g.players.flatMap(p=>[p.hand,p.field]),...(g.pending?[[g.pending.card]]:[])].flat();}

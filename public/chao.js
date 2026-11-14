@@ -64,7 +64,10 @@ function renderLobby() {
 }
 function turnCopy() {
   const actions = $('actions'); actions.replaceChildren(); const p = game.players.find(x => x.id === game.turnId), isMine = mine(), pending = game.pending;
-  $('privateDie').hidden = true;
+  const privateDie = $('privateDie');
+  const myFace = pending?.myFace;
+  privateDie.hidden = myFace == null;
+  privateDie.textContent = myFace == null ? '' : `あなたの秘密の出目　${myFace === 'x' ? '×' : myFace}`;
   if (game.phase === 'roll') {
     $('turnTag').textContent = isMine ? 'YOUR TURN' : 'NEXT CROSSING';
     $('status').textContent = isMine ? 'ダイスを振る番です' : `${p?.name || 'プレイヤー'}がダイスを振ります`;
@@ -74,8 +77,12 @@ function turnCopy() {
     $('turnTag').textContent = isMine ? 'SECRET DIE' : 'DECLARING';
     $('status').textContent = isMine ? '出目を宣言してください' : `${p?.name || '手番プレイヤー'}が数字を宣言します`;
     $('instruction').textContent = isMine ? '出た目と同じでも、違う数字でも宣言できます。進む数を選びましょう。' : '手番プレイヤーは出目を知っています。宣言を待ちましょう。';
-    if (isMine) { $('privateDie').hidden = false; $('privateDie').textContent = `あなたの秘密の出目　${pending?.myFace === 'x' ? '×' : pending?.myFace || '？'}`; for (let n=1;n<=4;n++) actions.append(button(String(n), 'declare', { amount:n }, 'chao-number')); }
-    else { $('privateDie').hidden = false; $('privateDie').textContent = '🔒 出目は手番プレイヤーだけに表示'; }
+    if (isMine) {
+      for (let n = 1; n <= 4; n++) actions.append(button(String(n), 'declare', { amount: n }, 'chao-number'));
+    } else {
+      privateDie.hidden = false;
+      privateDie.textContent = '🔒 出目は手番プレイヤーだけに表示';
+    }
   } else if (game.phase === 'challenge') {
     const due = game.challengeId === game.me?.id, declared = pending?.declared;
     $('turnTag').textContent = due ? 'CALL THE BLUFF?' : 'BLUFF CHECK';

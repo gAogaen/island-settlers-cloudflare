@@ -1,6 +1,6 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const ctx={crypto:require('node:crypto').webcrypto,Request,Response,URL,structuredClone};vm.createContext(ctx);
-vm.runInContext(fs.readFileSync('src/worker.mjs','utf8').replace('export default {','const worker={').replace('export class GameRoom','class GameRoom')+';globalThis.S={siPlayer,siStart,siAction,siView,siLegalTarget,siSacredSite,handleSpiritIsland};',ctx);const S=ctx.S;
+vm.runInContext(require('./worker-source.cjs')(ctx)+';globalThis.S={siPlayer,siStart,siAction,siView,siLegalTarget,siSacredSite,handleSpiritIsland};',ctx);const S=ctx.S;
 function make(n){const players=Array.from({length:n},(_,i)=>S.siPlayer('P'+i));players.forEach((p,i)=>p.spirit=['lightning','river','earth','shadows'][i]);const g={players,hostId:players[0].id,phase:'lobby',revision:1,code:'ABCDEF',messages:[],log:[]};S.siStart(g);return g;}
 function act(g,p,type,extra={}){S.siAction(g,p,{type,matchId:g.matchId,...extra});}
 for(let n=1;n<=4;n++){

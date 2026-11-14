@@ -1,6 +1,6 @@
-const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const vm=require('vm'),assert=require('node:assert/strict');
 const ctx={crypto:require('crypto').webcrypto,Request,Response,URL,structuredClone};vm.createContext(ctx);
-vm.runInContext(fs.readFileSync('src/worker.mjs','utf8').replace('export default {','const worker={').replace('export class GameRoom','class GameRoom')+';globalThis.CY={worker,GameRoom,CY_VALUES,cyCard,cyPlayer,cyStart,cyRound,cyAction,cyCalculate,cyView,cyNext};',ctx);
+vm.runInContext(require('./worker-source.cjs')(ctx)+';globalThis.CY={worker,GameRoom,CY_VALUES,cyCard,cyPlayer,cyStart,cyRound,cyAction,cyCalculate,cyView,cyNext};',ctx);
 const E=ctx.CY,V=E.CY_VALUES,ids=value=>V.map((v,i)=>v===value?i:-1).filter(i=>i>=0);
 function game(n=4){const ps=Array.from({length:n},(_,i)=>E.cyPlayer('P'+(i+1))),g={code:'ABC123',hostId:ps[0].id,players:ps,phase:'lobby',revision:1,startingLife:3,log:[]};E.cyStart(g);return g;}
 function action(g,p,type,args={}){E.cyAction(g,p,{revision:g.revision,matchId:g.matchId,roundId:g.roundId,type,...args});g.revision++;}

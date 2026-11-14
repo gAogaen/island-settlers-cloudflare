@@ -1,5 +1,5 @@
-const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),crypto=require('node:crypto').webcrypto;
-const ctx={crypto,Request,Response,URL,structuredClone};vm.createContext(ctx);vm.runInContext(fs.readFileSync('src/worker.mjs','utf8').replace('export default {','const worker={').replace('export class GameRoom','class GameRoom')+';globalThis.R={worker,GameRoom,rdPlayer,rdStart,rdAction,rdView,rdShuffle,rdKeys,RD_DECK};',ctx);const R=ctx.R;
+const vm=require('node:vm'),assert=require('node:assert/strict'),crypto=require('node:crypto').webcrypto;
+const ctx={crypto,Request,Response,URL,structuredClone};vm.createContext(ctx);vm.runInContext(require('./worker-source.cjs')(ctx)+';globalThis.R={worker,GameRoom,rdPlayer,rdStart,rdAction,rdView,rdShuffle,rdKeys,RD_DECK};',ctx);const R=ctx.R;
 function make(n=4){const players=Array.from({length:n},(_,i)=>R.rdPlayer('P'+i));const g={players,hostId:players[0].id,phase:'lobby',messages:[],log:[]};R.rdStart(g,players[0].id);return g;}
 const current=g=>g.players[g.activeIndex];
 function act(g,p,type,args={}){return R.rdAction(g,p,{type,matchId:g.matchId,turn:g.turn,pendingId:g.pending?.id,...args});}

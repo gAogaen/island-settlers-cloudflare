@@ -184,7 +184,7 @@ function finishByPoints(g, reason) {
 
 function view(g, me) {
   const pending = g.pending ? { actorId: g.pending.actorId, declared: g.pending.declared, challengers: g.pending.challengers?.map(p => p.id) || [], challengeIndex: g.pending.challengeIndex,
-    challengedBy: g.pending.challengedBy || null, resolved: g.phase === "finished" ? g.pending.resolved : undefined } : null;
+    challengedBy: g.pending.challengedBy || null, resolved: g.phase === "finished" && g.pending.challengedBy ? g.pending.resolved : undefined } : null;
   if (pending && me?.id === g.pending?.actorId && !g.pending.resolved) pending.myFace = g.pending.face;
   const currentChallenger = g.pending?.challengers?.[g.pending.challengeIndex];
   return { code: g.code, hostId: g.hostId, revision: g.revision, phase: g.phase, turnId: g.turnId, round: g.round,
