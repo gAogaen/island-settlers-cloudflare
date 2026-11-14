@@ -1,0 +1,51 @@
+name: Rocket evolution mobile QA
+on:
+  push:
+    branches: ['qa/rocket-evolution-frames-20261114']
+permissions:
+  contents: read
+jobs:
+  mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-package-lock
+      - run: npx playwright install --with-deps chromium
+      - run: |
+          python3 -m http.server 8765 --directory public >/tmp/rocket-http.log 2>&1 &
+          curl -fsS --retry 10 --retry-connrefused http://127.0.0.1:8765/rocket.html >/dev/null
+          cat > mobile-qa.cjs <<'JS'
+          const {chromium}=require('./node_modules/playwright');
+          const assert=require('node:assert/strict');
+          (async()=>{
+          const browser=await chromium.launch({args:['--no-sandbox','--disable-dev-shm-usage']});
+          try {
+          for(const width of [375,390,430]){
+          const page=await browser.newPage({viewport:{width,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:2});
+          const errors=[];page.on('pageerror',e=>errors.push(e.message));
+          const base=process.env.TEST_BASE||'http://127.0.0.1:8765';
+          await page.goto(base+'/rocket.html',{waitUntil:'domcontentloaded'});
+          assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth),width);
+          await page.locator('#galleryOpen').tap();
+          await page.locator('#gallerySearch').fill('フシギソウ');
+          const tile=page.locator('#galleryGrid img').first();
+          await tile.waitFor();
+          await tile.evaluate(i=>i.decode());
+          assert((await tile.getAttribute('src')).includes('ivysaur'));
+          await tile.tap();
+          const enlarged=page.locator('#cardPreviewImage');
+          await enlarged.evaluate(i=>i.decode());
+          const placement=await enlarged.boundingBox();
+          assert(placement.x>=0&&placement.x+placement.width<=width+1);
+          assert.deepEqual(errors,[]);
+          console.log(width,'gallery search, evolution WebP decode and preview');
+          await page.close();
+          }
+          }finally{await browser.close();}
+          })().catch(e=>{console.error(e);process.exitCode=1});
+          JS
+          node mobile-qa.cjs
