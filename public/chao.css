@@ -12,20 +12,26 @@
 .chao-catalog-art{position:relative;overflow:hidden;background:linear-gradient(180deg,#d9e1cf,#8eaa91 58%,#2b5361 58%);display:flex;align-items:center;justify-content:center;gap:26px}.chao-catalog-art:before{content:"";position:absolute;left:8%;right:8%;height:20px;background:repeating-linear-gradient(90deg,#815b3c 0 34px,#69492f 34px 39px);box-shadow:0 7px 0 #593d2a;transform:translateY(5px)}.catalog-bridge-token{position:relative;z-index:1;width:32px;height:39px;border:3px solid #fff0d1;border-radius:50% 50% 45% 45%;background:#e87362;box-shadow:0 5px 2px #32231988}.catalog-bridge-token.blue{background:#62a8dc}.chao-catalog-art b{position:relative;z-index:2;margin-left:35px;color:#fff3d6;font-size:45px;transform:rotate(12deg);text-shadow:0 3px 9px #29483c}
 .chao-bridge{display:block;min-width:0}.chao-bridge-wrap{display:grid;grid-template-columns:repeat(11,minmax(58px,1fr));min-width:638px}.chao-shell button.primary,.chao-lobby button{font:inherit;font-weight:800}.chao-actions button,.chao-chat-form button{font:inherit;font-weight:700}.chao-stake-option{display:block;width:100%;margin:8px 0;border:1px solid #d6d1c5;background:white;border-radius:10px;padding:12px;font:inherit;cursor:pointer}
 
-/* Live board: use a straight-down photo of the real tray, bridge, and river. */
-.chao-board{aspect-ratio:16/9;min-height:0;padding:16px clamp(10px,2vw,22px);background:#25485a url('/assets/chao/bridge-board-empty.webp?v=20261111-topdown') center/cover no-repeat;border:1px solid #355642;box-shadow:0 12px 34px #152b2140}
-.chao-board-title{position:relative;z-index:4;align-items:center;justify-content:flex-start;width:max-content;max-width:100%;padding:8px 12px;border:1px solid #ffffff38;border-radius:12px;background:#173527bf;color:#fff8e6;backdrop-filter:blur(5px)}
-.chao-board-title .chao-eyebrow,.chao-board-title small{color:#e4d9b7}.chao-board-title h2{color:#fff8e6;margin:2px 0 0}.chao-jungle,.chao-riverline{display:none}
-.chao-bridge{position:absolute;z-index:3;left:22%;top:27%;width:58%;height:28%;min-width:0;margin:0;padding:0;transform:none;background:transparent;border:0;border-radius:0;box-shadow:none}
-.chao-bridge-wrap{display:grid;width:100%;height:100%;min-width:0;grid-template-columns:repeat(11,minmax(0,1fr));overflow:visible;padding:0}
-.chao-space{height:100%;min-height:0;justify-content:space-between;padding:4px 0 10px;border:0;background:transparent}
-.chao-space-label{display:flex;align-items:center;justify-content:center;width:clamp(15px,2.2vw,25px);height:clamp(15px,2.2vw,25px);border:1px solid #9e7847;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f6e5bd,#d5b77d 74%,#9e794b);color:#503a23;font-size:clamp(.48rem,.72vw,.69rem);line-height:1;text-shadow:none;box-shadow:0 2px 4px #17221c88,inset 0 1px 2px #fff9}
-.chao-space-label.start,.chao-space-label.end{color:#503a23}
+/* Keep the controls outside the photo so they cannot cover the bridge. */
+.chao-board{display:grid;gap:12px;padding:12px;background:#f7f0de}
+.chao-board-title{flex-direction:row;align-items:baseline;flex-wrap:wrap;gap:4px 12px}
+.chao-board-title h2{margin:0;font-size:1.15rem;color:#293b31}
+.chao-board-title small{color:#44594e;font-size:.8rem}
+.chao-board-photo{position:relative;aspect-ratio:16/9;border-radius:9px;background:#25485a url('/assets/chao/bridge-board-empty.webp?v=20261111-topdown') center/cover no-repeat}
+.chao-bridge{position:absolute;left:22%;top:27%;width:58%;height:28%;margin:0;padding:0;background:none;border:0;box-shadow:none}
+.chao-bridge-wrap{width:100%;height:100%;min-width:0;grid-template-columns:repeat(11,minmax(0,1fr));overflow:visible;padding:0}
+.chao-space{height:100%;min-height:0;justify-content:space-between;padding:0;border:0}
+.chao-space-label{display:grid;place-items:center;width:min(96%,28px);min-height:20px;padding-block:2px;border:1px solid #866844;border-radius:5px;background:#fff4d6;color:#3b2b19;font:800 clamp(.69rem,2.4vw,1rem)/1 system-ui,sans-serif;text-shadow:none}
+.chao-space-label.start,.chao-space-label.end{background:#214c40;color:#fff}
 .chao-pawns{align-items:flex-end;min-height:0;flex:1;gap:2px;padding-bottom:1px}
 .chao-pawn{position:relative;overflow:visible;flex:0 0 auto;width:clamp(11px,2vw,23px);height:clamp(19px,3vw,34px);border:0;border-radius:0;background:transparent;box-shadow:none;clip-path:none;color:transparent;font-size:0;text-shadow:none}
 .chao-pawn:before{content:"";position:absolute;z-index:2;top:0;left:50%;width:45%;aspect-ratio:1;transform:translateX(-50%);border-radius:50%;background:linear-gradient(140deg,color-mix(in srgb,var(--pawn-color),white 35%),var(--pawn-color) 66%,color-mix(in srgb,var(--pawn-color),black 22%));box-shadow:1px 1px 2px #1b2119a8}
 .chao-pawn:after{content:"";position:absolute;left:6%;right:6%;bottom:0;height:70%;border-radius:35% 35% 24% 24%;background:linear-gradient(100deg,color-mix(in srgb,var(--pawn-color),white 26%),var(--pawn-color) 53%,color-mix(in srgb,var(--pawn-color),black 24%));box-shadow:0 3px 3px #1620199c;clip-path:polygon(33% 0,67% 0,100% 100%,0 100%)}
-.chao-goal-area{position:absolute;z-index:4;right:2%;bottom:2%;width:max-content;max-width:62%;gap:10px;padding:7px 9px;border:1px solid #a68c625c;background:#f4ead2e8;box-shadow:0 4px 12px #17271f45;backdrop-filter:blur(4px)}
-.chao-goal-area>div:first-child b{color:#5a4933;font-size:.75rem}.chao-goal-area small{font-size:.62rem}.chao-goal-steps{gap:3px}.chao-goal-step{width:clamp(22px,3.7vw,37px);height:clamp(28px,4.3vw,42px);border:1px solid #b69a6b;border-radius:3px;background:linear-gradient(180deg,#ead8b3,#c9ad7d);box-shadow:inset 0 1px #fff9,0 3px 0 #8e7048;color:#634c31}
-@media(max-width:700px){.chao-board{padding:8px;aspect-ratio:16/9}.chao-board-title{padding:5px 8px;border-radius:8px}.chao-board-title .chao-eyebrow{font-size:.5rem}.chao-board-title h2{font-size:.9rem}.chao-board-title small{font-size:.55rem}.chao-bridge{left:22%;top:27%;width:58%;height:28%}.chao-space{padding:2px 0 4px}.chao-space-label{width:15px;height:15px;font-size:.45rem}.chao-pawn{width:11px;height:19px}.chao-goal-area{left:34%;right:2%;bottom:2%;max-width:none;gap:5px;padding:4px 5px}.chao-goal-area>div:first-child b{font-size:.58rem}.chao-goal-area small{display:none}.chao-goal-steps{gap:2px}.chao-goal-step{width:clamp(19px,6vw,25px);height:27px;font-size:.55rem}.chao-goal-step small{font-size:.5rem}}
-*** End Patch
+
+.chao-goal-area{display:grid;gap:7px;padding:0;background:none;color:#293b31}
+.chao-goal-area>div:first-child{flex-direction:row;align-items:baseline;gap:8px;flex-wrap:wrap}
+.chao-goal-area small{color:#44594e;font-size:.8rem}
+.chao-goal-steps{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px}
+.chao-goal-step{width:auto;height:46px;justify-content:flex-start;padding-top:4px;gap:2px;background:#e9d9b9}
+.chao-goal-step small{color:#3b2b19;font:800 .9rem/1 system-ui,sans-serif}
+@media(max-width:700px){.chao-pawn{width:11px;height:19px}}

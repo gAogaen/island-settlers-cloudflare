@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="app-version" content="chao-20261111">
 <title>チャオチャオ | ボードゲームオンライン</title>
 <meta name="description" content="秘密のサイコロとブラフで吊り橋を渡る、チャオチャオのオンライン対戦。2〜4人対応。">
-<link rel="stylesheet" href="/theme.css"><script src="/theme.js"></script><link rel="stylesheet" href="/site-shell.css?v=20261101-logo"><link rel="stylesheet" href="/chao.css?v=20261115-mobile-die">
+<link rel="stylesheet" href="/theme.css"><script src="/theme.js"></script><link rel="stylesheet" href="/site-shell.css?v=20261101-logo"><link rel="stylesheet" href="/chao.css?v=20261115-board-layout">
 <meta property="og:type" content="website"><meta property="og:locale" content="ja_JP"><meta property="og:site_name" content="ボードゲームオンライン"><meta property="og:title" content="チャオチャオ | ボードゲームオンライン"><meta property="og:description" content="秘密のサイコロとブラフで吊り橋を渡る。2〜4人で遊ぶオンライン対戦。"><meta property="og:url" content="https://boardgame.un0wn.workers.dev/chao.html"><meta property="og:image" content="https://boardgame.un0wn.workers.dev/assets/og-boardgame-online-6b47de857c.jpg"><meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
@@ -15,7 +15,14 @@
   <section id="lobby" class="chao-panel chao-lobby"><div><span class="chao-eyebrow">TABLE LOBBY</span><h2>橋を渡る仲間を待っています</h2><p>2〜4人で遊べます。部屋コードを友達に共有してください。</p></div><div class="chao-player-list" id="lobbyPlayers"></div><button id="start" class="primary" type="button">ゲームを始める</button></section>
   <section id="play" hidden>
     <section class="chao-turn chao-panel" aria-live="polite"><div class="chao-turn-copy"><span class="chao-eyebrow" id="turnTag">YOUR TURN</span><h2 id="status"></h2><p id="instruction"></p><p id="privateDie" class="chao-private-die" hidden></p></div><div id="actions" class="chao-actions"></div></section>
-    <section class="chao-board chao-panel" aria-label="吊り橋とゴールの盤面"><div class="chao-board-title"><div><span class="chao-eyebrow">THE RICKETY BRIDGE</span><h2>一本橋</h2></div><small>10マスを越えるか、10マス目に止まるとゴール</small></div><div class="chao-jungle" aria-hidden="true"></div><div id="bridge" class="chao-bridge"></div><div class="chao-riverline" aria-hidden="true">〰　〰　〰　〰　〰　〰　〰　〰　〰　〰</div><div class="chao-goal-area"><div><b>ゴールの階段</b><small>先に渡った順に1〜7点</small></div><div id="goalSteps" class="chao-goal-steps"></div></div></section>
+    <section class="chao-board chao-panel" aria-label="吊り橋とゴールの盤面">
+      <div class="chao-board-title"><h2>一本橋</h2><small>0が入口、10以上でゴール</small></div>
+      <div class="chao-board-photo"><div id="bridge" class="chao-bridge"></div></div>
+      <div class="chao-goal-area">
+        <div><b>ゴールの階段</b><small>到着順の得点</small></div>
+        <div id="goalSteps" class="chao-goal-steps"></div>
+      </div>
+    </section>
     <section id="players" class="chao-players" aria-label="プレイヤーの状況"></section>
     <div class="chao-bottom-grid"><section class="chao-panel"><h2>ゲームログ</h2><ol id="log" class="chao-log"></ol></section><section class="chao-panel"><h2>みんなで相談</h2><div id="messages" class="chao-chat"></div><form id="chatForm" class="chao-chat-form"><input id="chatInput" maxlength="180" placeholder="ひとこと相談" aria-label="メッセージ"><button type="submit">送信</button></form></section></div>
     <section id="finished" class="chao-finished chao-panel" hidden><span class="chao-eyebrow">GAME OVER</span><h2 id="winnerTitle"></h2><p id="winnerText"></p><button id="rematch" type="button" class="primary">同じメンバーで再戦に参加</button><small id="rematchStatus"></small></section>
@@ -25,5 +32,5 @@
 <dialog id="stakeDialog" class="chao-dialog"><header><div><small>YOUR LAST CHANCE</small><h2>どのゴール駒を賭ける？</h2></div><button id="stakeCancel" type="button" aria-label="閉じる">×</button></header><div class="chao-rules-body"><p>橋の上に駒がないため、ダウトにはゴール駒を1個賭けます。宣言が本当なら、その駒が谷底に落ちます。</p><div id="stakeOptions"></div></div></dialog>
 <dialog id="challengeDialog" class="chao-dialog chao-result-dialog"><div><span class="chao-eyebrow">THE DIE IS REVEALED</span><h2 id="resultTitle"></h2><p id="resultText"></p><button id="resultClose" class="primary" type="button">橋を見る</button></div></dialog>
 <div id="toast" role="status" aria-live="polite"></div>
-<link rel="stylesheet" href="/gameplay-ux.css?v=20261105"><script src="/gameplay-ux.js?v=20261105" defer></script><script src="/gameplay-moments.js?v=20261106" defer></script><link rel="stylesheet" href="/first-play-rules.css?v=20261111"><script src="/first-play-rules.js?v=20261111-chao" defer></script><script src="/chao.js?v=20261115-mobile-die" defer></script>
+<link rel="stylesheet" href="/gameplay-ux.css?v=20261105"><script src="/gameplay-ux.js?v=20261105" defer></script><script src="/gameplay-moments.js?v=20261106" defer></script><link rel="stylesheet" href="/first-play-rules.css?v=20261111"><script src="/first-play-rules.js?v=20261111-chao" defer></script><script src="/chao.js?v=20261115-board-layout" defer></script>
 </body></html>

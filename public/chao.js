@@ -106,12 +106,12 @@ function renderBridge() {
   const cells = Array.from({length:11},(_,pos) => {
     const pawns = game.players.flatMap(player => (player.pawns || []).filter(pawn => pawn.status === 'bridge' && pawn.pos === pos).map(pawn => pawnHtml(pawn,player))).join('');
     const label = pos === 0 ? '入口' : pos === 10 ? 'ゴール' : String(pos);
-    return `<div class="chao-space"><span class="chao-space-label ${pos===0?'start':''} ${pos===10?'end':''}">${label}</span><div class="chao-pawns">${pawns}</div></div>`;
+    return `<div class="chao-space"><span class="chao-space-label ${pos===0?'start':''} ${pos===10?'end':''}" aria-label="${label}">${pos}</span><div class="chao-pawns">${pawns}</div></div>`;
   }).join('');
   $('bridge').innerHTML = `<div class="chao-bridge-wrap">${cells}</div>`;
   $('goalSteps').innerHTML = Array.from({length:8},(_,i) => {
     const rank=i+1, placed=game.goalOrder.find(x=>x.rank===rank), player=placed&&game.players.find(p=>p.id===placed.playerId);
-    return `<span class="chao-goal-step ${placed?'filled':''}" title="${placed?esc(player?.name):'未到着'}">${placed?pawnHtml({id:placed.pawnId},player):'·'}<small>${rank}</small></span>`;
+    return `<span class="chao-goal-step ${placed?'filled':''}" title="${placed?esc(player?.name):'未到着'}"><small>${rank}</small>${placed?pawnHtml({id:placed.pawnId},player):''}</span>`;
   }).join('');
 }
 function renderPlayers() {
