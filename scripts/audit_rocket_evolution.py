@@ -79,7 +79,7 @@ def main():
                "results": rows, "note": "Sample regions are provisional, not validated card-mask locations."}
     output = args.output or Path(f"rocket-evolution-audit-{args.start:02d}.json")
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(payload, ensure_ascii=False, indent=2)+"\\n", encoding="utf-8")
+    output.write_text(json.dumps(payload, ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
     print(f"Audited {len(batch)} / {len(files)} files; saved {output}")
     for row in rows:
         print(row["file"], row["width"], "x", row["height"], row["samples"])
