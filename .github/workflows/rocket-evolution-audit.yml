@@ -1,0 +1,33 @@
+name: Rocket evolution image audit
+
+on:
+  push:
+    paths:
+      - 'scripts/audit_rocket_evolution.py'
+      - '.github/workflows/rocket-evolution-audit.yml'
+      - 'public/assets/rocket/cards/evolution/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pixel-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Pillow
+        run: python -m pip install 'Pillow>=11,<13'
+      - name: Decode and audit all evolution images
+        run: python scripts/audit_rocket_evolution.py
+      - name: Save audit JSON
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rocket-evolution-pixel-audit
+          path: docs/rocket-evolution-pixel-audit.json
+          if-no-files-found: warn
