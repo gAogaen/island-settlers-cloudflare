@@ -4,6 +4,11 @@ function renderEffectControls(){
  const controls=$('controls'),q=game.pending,ownTurn=game.phase==='playing'&&!q&&game.turnId===me.id;
  const options=(players=game.players.filter(p=>p.alive))=>players.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>').join('');
  const cards=(ids=null)=>(me.hand||[]).filter(c=>!ids||ids.includes(c.id)).map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name)+' · '+esc(c.weather||'天気なし')+'</option>').join('');
+ if(q?.type==='endAbility'&&q.actorId===me.id){
+  controls.innerHTML='<p>'+esc(q.ability==='しゅうかく'?'山札から1枚引けます。':'おてんきチェックを行い、雨・雷雨ならHPと特殊状態を回復します。')+'</p><button id="endAbilityUse">使う</button><button id="endAbilitySkip">使わない</button>';
+  $('endAbilityUse').onclick=()=>action('respond',{choice:'yes'});
+  $('endAbilitySkip').onclick=()=>action('respond',{choice:'no'});
+ }
  if(q?.actorId===me.id&&['poisonTouch','poisonDamage'].includes(q.type)){
   controls.innerHTML='<p>どくしゅ：'+(q.type==='poisonTouch'?'特殊状態をどくに変更しますか？':'どくのダメージを2にしますか？')+'</p><button id="poisonUse">使う</button><button id="poisonSkip">使わない</button>';
   $('poisonUse').onclick=()=>action('respond',{choice:'yes'});
@@ -65,6 +70,20 @@ function renderEffectControls(){
   const extras=me.hand.filter(c=>c.type!=='dodge'&&['rain','thunderstorm'].includes(c.weather));
   for(const c of extras){const b=document.createElement('button');b.textContent='ふゆう：'+c.name+'で回避';b.onclick=()=>action('respond',{choice:'dodge',cardId:c.id});controls.append(b);}
  }
+ if(q?.type==='rivalChallenge'&&q.actorId===me.id){
+  const opponent=game.players.find(player=>player.id===q.opponentId);
+  controls.innerHTML='<p>'+esc(opponent?.name)+'と交互に「くらえ！」を出します。パスすると相手のポケモンから2ダメージを受けます。</p>';
+  for(const card of me.hand.filter(card=>card.type==='attack')){
+   const button=document.createElement('button');
+   button.textContent=card.name+' · '+(card.weather||'天気なし');
+   button.onclick=()=>action('respond',{choice:'play',cardId:card.id});
+   controls.append(button);
+  }
+  const pass=document.createElement('button');
+  pass.textContent='パスする';
+  pass.onclick=()=>action('respond',{choice:'pass'});
+  controls.append(pass);
+ }
  if(q?.type==='printedEvent'&&q.actorId===me.id){
   const title=document.createElement('p');
   title.textContent=q.eventName;
@@ -108,7 +127,6 @@ function renderEffectControls(){
  if(mon.attacks.some(m=>m.effect?.id==='heal-many'))panel.innerHTML+='<fieldset><legend>いのちのしずくの対象</legend>'+game.players.filter(p=>p.alive).map(p=>'<label><input type="checkbox" name="effectHeal" value="'+esc(p.id)+'">'+esc(p.name)+'</label>').join('')+'</fieldset>';
  if(mon.ability==='アナライズ'&&mon.abilityStatus==='implemented')panel.innerHTML+='<fieldset><legend>アナライズ（残りHP以下の枚数）</legend>'+me.hand.map(c=>'<label><input type="checkbox" name="effectDiscard" value="'+esc(c.id)+'">'+esc(c.name)+'</label>').join('')+'<button id="useAnalyze">選んだ手札を交換</button></fieldset>';
  if(mon.ability==='すてみ'&&mon.abilityStatus==='implemented')panel.innerHTML+='<label>減らすHP<input id="effectAmount" type="number" min="1" max="'+mon.hp+'" value="1"></label><button id="useReckless">すてみを使う</button>';
- if(mon.ability==='しゅうかく'&&mon.abilityStatus==='implemented')panel.innerHTML+='<label><input id="effectHarvest" type="checkbox" checked>番の終了時に「しゅうかく」で1枚引く</label>';
  if(mon.heldEffect==='life-orb'&&mon.ability!=='くいしんぼう'){
   const label=document.createElement('label');
   label.innerHTML='<input id="useLifeOrb" type="checkbox">命中時にいのちのたまを使う';
@@ -143,19 +161,14 @@ function renderEffectControls(){
  panel.querySelectorAll('[data-effect-move]').forEach(b=>b.onclick=()=>{const moveIndex=Number(b.dataset.effectMove),m=mon.attacks[moveIndex];if(!chosen){toast('先に手札のカードを選んでください');return;}if(m.trigger!=='weather'&&me.hand.find(c=>c.id===chosen)?.type!=='attack'){toast('「くらえ！」を選んでください');return;}action(m.trigger==='weather'?'move':'play',{cardId:chosen,lifeOrb:!!$('useLifeOrb')?.checked,eventChoice:$('eventChoice')?.value,moveIndex,secondTargetId:m.maxTargets===2?$('secondMoveTarget')?.value:undefined,costCardId:$('moveCost')?.value,targetId:$('effectTarget').value,targetIds:[...document.querySelectorAll('[name="effectHeal"]:checked')].map(c=>c.value),marker:$('effectMarker').value,recoil:$('effectRecoil').checked});});
  if($('useAnalyze'))$('useAnalyze').onclick=()=>action('ability',{cardIds:[...document.querySelectorAll('[name="effectDiscard"]:checked')].map(c=>c.value)});
  if($('useReckless'))$('useReckless').onclick=()=>action('ability',{amount:Number($('effectAmount').value)});
- if(mon.ability==='あめうけざら'&&mon.abilityStatus==='implemented'){
-  const label=document.createElement('label');
-  label.innerHTML='<input id="rainDish" type="checkbox">番の終了時に「あめうけざら」を使う';
-  panel.append(label);
- }
  if(mon.heldEffect==='light-ball'&&mon.ability!=='くいしんぼう'){
   const button=document.createElement('button');
   button.textContent='選んだ対象にでんきだまを使う';
   button.onclick=()=>action('held-effect',{targetId:$('effectTarget').value});
   panel.append(button);
  }
- const end=(levelUp=false)=>action('end',{levelUp,rainDish:!!$('rainDish')?.checked,harvest:!!$('effectHarvest')?.checked});
+ const end=(levelUp=false)=>action('end',{levelUp});
  if($('end'))$('end').onclick=()=>end();if($('levelEnd'))$('levelEnd').onclick=()=>end(true);
- if($('discard'))$('discard').onclick=()=>action('discard',{cardIds:[...discardSet],rainDish:!!$('rainDish')?.checked,harvest:!!$('effectHarvest')?.checked});
+ if($('discard'))$('discard').onclick=()=>action('discard',{cardIds:[...discardSet]});
  if($('play'))$('play').onclick=()=>action('play',{cardId:chosen,lifeOrb:!!$('useLifeOrb')?.checked,eventChoice:$('eventChoice')?.value,toolChoice:$('toolChoice')?.value,pokemonIndex:$('reviveIndex')?.value,targetId:$('target')?.value||'',marker:$('effectMarker')?.value,recoil:!!$('effectRecoil')?.checked});
 }

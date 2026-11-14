@@ -205,3 +205,13 @@ button{border-color:#c9b990;background:#eee5d2;color:#352f28}
 #decisionControls .actions { align-items: stretch; }
 
 .board-held-item { display: block; max-width: 100%; padding: 2px 5px; font-size: .72rem; overflow-wrap: anywhere; }
+
+.turn-badge { display: inline-block; align-self: start; padding: 2px 7px; border-radius: 5px; font-size: .75rem; font-weight: 800; background: #ffe66a; color: #231e12; }
+
+.hp i.hp-bonus { outline: 1px solid #78d69a; }
+.hp i.hp-bonus.on { background: #48be7c; }
+
+#abilityNoticeDialog { text-align: center; max-width: min(28rem, 92vw); }
+#abilityNoticeImage:not([hidden]) { display: block; margin: 0 auto 12px; max-width: 100%; max-height: 55dvh; object-fit: contain; }
+
+.response-badge { display: inline-block; padding: 2px 6px; border-radius: 5px; background: #ffe0a0; color: #362200; font-size: .72rem; font-weight: 800; }
